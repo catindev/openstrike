@@ -10,6 +10,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Documentation
 
+- Documented debug BSP viewer controls and updated project status/roadmap after #11.
 - Added repository handoff documentation for agents and contributors.
 - Added ADR structure and current project status documents.
 - Added issue-backed roadmap documentation.
