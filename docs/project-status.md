@@ -27,7 +27,7 @@ The project can:
 - #10 - documentation and handoff rules, completed by PR #21.
 - #3 - config and VFS automated tests, completed by PR #22.
 - #11 - debug viewer navigation, completed by PR #25.
-- #12 - texture package metadata reader, completed by current PR.
+- #12 - texture package metadata reader, completed by PR #33.
 
 ## Open GitHub issues
 
