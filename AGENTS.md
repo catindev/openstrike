@@ -74,6 +74,12 @@ cmake --preset ninja-debug
 cmake --build build/ninja-debug
 ```
 
+Run tests:
+
+```bash
+ctest --test-dir build/macos-arm64-debug --output-on-failure
+```
+
 Repository asset audit:
 
 ```bash
