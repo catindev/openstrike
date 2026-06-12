@@ -52,11 +52,16 @@ std::filesystem::path normalizeExistingDirectory(const std::filesystem::path& in
     return canonical;
 }
 
-std::string lowerExtension(std::string_view extension) {
-    std::string result(extension);
+std::string lowerString(std::string_view value) {
+    std::string result(value);
     std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
+    return result;
+}
+
+std::string lowerExtension(std::string_view extension) {
+    std::string result = lowerString(extension);
 
     if (!result.empty() && result.front() != '.') {
         result.insert(result.begin(), '.');
@@ -73,6 +78,28 @@ std::string virtualPathFor(const std::filesystem::path& root, const std::filesys
     }
 
     return relative.generic_string();
+}
+
+std::string canonicalFileKey(const std::filesystem::path& file) {
+    std::error_code ec;
+    std::filesystem::path canonical = std::filesystem::weakly_canonical(file, ec);
+    if (ec) {
+        ec.clear();
+        canonical = std::filesystem::absolute(file, ec);
+    }
+
+    if (ec) {
+        canonical = file;
+    }
+
+    return canonical.generic_string();
+}
+
+std::string virtualFileKey(std::string_view virtualPath) {
+    // Legacy game resource lookups are effectively case-insensitive on the
+    // platforms we target, and macOS default filesystems are commonly
+    // case-insensitive. Keep virtual resource shadowing case-insensitive too.
+    return lowerString(virtualPath);
 }
 
 } // namespace
@@ -137,6 +164,8 @@ std::vector<ResourceFile> VirtualFileSystem::findByExtensions(const std::vector<
     }
 
     std::vector<ResourceFile> result;
+    std::unordered_set<std::string> seenCanonicalFiles;
+    std::unordered_set<std::string> seenVirtualFiles;
 
     for (std::size_t mountIndex = 0; mountIndex < mountedRoots_.size(); ++mountIndex) {
         const MountedRoot& root = mountedRoots_[mountIndex];
@@ -163,9 +192,26 @@ std::vector<ResourceFile> VirtualFileSystem::findByExtensions(const std::vector<
                 continue;
             }
 
+            // The same physical file can be visible through multiple mounted roots,
+            // for example when both a mod directory and its parent game directory are
+            // configured. Keep the first match so mount order defines precedence.
+            if (!seenCanonicalFiles.insert(canonicalFileKey(it->path())).second) {
+                continue;
+            }
+
+            const std::string virtualPath = virtualPathFor(root.canonicalPath, it->path());
+
+            // Different physical files can also have the same virtual path across
+            // mounted roots, for example cstrike/cached.wad and valve/cached.wad
+            // both appear as cached.wad when their directories are mounted directly.
+            // This mirrors mod overlay semantics: earlier mounts shadow later mounts.
+            if (!seenVirtualFiles.insert(virtualFileKey(virtualPath)).second) {
+                continue;
+            }
+
             result.push_back(ResourceFile{
                 .absolutePath = it->path(),
-                .virtualPath = virtualPathFor(root.canonicalPath, it->path()),
+                .virtualPath = virtualPath,
                 .extension = ext,
                 .mountIndex = mountIndex,
             });
