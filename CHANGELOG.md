@@ -4,19 +4,20 @@ All notable OpenStrike changes should be documented here.
 
 ## Unreleased
 
-### Testing
-
-- Added CTest-backed config and VFS regression tests using only synthetic temporary files.
-
-### Fixed
-
-- Hardened config array parsing so `[resources].roots` cannot accidentally match `[resources].open_asset_roots`.
-
 ### Documentation
 
 - Added repository handoff documentation for agents and contributors.
 - Added ADR structure and current project status documents.
 - Added issue-backed roadmap documentation.
+
+### Testing
+
+- Added CTest-based regression coverage for config parsing, config template generation, VFS mount validation, resource indexing, physical-file deduplication, and virtual-path shadowing.
+- CI now runs the test suite after building.
+
+### Fixed
+
+- Fixed config array parsing so `roots` cannot accidentally match `open_asset_roots` by substring.
 
 ## 2026-06-12
 
