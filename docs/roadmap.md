@@ -11,7 +11,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #10 | Documentation, ADRs, changelog, and agent handoff. | #21 |
 | #3 | Config and VFS test hardening. | #22 |
 | #11 | Debug viewer navigation controls. | #25 |
-| #12 | Texture package metadata reader and dump tool. | Current PR |
+| #12 | Texture package metadata reader and dump tool. | #33 |
 
 ## Active near-term work
 
