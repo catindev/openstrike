@@ -2,6 +2,7 @@
 #include "assets/VirtualFileSystem.h"
 #include "config/Config.h"
 #include "config/ConfigPaths.h"
+#include "platform/Window.h"
 
 #include <exception>
 #include <filesystem>
@@ -20,6 +21,7 @@ struct CliOptions {
     bool printConfigPath = false;
     bool validateConfig = false;
     bool listResources = false;
+    bool noWindow = false;
     std::optional<fs::path> configPath;
     std::vector<fs::path> resourceRoots;
 };
@@ -35,6 +37,7 @@ void printUsage(std::ostream& out) {
         << "  --print-config-path            Print the default config path and exit.\n"
         << "  --validate-config              Load config, mount resource roots, print summary, and exit.\n"
         << "  --list-resources               Print indexed resource filenames.\n"
+        << "  --no-window                    Initialize resources and exit without opening a window.\n"
         << "  --config <path>                Use an explicit config file.\n"
         << "  --resource-root <path>         Add a temporary read-only resource root.\n"
         << "\n"
@@ -56,6 +59,8 @@ CliOptions parseArgs(int argc, char** argv) {
             options.validateConfig = true;
         } else if (arg == "--list-resources") {
             options.listResources = true;
+        } else if (arg == "--no-window") {
+            options.noWindow = true;
         } else if (arg == "--config") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--config requires a path argument");
@@ -109,6 +114,26 @@ void printMountedRoots(const osk::VirtualFileSystem& vfs) {
     }
 }
 
+int runWindowLoop() {
+    std::string error;
+    std::unique_ptr<osk::Window> window = osk::Window::create(osk::WindowDesc{
+        .title = "OpenStrike Bootstrap",
+        .width = 1280,
+        .height = 720,
+    }, &error);
+
+    if (!window) {
+        std::cerr << "OpenStrike error: failed to create window: " << error << '\n';
+        return 3;
+    }
+
+    std::cout << "OpenStrike window running. Press Esc or close the window to exit.\n";
+    window->runUntilClosed();
+    std::cout << "OpenStrike window closed.\n";
+
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -154,11 +179,20 @@ int main(int argc, char** argv) {
             std::cout << "Config: " << configPath.string() << '\n';
             printMountedRoots(vfs);
             osk::printResourceIndex(std::cout, index, options.listResources);
-        } else {
-            std::cout << "OpenStrike bootstrap client initialized.\n";
-            std::cout << "Config: " << configPath.string() << '\n';
-            std::cout << "Indexed resources: " << index.totalFiles() << '\n';
-            std::cout << "Renderer/window bootstrap is the next implementation step.\n";
+            return rootsOk ? 0 : 2;
+        }
+
+        std::cout << "OpenStrike bootstrap client initialized.\n";
+        std::cout << "Config: " << configPath.string() << '\n';
+        std::cout << "Indexed resources: " << index.totalFiles() << '\n';
+
+        if (options.noWindow) {
+            return rootsOk ? 0 : 2;
+        }
+
+        const int windowResult = runWindowLoop();
+        if (windowResult != 0) {
+            return windowResult;
         }
 
         return rootsOk ? 0 : 2;
