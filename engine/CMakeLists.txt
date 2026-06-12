@@ -6,6 +6,7 @@ add_library(openstrike_engine STATIC
     assets/ResourceIndex.cpp
     assets/loaders/BspLoader.cpp
     assets/loaders/BspGeometry.cpp
+    assets/loaders/BspMesh.cpp
 )
 
 if (APPLE)

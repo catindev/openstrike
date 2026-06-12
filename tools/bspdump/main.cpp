@@ -1,5 +1,6 @@
 #include "assets/loaders/BspGeometry.h"
 #include "assets/loaders/BspLoader.h"
+#include "assets/loaders/BspMesh.h"
 
 #include <filesystem>
 #include <iomanip>
@@ -35,7 +36,8 @@ void printBounds(const osk::bsp::Bounds3& bounds) {
 void printSummary(
     const fs::path& path,
     const osk::bsp::BspSummary& summary,
-    const osk::bsp::BspGeometrySummary& geometry) {
+    const osk::bsp::BspGeometrySummary& geometry,
+    const osk::bsp::BspWorldMesh& mesh) {
     std::cout << "BSP file: " << path.string() << '\n';
     std::cout << "Version:  " << summary.version << '\n';
     std::cout << "Size:     " << summary.fileSize << " bytes\n";
@@ -91,12 +93,23 @@ void printSummary(
     std::cout << "  max face edges:   " << geometry.maxEdgesPerFace << '\n';
     printBounds(geometry.bounds);
 
-    if (!summary.warnings.empty() || !geometry.warnings.empty()) {
+    std::cout << "\nWorld mesh:\n";
+    std::cout << "  vertices:         " << mesh.vertices.size() << '\n';
+    std::cout << "  indices:          " << mesh.indices.size() << '\n';
+    std::cout << "  triangles:        " << mesh.triangleCount() << '\n';
+    std::cout << "  face ranges:      " << mesh.faces.size() << '\n';
+    std::cout << "  skipped faces:    " << mesh.skippedFaceCount << '\n';
+    printBounds(mesh.bounds);
+
+    if (!summary.warnings.empty() || !geometry.warnings.empty() || !mesh.warnings.empty()) {
         std::cout << "\nWarnings:\n";
         for (const std::string& warning : summary.warnings) {
             std::cout << "  - " << warning << '\n';
         }
         for (const std::string& warning : geometry.warnings) {
+            std::cout << "  - " << warning << '\n';
+        }
+        for (const std::string& warning : mesh.warnings) {
             std::cout << "  - " << warning << '\n';
         }
     }
@@ -122,8 +135,9 @@ int main(int argc, char** argv) {
         const fs::path path = argv[1];
         const osk::bsp::BspSummary summary = osk::bsp::loadBspSummary(path);
         const osk::bsp::BspGeometrySummary geometry = osk::bsp::loadBspGeometrySummary(path);
-        printSummary(path, summary, geometry);
-        return summary.warnings.empty() && geometry.warnings.empty() ? 0 : 2;
+        const osk::bsp::BspWorldMesh mesh = osk::bsp::loadBspWorldMesh(path);
+        printSummary(path, summary, geometry, mesh);
+        return summary.warnings.empty() && geometry.warnings.empty() && mesh.warnings.empty() ? 0 : 2;
     } catch (const std::exception& e) {
         std::cerr << "OpenStrikeBspDump error: " << e.what() << '\n';
         return 1;
