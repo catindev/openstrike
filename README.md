@@ -57,6 +57,12 @@ cmake -S . -B build/default-debug -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/default-debug
 ```
 
+Run tests:
+
+```bash
+ctest --test-dir build/macos-arm64-debug --output-on-failure
+```
+
 ## Bootstrap CLI
 
 Print the default config path:
