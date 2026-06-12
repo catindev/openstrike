@@ -25,6 +25,7 @@ if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/asset_audit)
     add_subdirectory(tools/bspdump)
     add_subdirectory(tools/bspview)
+    add_subdirectory(tools/texturepkgdump)
 endif()
 
 if (OSK_BUILD_TESTS)
