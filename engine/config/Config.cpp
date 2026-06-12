@@ -101,51 +101,69 @@ std::optional<std::string> rawValue(const std::string& section, std::string_view
     return std::nullopt;
 }
 
-std::optional<std::string> rawArrayValue(const std::string& section, std::string_view key) {
-    const std::string keyText(key);
-    std::istringstream stream(section);
-    std::string line;
-    bool collecting = false;
-    std::string collected;
+std::optional<std::size_t> findArrayClose(std::string_view text) {
+    bool inString = false;
+    bool escape = false;
 
-    while (std::getline(stream, line)) {
-        if (!collecting) {
-            const auto eq = line.find('=');
-            if (eq == std::string::npos) {
-                continue;
-            }
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        const char c = text[i];
 
-            if (trim(std::string_view(line).substr(0, eq)) != keyText) {
-                continue;
-            }
-
-            const std::string value = std::string(line.substr(eq + 1));
-            const auto open = value.find('[');
-            if (open == std::string::npos) {
-                throw std::runtime_error("expected array value for config key: " + std::string(key));
-            }
-
-            collected = value.substr(open + 1);
-            if (const auto close = collected.find(']'); close != std::string::npos) {
-                return collected.substr(0, close);
-            }
-
-            collected.push_back('\n');
-            collecting = true;
+        if (escape) {
+            escape = false;
             continue;
         }
 
-        if (const auto close = line.find(']'); close != std::string::npos) {
-            collected += line.substr(0, close);
-            return collected;
+        if (inString && c == '\\') {
+            escape = true;
+            continue;
         }
 
-        collected += line;
-        collected.push_back('\n');
+        if (c == '"') {
+            inString = !inString;
+            continue;
+        }
+
+        if (!inString && c == ']') {
+            return i;
+        }
     }
 
-    if (collecting) {
-        throw std::runtime_error("unterminated array in config key: " + std::string(key));
+    return std::nullopt;
+}
+
+std::optional<std::string> rawArrayValue(const std::string& section, std::string_view key) {
+    std::istringstream stream(section);
+    std::string line;
+    const std::string keyText(key);
+
+    while (std::getline(stream, line)) {
+        const auto eq = line.find('=');
+        if (eq == std::string::npos) {
+            continue;
+        }
+
+        if (trim(std::string_view(line).substr(0, eq)) != keyText) {
+            continue;
+        }
+
+        const auto open = line.find('[', eq + 1);
+        if (open == std::string::npos) {
+            return std::nullopt;
+        }
+
+        std::string collected = line.substr(open + 1);
+        while (true) {
+            if (const auto close = findArrayClose(collected)) {
+                return collected.substr(0, *close);
+            }
+
+            if (!std::getline(stream, line)) {
+                throw std::runtime_error("unterminated array in config key: " + std::string(key));
+            }
+
+            collected.push_back('\n');
+            collected += line;
+        }
     }
 
     return std::nullopt;
