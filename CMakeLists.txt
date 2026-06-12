@@ -15,8 +15,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(OSK_BUILD_TOOLS "Build OpenStrike command-line tools" ON)
-option(OSK_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 option(OSK_BUILD_TESTS "Build OpenStrike tests" ON)
+option(OSK_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 add_subdirectory(engine)
 add_subdirectory(apps/client)
