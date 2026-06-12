@@ -32,6 +32,7 @@ The project currently contains:
 - Minimal config template generation and parser.
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
 - Map header, geometry summary, and triangulated mesh generation.
+- Texture package header, directory, and mip metadata inspection.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for untextured map wireframes.
 - Tooling for asset audits and format inspection.
@@ -89,6 +90,12 @@ Map dump:
 
 ```bash
 ./build/macos-arm64-debug/tools/bspdump/OpenStrikeBspDump /absolute/path/to/local/map.bsp
+```
+
+Texture package metadata dump:
+
+```bash
+./build/macos-arm64-debug/tools/texturepkgdump/OpenStrikeTexturePkgDump /absolute/path/to/local/package.wad
 ```
 
 Map debug viewer:
