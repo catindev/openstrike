@@ -4,6 +4,10 @@ All notable OpenStrike changes should be documented here.
 
 ## Unreleased
 
+### Added
+
+- Added debug BSP viewer navigation controls for rotation, zoom, and view reset.
+
 ### Documentation
 
 - Added repository handoff documentation for agents and contributors.

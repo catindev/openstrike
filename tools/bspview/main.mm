@@ -22,18 +22,21 @@ struct ViewerVertex {
     vector_float3 normal;
 };
 
+struct ViewerCamera {
+    float yaw = 0.7853981633974483F;    // 45 degrees.
+    float pitch = -0.9599310885968813F; // -55 degrees.
+    float zoom = 1.0F;
+};
+
 float length3(const osk::bsp::Vec3& value) {
     return std::sqrt(value.x * value.x + value.y * value.y + value.z * value.z);
 }
 
-osk::bsp::Vec3 rotateDebugView(osk::bsp::Vec3 value) {
-    constexpr float yaw = 0.7853981633974483F;    // 45 degrees.
-    constexpr float pitch = -0.9599310885968813F; // -55 degrees.
-
-    const float cy = std::cos(yaw);
-    const float sy = std::sin(yaw);
-    const float cp = std::cos(pitch);
-    const float sp = std::sin(pitch);
+osk::bsp::Vec3 rotateView(osk::bsp::Vec3 value, const ViewerCamera& camera) {
+    const float cy = std::cos(camera.yaw);
+    const float sy = std::sin(camera.yaw);
+    const float cp = std::cos(camera.pitch);
+    const float sp = std::sin(camera.pitch);
 
     const float x0 = value.x * cy - value.y * sy;
     const float y0 = value.x * sy + value.y * cy;
@@ -46,7 +49,7 @@ osk::bsp::Vec3 rotateDebugView(osk::bsp::Vec3 value) {
     };
 }
 
-std::vector<ViewerVertex> buildViewerVertices(const osk::bsp::BspWorldMesh& mesh) {
+std::vector<ViewerVertex> buildViewerVertices(const osk::bsp::BspWorldMesh& mesh, const ViewerCamera& camera) {
     std::vector<ViewerVertex> vertices;
     vertices.reserve(mesh.vertices.size());
 
@@ -70,18 +73,20 @@ std::vector<ViewerVertex> buildViewerVertices(const osk::bsp::BspWorldMesh& mesh
         radius = 1.0F;
     }
 
+    const float viewScale = 0.9F * camera.zoom;
+
     for (const osk::bsp::BspMeshVertex& source : mesh.vertices) {
         const osk::bsp::Vec3 centered{
             .x = source.position.x - center.x,
             .y = source.position.y - center.y,
             .z = source.position.z - center.z,
         };
-        const osk::bsp::Vec3 p = rotateDebugView(centered);
-        const osk::bsp::Vec3 n = rotateDebugView(source.normal);
+        const osk::bsp::Vec3 p = rotateView(centered, camera);
+        const osk::bsp::Vec3 n = rotateView(source.normal, camera);
 
         const float z = std::clamp(p.z / (radius * 2.0F) + 0.5F, 0.0F, 1.0F);
         vertices.push_back(ViewerVertex{
-            .position = vector_float3{p.x / radius * 0.9F, p.y / radius * 0.9F, z},
+            .position = vector_float3{p.x / radius * viewScale, p.y / radius * viewScale, z},
             .normal = vector_float3{n.x, n.y, n.z},
         });
     }
@@ -136,6 +141,12 @@ void printUsage(std::ostream& out) {
         << "Usage:\n"
         << "  OpenStrikeBspView <path/to/map.bsp>\n"
         << "\n"
+        << "Controls:\n"
+        << "  Left mouse drag / arrow keys  Rotate view\n"
+        << "  Mouse wheel / + / -           Zoom view\n"
+        << "  R                             Reset view\n"
+        << "  Esc                           Exit\n"
+        << "\n"
         << "This debug tool opens a native macOS Metal window and displays a\n"
         << "wireframe view of local user-provided BSP geometry. It does not copy,\n"
         << "extract, or write user-provided assets.\n";
@@ -163,11 +174,40 @@ void printUsage(std::ostream& out) {
     id<MTLBuffer> _vertexBuffer;
     id<MTLBuffer> _indexBuffer;
     NSUInteger _indexCount;
+    const osk::bsp::BspWorldMesh* _mesh;
+    ViewerCamera _camera;
 }
 - (instancetype)initWithView:(MTKView*)view mesh:(const osk::bsp::BspWorldMesh&)mesh errorMessage:(std::string*)errorMessage;
+- (void)rotateByDeltaX:(CGFloat)deltaX deltaY:(CGFloat)deltaY;
+- (void)zoomByFactor:(float)factor;
+- (void)resetView;
 @end
 
 @implementation OSKBspMetalRenderer
+
+- (BOOL)rebuildVertexBufferWithErrorMessage:(std::string*)errorMessage {
+    const std::vector<ViewerVertex> vertices = buildViewerVertices(*_mesh, _camera);
+    if (vertices.empty()) {
+        if (errorMessage != nullptr) {
+            *errorMessage = "BSP world mesh has no drawable vertices";
+        }
+        return NO;
+    }
+
+    id<MTLBuffer> newVertexBuffer = [_device newBufferWithBytes:vertices.data()
+                                                         length:vertices.size() * sizeof(ViewerVertex)
+                                                        options:MTLResourceStorageModeManaged];
+    if (newVertexBuffer == nil) {
+        if (errorMessage != nullptr) {
+            *errorMessage = "failed to create Metal vertex buffer";
+        }
+        return NO;
+    }
+
+    [_vertexBuffer release];
+    _vertexBuffer = newVertexBuffer;
+    return YES;
+}
 
 - (instancetype)initWithView:(MTKView*)view mesh:(const osk::bsp::BspWorldMesh&)mesh errorMessage:(std::string*)errorMessage {
     self = [super init];
@@ -175,6 +215,7 @@ void printUsage(std::ostream& out) {
         return nil;
     }
 
+    _mesh = &mesh;
     _device = [view.device retain];
     _commandQueue = [_device newCommandQueue];
     if (_commandQueue == nil) {
@@ -185,8 +226,7 @@ void printUsage(std::ostream& out) {
         return nil;
     }
 
-    const std::vector<ViewerVertex> vertices = buildViewerVertices(mesh);
-    if (vertices.empty() || mesh.indices.empty()) {
+    if (mesh.vertices.empty() || mesh.indices.empty()) {
         if (errorMessage != nullptr) {
             *errorMessage = "BSP world mesh has no drawable geometry";
         }
@@ -194,17 +234,19 @@ void printUsage(std::ostream& out) {
         return nil;
     }
 
-    _vertexBuffer = [_device newBufferWithBytes:vertices.data()
-                                         length:vertices.size() * sizeof(ViewerVertex)
-                                        options:MTLResourceStorageModeManaged];
+    if (![self rebuildVertexBufferWithErrorMessage:errorMessage]) {
+        [self release];
+        return nil;
+    }
+
     _indexBuffer = [_device newBufferWithBytes:mesh.indices.data()
                                         length:mesh.indices.size() * sizeof(std::uint32_t)
                                        options:MTLResourceStorageModeManaged];
     _indexCount = static_cast<NSUInteger>(mesh.indices.size());
 
-    if (_vertexBuffer == nil || _indexBuffer == nil) {
+    if (_indexBuffer == nil) {
         if (errorMessage != nullptr) {
-            *errorMessage = "failed to create Metal mesh buffers";
+            *errorMessage = "failed to create Metal index buffer";
         }
         [self release];
         return nil;
@@ -272,6 +314,23 @@ void printUsage(std::ostream& out) {
     [super dealloc];
 }
 
+- (void)rotateByDeltaX:(CGFloat)deltaX deltaY:(CGFloat)deltaY {
+    _camera.yaw += static_cast<float>(deltaX) * 0.01F;
+    _camera.pitch += static_cast<float>(deltaY) * 0.01F;
+    _camera.pitch = std::clamp(_camera.pitch, -1.55F, 1.55F);
+    (void)[self rebuildVertexBufferWithErrorMessage:nullptr];
+}
+
+- (void)zoomByFactor:(float)factor {
+    _camera.zoom = std::clamp(_camera.zoom * factor, 0.10F, 10.0F);
+    (void)[self rebuildVertexBufferWithErrorMessage:nullptr];
+}
+
+- (void)resetView {
+    _camera = ViewerCamera{};
+    (void)[self rebuildVertexBufferWithErrorMessage:nullptr];
+}
+
 - (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {
     (void)view;
     (void)size;
@@ -304,6 +363,65 @@ void printUsage(std::ostream& out) {
 }
 
 @end
+
+BOOL handleViewerEvent(NSEvent* event, OSKBspMetalRenderer* renderer, OSKBspViewDelegate* windowDelegate, NSWindow* window) {
+    switch ([event type]) {
+        case NSEventTypeKeyDown: {
+            NSString* characters = [event charactersIgnoringModifiers];
+            if ([characters length] == 0) {
+                return NO;
+            }
+
+            const unichar key = [characters characterAtIndex:0];
+            if (key == 27) {
+                [windowDelegate setCloseRequested:YES];
+                [window close];
+                return YES;
+            }
+
+            switch (key) {
+                case 'r':
+                case 'R':
+                    [renderer resetView];
+                    return YES;
+                case '+':
+                case '=':
+                    [renderer zoomByFactor:1.10F];
+                    return YES;
+                case '-':
+                case '_':
+                    [renderer zoomByFactor:0.90F];
+                    return YES;
+                case NSLeftArrowFunctionKey:
+                    [renderer rotateByDeltaX:-12.0 deltaY:0.0];
+                    return YES;
+                case NSRightArrowFunctionKey:
+                    [renderer rotateByDeltaX:12.0 deltaY:0.0];
+                    return YES;
+                case NSUpArrowFunctionKey:
+                    [renderer rotateByDeltaX:0.0 deltaY:-12.0];
+                    return YES;
+                case NSDownArrowFunctionKey:
+                    [renderer rotateByDeltaX:0.0 deltaY:12.0];
+                    return YES;
+                default:
+                    return NO;
+            }
+        }
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged:
+            [renderer rotateByDeltaX:[event deltaX] deltaY:[event deltaY]];
+            return YES;
+        case NSEventTypeScrollWheel: {
+            const float factor = std::exp(static_cast<float>([event scrollingDeltaY]) * 0.02F);
+            [renderer zoomByFactor:factor];
+            return YES;
+        }
+        default:
+            return NO;
+    }
+}
 
 int main(int argc, char** argv) {
     if (argc == 2) {
@@ -377,9 +495,10 @@ int main(int argc, char** argv) {
             [window setContentView:view];
             [window center];
             [window makeKeyAndOrderFront:nil];
+            [window makeFirstResponder:view];
             [NSApp activateIgnoringOtherApps:YES];
 
-            std::cout << "OpenStrikeBspView running. Press Esc or close the window to exit.\n";
+            std::cout << "OpenStrikeBspView running. Drag to rotate, scroll to zoom, press R to reset, Esc to exit.\n";
             std::cout << "Mesh: " << mesh.vertices.size() << " vertices, "
                 << mesh.indices.size() << " indices, "
                 << mesh.triangleCount() << " triangles\n";
@@ -396,13 +515,8 @@ int main(int argc, char** argv) {
                             break;
                         }
 
-                        if ([event type] == NSEventTypeKeyDown) {
-                            NSString* characters = [event charactersIgnoringModifiers];
-                            if ([characters length] > 0 && [characters characterAtIndex:0] == 27) {
-                                [windowDelegate setCloseRequested:YES];
-                                [window close];
-                                break;
-                            }
+                        if (handleViewerEvent(event, renderer, windowDelegate, window)) {
+                            continue;
                         }
 
                         [NSApp sendEvent:event];
