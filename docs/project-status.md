@@ -4,7 +4,7 @@ Last updated: 2026-06-12.
 
 ## Current milestone
 
-OpenStrike has reached the first visual map-inspection milestone on macOS.
+OpenStrike has reached the first visual map-inspection milestone on macOS and now has automated coverage for the config/VFS bootstrap.
 
 The project can:
 
@@ -13,6 +13,7 @@ The project can:
 - read a config file from the user application support directory;
 - mount configured resource roots read-only;
 - index compatible local file types;
+- run automated tests for config parsing, template generation, VFS mounting, and indexing;
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
@@ -22,11 +23,11 @@ The project can:
 
 - #1 - first macOS window lifecycle, completed by PR #4 and expanded by PR #9.
 - #2 - map header and lump dump tool, completed by PR #6, PR #7, PR #8, and PR #9.
+- #10 - documentation and handoff rules, completed by PR #21.
+- #3 - config and VFS automated tests, pending current PR.
 
 ## Open GitHub issues
 
-- #3 - config and VFS automated tests.
-- #10 - documentation and handoff rules.
 - #11 - debug viewer navigation.
 - #12 - texture package metadata reader.
 - #13 - textured map viewer pass.
@@ -46,6 +47,7 @@ engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
 engine/assets/loaders/        map summary, geometry, and mesh builders
 engine/platform/              native macOS window abstraction and headless fallback
+tests/                        config and VFS regression tests
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map metadata CLI
 tools/bspview/                macOS Metal wireframe debug viewer
@@ -69,6 +71,12 @@ Build:
 ```bash
 cmake --preset macos-arm64-debug
 cmake --build build/macos-arm64-debug
+```
+
+Test:
+
+```bash
+ctest --test-dir build/macos-arm64-debug --output-on-failure
 ```
 
 Config validation:
