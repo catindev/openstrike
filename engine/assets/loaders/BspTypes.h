@@ -48,10 +48,20 @@ struct LumpInfo {
     bool sizeAligned = true;
 };
 
+struct BspTextureMetadata {
+    std::size_t index = 0;
+    std::string name;
+    std::uint32_t width = 0;
+    std::uint32_t height = 0;
+    std::array<std::uint32_t, 4> mipOffsets{};
+    bool mipMetadataAvailable = false;
+};
+
 struct TextureInfo {
     std::int32_t declaredCount = 0;
     std::size_t validOffsetCount = 0;
     std::size_t namedTextureCount = 0;
+    std::vector<BspTextureMetadata> entries;
 };
 
 struct BspSummary {
