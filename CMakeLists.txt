@@ -16,6 +16,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(OSK_BUILD_TOOLS "Build OpenStrike command-line tools" ON)
 option(OSK_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+option(OSK_BUILD_TESTS "Build OpenStrike tests" ON)
 
 add_subdirectory(engine)
 add_subdirectory(apps/client)
@@ -24,4 +25,9 @@ if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/asset_audit)
     add_subdirectory(tools/bspdump)
     add_subdirectory(tools/bspview)
+endif()
+
+if (OSK_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
