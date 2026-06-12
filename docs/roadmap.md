@@ -9,7 +9,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #1 | First macOS window lifecycle and debug viewer path. | #4, #9 |
 | #2 | Map header/lump inspection and mesh path. | #6, #7, #8, #9 |
 | #10 | Documentation, ADRs, changelog, and agent handoff. | #21 |
-| #3 | Config and VFS test hardening. | Pending current PR |
+| #3 | Config and VFS test hardening. | #22 |
 | #11 | Debug viewer navigation controls. | #25 |
 
 ## Active near-term work
