@@ -1,15 +1,15 @@
-add_executable(OpenStrikeConfigVfsTests
-    config_vfs_tests.cpp
+add_executable(openstrike_config_vfs_tests
+    test_config_vfs.cpp
 )
 
-target_link_libraries(OpenStrikeConfigVfsTests
+target_link_libraries(openstrike_config_vfs_tests
     PRIVATE
         openstrike_engine
 )
 
-target_compile_features(OpenStrikeConfigVfsTests PRIVATE cxx_std_20)
+target_compile_features(openstrike_config_vfs_tests PRIVATE cxx_std_20)
 
 add_test(
-    NAME config_vfs
-    COMMAND OpenStrikeConfigVfsTests
+    NAME openstrike_config_vfs_tests
+    COMMAND openstrike_config_vfs_tests
 )
