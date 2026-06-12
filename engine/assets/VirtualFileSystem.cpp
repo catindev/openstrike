@@ -75,6 +75,21 @@ std::string virtualPathFor(const std::filesystem::path& root, const std::filesys
     return relative.generic_string();
 }
 
+std::string canonicalFileKey(const std::filesystem::path& file) {
+    std::error_code ec;
+    std::filesystem::path canonical = std::filesystem::weakly_canonical(file, ec);
+    if (ec) {
+        ec.clear();
+        canonical = std::filesystem::absolute(file, ec);
+    }
+
+    if (ec) {
+        canonical = file;
+    }
+
+    return canonical.generic_string();
+}
+
 } // namespace
 
 bool VirtualFileSystem::mountReadOnlyDirectory(
@@ -137,6 +152,7 @@ std::vector<ResourceFile> VirtualFileSystem::findByExtensions(const std::vector<
     }
 
     std::vector<ResourceFile> result;
+    std::unordered_set<std::string> seenCanonicalFiles;
 
     for (std::size_t mountIndex = 0; mountIndex < mountedRoots_.size(); ++mountIndex) {
         const MountedRoot& root = mountedRoots_[mountIndex];
@@ -160,6 +176,13 @@ std::vector<ResourceFile> VirtualFileSystem::findByExtensions(const std::vector<
 
             const std::string ext = lowerExtension(it->path().extension().string());
             if (!wanted.contains(ext)) {
+                continue;
+            }
+
+            // The same physical file can be visible through multiple mounted roots,
+            // for example when both a mod directory and its parent game directory are
+            // configured. Keep the first match so mount order defines precedence.
+            if (!seenCanonicalFiles.insert(canonicalFileKey(it->path())).second) {
                 continue;
             }
 
