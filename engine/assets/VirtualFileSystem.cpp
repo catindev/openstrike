@@ -41,6 +41,7 @@ std::filesystem::path normalizeExistingDirectory(const std::filesystem::path& in
     }
 
     std::filesystem::directory_iterator probe(canonical, ec);
+    (void)probe;
     if (ec) {
         if (errorMessage != nullptr) {
             *errorMessage = "path is not readable: " + canonical.string();
