@@ -9,11 +9,12 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summary, geometry summary, and mesh builders
+engine/assets/loaders/        map summary, geometry summary, mesh builders, and texture package metadata readers
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
 tools/bspdump/                map metadata CLI
 tools/bspview/                macOS Metal wireframe debug viewer
+tools/texturepkgdump/         texture package metadata CLI
 ```
 
 ## Current data flow
@@ -28,6 +29,10 @@ config.toml
   -> BspGeometrySummary
   -> BspWorldMesh
   -> OpenStrikeBspDump / OpenStrikeBspView
+
+local texture package path
+  -> TexturePackageSummary
+  -> OpenStrikeTexturePkgDump
 ```
 
 ## Resource model
@@ -58,12 +63,28 @@ Implemented:
 
 Not implemented yet:
 
-- texture package loading;
 - normalized texture UVs using texture dimensions;
 - light data atlas construction;
 - visibility set traversal;
 - collision tracing;
 - entity adaptation into gameplay objects.
+
+## Texture package loader status
+
+Implemented:
+
+- WAD2/WAD3-style header validation;
+- directory range and entry metadata validation;
+- safe texture name, width, height, and mip-offset metadata inspection;
+- read-only metadata dump CLI;
+- synthetic parser tests without proprietary fixtures.
+
+Not implemented yet:
+
+- texture pixel decoding;
+- texture extraction or conversion;
+- renderer upload path;
+- integration with textured map rendering.
 
 ## Near-term modules
 

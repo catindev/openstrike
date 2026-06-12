@@ -13,11 +13,12 @@ The project can:
 - read a config file from the user application support directory;
 - mount configured resource roots read-only;
 - index compatible local file types;
-- run automated tests for config parsing, template generation, VFS mounting, and indexing;
+- run automated tests for config parsing, template generation, VFS mounting, resource indexing, and texture package metadata parsing;
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
-- show and navigate that mesh in a native Metal debug wireframe viewer.
+- show and navigate that mesh in a native Metal debug wireframe viewer;
+- inspect legacy texture package headers, directory entries, and safe mip metadata.
 
 ## Completed GitHub issues
 
@@ -26,10 +27,10 @@ The project can:
 - #10 - documentation and handoff rules, completed by PR #21.
 - #3 - config and VFS automated tests, completed by PR #22.
 - #11 - debug viewer navigation, completed by PR #25.
+- #12 - texture package metadata reader, completed by PR #33.
 
 ## Open GitHub issues
 
-- #12 - texture package metadata reader.
 - #13 - textured map viewer pass.
 - #14 - map light data inspection.
 - #15 - map collision trace prototype.
@@ -45,17 +46,18 @@ The project can:
 apps/client/                  bootstrap client app
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
-engine/assets/loaders/        map summary, geometry, and mesh builders
+engine/assets/loaders/        map summaries, map mesh builders, and texture package metadata readers
 engine/platform/              native macOS window abstraction and headless fallback
-tests/                        config and VFS regression tests
+tests/                        config, VFS, and texture package metadata regression tests
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map metadata CLI
 tools/bspview/                macOS Metal wireframe debug viewer
+tools/texturepkgdump/         texture package metadata CLI
 ```
 
 ## Current limitations
 
-- No texture package loader beyond map-embedded texture metadata.
+- No texture pixel decoding or renderer upload path yet.
 - No textured map rendering yet.
 - No light data visualization yet.
 - No collision tracing yet.
@@ -88,6 +90,12 @@ Map dump:
 
 ```bash
 ./build/macos-arm64-debug/tools/bspdump/OpenStrikeBspDump /absolute/path/to/local/map.bsp
+```
+
+Texture package metadata dump:
+
+```bash
+./build/macos-arm64-debug/tools/texturepkgdump/OpenStrikeTexturePkgDump /absolute/path/to/local/package.wad
 ```
 
 Map wireframe viewer:

@@ -11,12 +11,12 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #10 | Documentation, ADRs, changelog, and agent handoff. | #21 |
 | #3 | Config and VFS test hardening. | #22 |
 | #11 | Debug viewer navigation controls. | #25 |
+| #12 | Texture package metadata reader and dump tool. | #33 |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P1 | #12 | Add texture package metadata reader. | First step toward textured rendering. |
 | P1 | #13 | Add textured map viewer pass. | Requires texture package metadata and decode path. |
 | P2 | #14 | Add map light data inspection. | Required before lightmapped world rendering. |
 | P2 | #15 | Add map collision trace prototype. | Required before movement and sandbox. |
@@ -37,11 +37,11 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Implement #12 texture package metadata reader.
-2. Implement #13 textured map viewer pass.
-3. Implement #14 map light data inspection.
-4. Implement #15 map collision trace prototype.
-5. Implement #16 player movement sandbox prototype.
+1. Implement #13 textured map viewer pass.
+2. Implement #14 map light data inspection.
+3. Implement #15 map collision trace prototype.
+4. Implement #16 player movement sandbox prototype.
+5. Implement #17 model metadata inspection tool.
 
 ## Later roadmap
 
