@@ -18,4 +18,5 @@ add_subdirectory(apps/client)
 
 if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/asset_audit)
+    add_subdirectory(tools/bspdump)
 endif()
