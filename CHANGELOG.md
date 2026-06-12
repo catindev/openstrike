@@ -4,6 +4,14 @@ All notable OpenStrike changes should be documented here.
 
 ## Unreleased
 
+### Testing
+
+- Added CTest-backed config and VFS regression tests using only synthetic temporary files.
+
+### Fixed
+
+- Hardened config array parsing so `[resources].roots` cannot accidentally match `[resources].open_asset_roots`.
+
 ### Documentation
 
 - Added repository handoff documentation for agents and contributors.
