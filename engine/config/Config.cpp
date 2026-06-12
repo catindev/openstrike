@@ -103,27 +103,52 @@ std::optional<std::string> rawValue(const std::string& section, std::string_view
 
 std::optional<std::string> rawArrayValue(const std::string& section, std::string_view key) {
     const std::string keyText(key);
-    const auto keyPos = section.find(keyText);
-    if (keyPos == std::string::npos) {
-        return std::nullopt;
+    std::istringstream stream(section);
+    std::string line;
+    bool collecting = false;
+    std::string collected;
+
+    while (std::getline(stream, line)) {
+        if (!collecting) {
+            const auto eq = line.find('=');
+            if (eq == std::string::npos) {
+                continue;
+            }
+
+            if (trim(std::string_view(line).substr(0, eq)) != keyText) {
+                continue;
+            }
+
+            const std::string value = std::string(line.substr(eq + 1));
+            const auto open = value.find('[');
+            if (open == std::string::npos) {
+                throw std::runtime_error("expected array value for config key: " + std::string(key));
+            }
+
+            collected = value.substr(open + 1);
+            if (const auto close = collected.find(']'); close != std::string::npos) {
+                return collected.substr(0, close);
+            }
+
+            collected.push_back('\n');
+            collecting = true;
+            continue;
+        }
+
+        if (const auto close = line.find(']'); close != std::string::npos) {
+            collected += line.substr(0, close);
+            return collected;
+        }
+
+        collected += line;
+        collected.push_back('\n');
     }
 
-    const auto eq = section.find('=', keyPos + keyText.size());
-    if (eq == std::string::npos) {
-        return std::nullopt;
-    }
-
-    const auto open = section.find('[', eq + 1);
-    if (open == std::string::npos) {
-        return std::nullopt;
-    }
-
-    const auto close = section.find(']', open + 1);
-    if (close == std::string::npos) {
+    if (collecting) {
         throw std::runtime_error("unterminated array in config key: " + std::string(key));
     }
 
-    return section.substr(open + 1, close - open - 1);
+    return std::nullopt;
 }
 
 std::vector<std::filesystem::path> parseStringArray(const std::string& section, std::string_view key) {
