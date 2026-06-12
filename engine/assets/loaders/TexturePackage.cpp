@@ -1,10 +1,10 @@
 #include "assets/loaders/TexturePackage.h"
 
-#include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace osk::texture {
