@@ -1,0 +1,65 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "macos-arm64-debug",
+      "displayName": "macOS arm64 Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-arm64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0"
+      }
+    },
+    {
+      "name": "macos-x86_64-debug",
+      "displayName": "macOS x86_64 Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-x86_64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0"
+      }
+    },
+    {
+      "name": "macos-universal-release",
+      "displayName": "macOS Universal Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-universal-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0"
+      }
+    },
+    {
+      "name": "default-debug",
+      "displayName": "Default Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/default-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "macos-arm64-debug",
+      "configurePreset": "macos-arm64-debug"
+    },
+    {
+      "name": "macos-x86_64-debug",
+      "configurePreset": "macos-x86_64-debug"
+    },
+    {
+      "name": "macos-universal-release",
+      "configurePreset": "macos-universal-release"
+    },
+    {
+      "name": "default-debug",
+      "configurePreset": "default-debug"
+    }
+  ]
+}
