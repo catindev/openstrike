@@ -1,0 +1,97 @@
+#include "assets/loaders/BspLoader.h"
+
+#include <filesystem>
+#include <iomanip>
+#include <iostream>
+#include <string>
+
+namespace fs = std::filesystem;
+
+namespace {
+
+void printUsage(std::ostream& out) {
+    out << "OpenStrikeBspDump\n"
+        << "\n"
+        << "Usage:\n"
+        << "  OpenStrikeBspDump <path/to/map.bsp>\n"
+        << "\n"
+        << "This tool reads a local user-provided BSP file and prints structural metadata.\n"
+        << "It does not copy assets, extract assets, or connect to any external service.\n";
+}
+
+void printSummary(const fs::path& path, const osk::bsp::BspSummary& summary) {
+    std::cout << "BSP file: " << path.string() << '\n';
+    std::cout << "Version:  " << summary.version << '\n';
+    std::cout << "Size:     " << summary.fileSize << " bytes\n";
+    std::cout << '\n';
+
+    std::cout << "Lumps:\n";
+    std::cout << "  " << std::left
+        << std::setw(14) << "Name"
+        << std::right
+        << std::setw(12) << "Offset"
+        << std::setw(12) << "Length"
+        << std::setw(12) << "ElemSize"
+        << std::setw(12) << "Count"
+        << "  Status\n";
+
+    for (const osk::bsp::LumpInfo& lump : summary.lumps) {
+        std::string status = "ok";
+        if (!lump.rangeValid) {
+            status = "bad-range";
+        } else if (!lump.sizeAligned) {
+            status = "bad-size";
+        }
+
+        std::cout << "  " << std::left
+            << std::setw(14) << lump.name
+            << std::right
+            << std::setw(12) << lump.offset
+            << std::setw(12) << lump.length
+            << std::setw(12) << lump.elementSize
+            << std::setw(12) << lump.elementCount
+            << "  " << status << '\n';
+    }
+
+    std::cout << '\n';
+    std::cout << "Entities:\n";
+    std::cout << "  blocks: " << summary.entityBlockCount << '\n';
+    std::cout << "\nTextures:\n";
+    std::cout << "  declared:      " << summary.textures.declaredCount << '\n';
+    std::cout << "  valid offsets: " << summary.textures.validOffsetCount << '\n';
+    std::cout << "  named:         " << summary.textures.namedTextureCount << '\n';
+
+    if (!summary.warnings.empty()) {
+        std::cout << "\nWarnings:\n";
+        for (const std::string& warning : summary.warnings) {
+            std::cout << "  - " << warning << '\n';
+        }
+    }
+}
+
+} // namespace
+
+int main(int argc, char** argv) {
+    if (argc == 2) {
+        const std::string arg = argv[1];
+        if (arg == "--help" || arg == "-h") {
+            printUsage(std::cout);
+            return 0;
+        }
+    }
+
+    if (argc != 2) {
+        printUsage(std::cerr);
+        return 1;
+    }
+
+    try {
+        const fs::path path = argv[1];
+        const osk::bsp::BspSummary summary = osk::bsp::loadBspSummary(path);
+        printSummary(path, summary);
+        return summary.warnings.empty() ? 0 : 2;
+    } catch (const std::exception& e) {
+        std::cerr << "OpenStrikeBspDump error: " << e.what() << '\n';
+        return 1;
+    }
+}

@@ -4,6 +4,7 @@ add_library(openstrike_engine STATIC
     config/ConfigPaths.cpp
     assets/VirtualFileSystem.cpp
     assets/ResourceIndex.cpp
+    assets/loaders/BspLoader.cpp
 )
 
 target_include_directories(openstrike_engine
