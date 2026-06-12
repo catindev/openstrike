@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-12.
+Last updated: 2026-06-13.
 
 ## Current milestone
 
@@ -17,18 +17,18 @@ The project can:
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
-- show that mesh in a native Metal debug wireframe viewer.
+- show and navigate that mesh in a native Metal debug wireframe viewer.
 
 ## Completed GitHub issues
 
 - #1 - first macOS window lifecycle, completed by PR #4 and expanded by PR #9.
 - #2 - map header and lump dump tool, completed by PR #6, PR #7, PR #8, and PR #9.
 - #10 - documentation and handoff rules, completed by PR #21.
-- #3 - config and VFS automated tests, pending current PR.
+- #3 - config and VFS automated tests, completed by PR #22.
+- #11 - debug viewer navigation, completed by PR #25.
 
 ## Open GitHub issues
 
-- #11 - debug viewer navigation.
 - #12 - texture package metadata reader.
 - #13 - textured map viewer pass.
 - #14 - map light data inspection.
@@ -55,7 +55,6 @@ tools/bspview/                macOS Metal wireframe debug viewer
 
 ## Current limitations
 
-- No interactive viewer navigation yet.
 - No texture package loader beyond map-embedded texture metadata.
 - No textured map rendering yet.
 - No light data visualization yet.
@@ -96,5 +95,12 @@ Map wireframe viewer:
 ```bash
 ./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp
 ```
+
+Controls:
+
+- Left mouse drag or arrow keys rotate/orbit the view.
+- Mouse wheel or `+` / `-` zooms the view.
+- `R` resets the view.
+- `Esc` closes the viewer.
 
 Do not commit local files used for manual validation.

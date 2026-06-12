@@ -97,6 +97,13 @@ Map debug viewer:
 ./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp
 ```
 
+OpenStrikeBspView controls:
+
+- Left mouse drag or arrow keys: rotate/orbit the view.
+- Mouse wheel or `+` / `-`: zoom the view.
+- `R`: reset the view.
+- `Esc`: close the viewer.
+
 ## Local user resources
 
 OpenStrike does not include game resources. Local paths to compatible user-provided files are configured through:

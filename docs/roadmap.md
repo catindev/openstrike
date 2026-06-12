@@ -9,13 +9,13 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #1 | First macOS window lifecycle and debug viewer path. | #4, #9 |
 | #2 | Map header/lump inspection and mesh path. | #6, #7, #8, #9 |
 | #10 | Documentation, ADRs, changelog, and agent handoff. | #21 |
-| #3 | Config and VFS test hardening. | Pending current PR |
+| #3 | Config and VFS test hardening. | #22 |
+| #11 | Debug viewer navigation controls. | #25 |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P1 | #11 | Improve debug viewer navigation. | Makes map inspection practical. |
 | P1 | #12 | Add texture package metadata reader. | First step toward textured rendering. |
 | P1 | #13 | Add textured map viewer pass. | Requires texture package metadata and decode path. |
 | P2 | #14 | Add map light data inspection. | Required before lightmapped world rendering. |
@@ -37,11 +37,11 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Implement #11 viewer navigation.
-2. Implement #12 texture package metadata reader.
-3. Implement #13 textured map viewer pass.
-4. Implement #14 map light data inspection.
-5. Implement #15 map collision trace prototype.
+1. Implement #12 texture package metadata reader.
+2. Implement #13 textured map viewer pass.
+3. Implement #14 map light data inspection.
+4. Implement #15 map collision trace prototype.
+5. Implement #16 player movement sandbox prototype.
 
 ## Later roadmap
 
