@@ -10,6 +10,8 @@ namespace osk::bsp {
 namespace {
 
 constexpr std::size_t HeaderSize = 4 + LumpCount * 8;
+constexpr std::size_t MipTextureNameBytes = 16;
+constexpr std::size_t MipHeaderBytes = 40;
 
 std::uint8_t byteAt(std::span<const std::byte> bytes, std::size_t offset) {
     return std::to_integer<std::uint8_t>(bytes[offset]);
@@ -50,20 +52,38 @@ std::size_t countEntityBlocks(std::span<const std::byte> bytes, const LumpInfo& 
     return count;
 }
 
-std::size_t readMipTextureNameLength(std::span<const std::byte> textureLump, std::size_t mipOffset) {
-    constexpr std::size_t NameBytes = 16;
-    constexpr std::size_t MipHeaderBytes = 40;
-
+std::string readMipTextureName(std::span<const std::byte> textureLump, std::size_t mipOffset) {
     if (mipOffset > textureLump.size() || MipHeaderBytes > textureLump.size() - mipOffset) {
-        return 0;
+        return {};
     }
 
-    std::size_t length = 0;
-    while (length < NameBytes && byteAt(textureLump, mipOffset + length) != 0) {
-        ++length;
+    std::string name;
+    for (std::size_t i = 0; i < MipTextureNameBytes; ++i) {
+        const std::uint8_t c = byteAt(textureLump, mipOffset + i);
+        if (c == 0) {
+            break;
+        }
+        name.push_back(static_cast<char>(c));
     }
 
-    return length;
+    return name;
+}
+
+BspTextureMetadata readMipTextureMetadata(std::span<const std::byte> textureLump, std::size_t textureIndex, std::size_t mipOffset) {
+    BspTextureMetadata metadata;
+    metadata.index = textureIndex;
+    if (mipOffset > textureLump.size() || MipHeaderBytes > textureLump.size() - mipOffset) {
+        return metadata;
+    }
+
+    metadata.name = readMipTextureName(textureLump, mipOffset);
+    metadata.width = readU32LE(textureLump, mipOffset + 16);
+    metadata.height = readU32LE(textureLump, mipOffset + 20);
+    for (std::size_t i = 0; i < metadata.mipOffsets.size(); ++i) {
+        metadata.mipOffsets[i] = readU32LE(textureLump, mipOffset + 24 + i * 4);
+    }
+    metadata.mipMetadataAvailable = !metadata.name.empty() && metadata.width > 0 && metadata.height > 0;
+    return metadata;
 }
 
 TextureInfo parseTextureInfo(std::span<const std::byte> bytes, const LumpInfo& textures, std::vector<std::string>& warnings) {
@@ -94,6 +114,7 @@ TextureInfo parseTextureInfo(std::span<const std::byte> bytes, const LumpInfo& t
         return info;
     }
 
+    info.entries.reserve(count);
     for (std::size_t i = 0; i < count; ++i) {
         const std::int32_t relativeOffset = readI32LE(lump, 4 + i * 4);
         if (relativeOffset < 0) {
@@ -107,9 +128,11 @@ TextureInfo parseTextureInfo(std::span<const std::byte> bytes, const LumpInfo& t
         }
 
         ++info.validOffsetCount;
-        if (readMipTextureNameLength(lump, mipOffset) > 0) {
+        BspTextureMetadata metadata = readMipTextureMetadata(lump, i, mipOffset);
+        if (metadata.mipMetadataAvailable) {
             ++info.namedTextureCount;
         }
+        info.entries.push_back(std::move(metadata));
     }
 
     return info;
