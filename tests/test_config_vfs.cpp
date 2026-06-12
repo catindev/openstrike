@@ -144,6 +144,23 @@ show_collision = true
     require(config.debug.showCollision, "show_collision should parse true");
 }
 
+void testConfigArrayKeysDoNotCollide() {
+    TempDir temp("config-key-collision");
+    const fs::path configPath = temp.path() / "config.toml";
+
+    writeTextFile(configPath, R"toml(
+[resources]
+open_asset_roots = [
+  "./assets_open"
+]
+)toml");
+
+    const osk::EngineConfig config = osk::loadConfigFile(configPath);
+    require(config.resources.roots.empty(), "roots must not parse open_asset_roots by substring collision");
+    requireEqual(config.resources.openAssetRoots.size(), static_cast<std::size_t>(1), "open_asset_roots should still parse");
+    requireEqual(pathString(config.resources.openAssetRoots[0]), "./assets_open", "open asset root after collision test");
+}
+
 void testConfigDefaultsAndTemplate() {
     TempDir temp("config-template");
     const fs::path configPath = temp.path() / "nested" / "config.toml";
@@ -302,6 +319,7 @@ struct TestCase {
 int main() {
     const std::vector<TestCase> tests{
         {"config parsing", testConfigParsing},
+        {"config array key collision", testConfigArrayKeysDoNotCollide},
         {"config defaults and template", testConfigDefaultsAndTemplate},
         {"config errors", testConfigErrors},
         {"vfs mount validation", testVfsMountValidation},
