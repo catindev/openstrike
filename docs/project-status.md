@@ -24,7 +24,7 @@ The project can:
 - #1 - first macOS window lifecycle, completed by PR #4 and expanded by PR #9.
 - #2 - map header and lump dump tool, completed by PR #6, PR #7, PR #8, and PR #9.
 - #10 - documentation and handoff rules, completed by PR #21.
-- #3 - config and VFS automated tests, pending current PR.
+- #3 - config and VFS automated tests, completed by PR #22.
 - #11 - debug viewer navigation, completed by PR #25.
 
 ## Open GitHub issues
