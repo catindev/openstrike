@@ -7,6 +7,23 @@ add_library(openstrike_engine STATIC
     assets/loaders/BspLoader.cpp
 )
 
+if (APPLE)
+    target_sources(openstrike_engine
+        PRIVATE
+            platform/macos/MacWindow.mm
+    )
+
+    target_link_libraries(openstrike_engine
+        PRIVATE
+            "-framework Cocoa"
+    )
+else()
+    target_sources(openstrike_engine
+        PRIVATE
+            platform/HeadlessWindow.cpp
+    )
+endif()
+
 target_include_directories(openstrike_engine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
