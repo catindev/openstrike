@@ -1,3 +1,4 @@
+#include "assets/loaders/BspGeometry.h"
 #include "assets/loaders/BspLoader.h"
 
 #include <filesystem>
@@ -19,7 +20,22 @@ void printUsage(std::ostream& out) {
         << "It does not copy assets, extract assets, or connect to any external service.\n";
 }
 
-void printSummary(const fs::path& path, const osk::bsp::BspSummary& summary) {
+void printBounds(const osk::bsp::Bounds3& bounds) {
+    if (!bounds.valid) {
+        std::cout << "  bounds:           unavailable\n";
+        return;
+    }
+
+    std::cout << "  bounds min:       "
+        << bounds.min.x << ", " << bounds.min.y << ", " << bounds.min.z << '\n';
+    std::cout << "  bounds max:       "
+        << bounds.max.x << ", " << bounds.max.y << ", " << bounds.max.z << '\n';
+}
+
+void printSummary(
+    const fs::path& path,
+    const osk::bsp::BspSummary& summary,
+    const osk::bsp::BspGeometrySummary& geometry) {
     std::cout << "BSP file: " << path.string() << '\n';
     std::cout << "Version:  " << summary.version << '\n';
     std::cout << "Size:     " << summary.fileSize << " bytes\n";
@@ -55,15 +71,32 @@ void printSummary(const fs::path& path, const osk::bsp::BspSummary& summary) {
 
     std::cout << '\n';
     std::cout << "Entities:\n";
-    std::cout << "  blocks: " << summary.entityBlockCount << '\n';
-    std::cout << "\nTextures:\n";
-    std::cout << "  declared:      " << summary.textures.declaredCount << '\n';
-    std::cout << "  valid offsets: " << summary.textures.validOffsetCount << '\n';
-    std::cout << "  named:         " << summary.textures.namedTextureCount << '\n';
+    std::cout << "  blocks:           " << summary.entityBlockCount << '\n';
 
-    if (!summary.warnings.empty()) {
+    std::cout << "\nTextures:\n";
+    std::cout << "  declared:         " << summary.textures.declaredCount << '\n';
+    std::cout << "  valid offsets:    " << summary.textures.validOffsetCount << '\n';
+    std::cout << "  named:            " << summary.textures.namedTextureCount << '\n';
+
+    std::cout << "\nGeometry:\n";
+    std::cout << "  vertices:         " << geometry.vertexCount << '\n';
+    std::cout << "  edges:            " << geometry.edgeCount << '\n';
+    std::cout << "  surfedges:        " << geometry.surfEdgeCount << '\n';
+    std::cout << "  faces:            " << geometry.faceCount << '\n';
+    std::cout << "  valid faces:      " << geometry.validFaceCount << '\n';
+    std::cout << "  invalid faces:    " << geometry.invalidFaceCount << '\n';
+    std::cout << "  degenerate faces: " << geometry.degenerateFaceCount << '\n';
+    std::cout << "  polygon vertices: " << geometry.polygonVertexCount << '\n';
+    std::cout << "  triangles:        " << geometry.triangleCount << '\n';
+    std::cout << "  max face edges:   " << geometry.maxEdgesPerFace << '\n';
+    printBounds(geometry.bounds);
+
+    if (!summary.warnings.empty() || !geometry.warnings.empty()) {
         std::cout << "\nWarnings:\n";
         for (const std::string& warning : summary.warnings) {
+            std::cout << "  - " << warning << '\n';
+        }
+        for (const std::string& warning : geometry.warnings) {
             std::cout << "  - " << warning << '\n';
         }
     }
@@ -88,8 +121,9 @@ int main(int argc, char** argv) {
     try {
         const fs::path path = argv[1];
         const osk::bsp::BspSummary summary = osk::bsp::loadBspSummary(path);
-        printSummary(path, summary);
-        return summary.warnings.empty() ? 0 : 2;
+        const osk::bsp::BspGeometrySummary geometry = osk::bsp::loadBspGeometrySummary(path);
+        printSummary(path, summary, geometry);
+        return summary.warnings.empty() && geometry.warnings.empty() ? 0 : 2;
     } catch (const std::exception& e) {
         std::cerr << "OpenStrikeBspDump error: " << e.what() << '\n';
         return 1;
