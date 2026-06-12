@@ -10,9 +10,20 @@ The program may read certain legacy resource formats from files provided locally
 
 This project does not bypass DRM, does not connect to official servers, does not implement official network protocols, and does not include anti-cheat circumvention.
 
+## Documentation
+
+Start here:
+
+- [`AGENTS.md`](AGENTS.md) - instructions for AI agents and contributors.
+- [`CHANGELOG.md`](CHANGELOG.md) - project history.
+- [`docs/README.md`](docs/README.md) - documentation index.
+- [`docs/project-status.md`](docs/project-status.md) - current state and validated milestones.
+- [`docs/roadmap.md`](docs/roadmap.md) - issue-backed roadmap.
+- [`docs/adr/`](docs/adr/) - architecture decision records.
+
 ## Current status
 
-Bootstrap phase. The repository currently contains:
+The project currently contains:
 
 - C++20 engine skeleton.
 - CMake-based builds.
@@ -20,12 +31,15 @@ Bootstrap phase. The repository currently contains:
 - Config-driven read-only resource roots.
 - Minimal config template generation and parser.
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
-- Tooling for asset audits and future format inspection.
+- Map header, geometry summary, and triangulated mesh generation.
+- Native macOS window lifecycle.
+- Native Metal debug viewer for untextured map wireframes.
+- Tooling for asset audits and format inspection.
 - GitHub Actions build/audit workflow.
 
 ## Repository rules
 
-Do not commit proprietary assets, proprietary code, decompiled code, leaked code, trademarks, logos, original game UI, or files extracted from commercial games.
+Do not commit proprietary assets, proprietary code, decompiled code, leaked code, trademarks, logos, original UI, or files extracted from commercial games.
 
 Only original or explicitly open-source assets may be committed to this repository.
 
@@ -67,6 +81,20 @@ On macOS CMake builds, the executable is inside the generated app bundle:
 
 ```bash
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --validate-config
+```
+
+## Tools
+
+Map dump:
+
+```bash
+./build/macos-arm64-debug/tools/bspdump/OpenStrikeBspDump /absolute/path/to/local/map.bsp
+```
+
+Map debug viewer:
+
+```bash
+./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp
 ```
 
 ## Local user resources
