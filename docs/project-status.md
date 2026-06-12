@@ -16,17 +16,18 @@ The project can:
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
-- show that mesh in a native Metal debug wireframe viewer.
+- show that mesh in a native Metal debug wireframe viewer;
+- run automated config and VFS regression tests with synthetic files.
 
 ## Completed GitHub issues
 
 - #1 - first macOS window lifecycle, completed by PR #4 and expanded by PR #9.
 - #2 - map header and lump dump tool, completed by PR #6, PR #7, PR #8, and PR #9.
+- #3 - config and VFS automated tests.
+- #10 - documentation and handoff rules.
 
 ## Open GitHub issues
 
-- #3 - config and VFS automated tests.
-- #10 - documentation and handoff rules.
 - #11 - debug viewer navigation.
 - #12 - texture package metadata reader.
 - #13 - textured map viewer pass.
@@ -49,6 +50,7 @@ engine/platform/              native macOS window abstraction and headless fallb
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map metadata CLI
 tools/bspview/                macOS Metal wireframe debug viewer
+tests/                        synthetic regression tests
 ```
 
 ## Current limitations
@@ -69,6 +71,12 @@ Build:
 ```bash
 cmake --preset macos-arm64-debug
 cmake --build build/macos-arm64-debug
+```
+
+Tests:
+
+```bash
+ctest --test-dir build/macos-arm64-debug --output-on-failure
 ```
 
 Config validation:
