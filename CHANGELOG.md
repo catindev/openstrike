@@ -9,6 +9,7 @@ All notable OpenStrike changes should be documented here.
 - Added crouch state, stand/crouch hull selection, blocked-uncrouch reporting, and the `OpenStrikePlayerMove` synthetic movement debug CLI for #16.
 - Added read-only legacy model metadata parsing and the `OpenStrikeModelDump` CLI for #17.
 - Added read-only legacy sprite metadata parsing and the `OpenStrikeSpriteDump` CLI for #18.
+- Added PCM WAV metadata validation and the macOS `OpenStrikeWavPlay` playback prototype for #19.
 - Added a trace-backed fixed-tick player movement prototype with gravity, walking, and jumping state updates.
 - Added BSP collision plane/clipnode/model metadata loading and a minimal point trace CLI, `OpenStrikeBspTrace`.
 - Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
@@ -21,6 +22,7 @@ All notable OpenStrike changes should be documented here.
 - Documented player movement debug CLI usage and moved #16 to completed roadmap/status.
 - Documented model metadata inspection usage, architecture, and roadmap/status progress for #17.
 - Documented sprite metadata inspection usage, architecture, and roadmap/status progress for #18.
+- Documented the WAV playback prototype, AVFoundation ADR, tool usage, limitations, and roadmap/status progress for #19.
 - Added the long-form first vision document to the project documentation index.
 - Documented fixed-tick player movement prototype status and remaining #16 sandbox limitations.
 - Documented BSP collision trace prototype usage, status, architecture, and roadmap progress for #15.
@@ -37,6 +39,7 @@ All notable OpenStrike changes should be documented here.
 - Added synthetic player movement coverage for crouch hull selection, uncrouch, blocked uncrouch, and grounded gravity stability.
 - Added synthetic coverage for legacy model metadata parsing and malformed-file rejection.
 - Added synthetic coverage for legacy sprite metadata parsing, grouped frames, and malformed-file rejection.
+- Added synthetic coverage for PCM WAV metadata parsing, odd-sized chunks, warnings, and malformed-file rejection.
 - Added synthetic coverage for trace-backed fixed-tick player movement, gravity landing, jumping, and missing trace context warnings.
 - Added synthetic coverage for BSP collision tables, clear traces, hit traces, start-solid traces, and malformed collision data.
 - Added synthetic coverage for BSP light metadata, missing lighting, and truncated light data handling.

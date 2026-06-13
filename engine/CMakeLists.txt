@@ -12,6 +12,7 @@ add_library(openstrike_engine STATIC
     assets/loaders/TexturePackage.cpp
     assets/loaders/ModelMetadata.cpp
     assets/loaders/SpriteMetadata.cpp
+    assets/loaders/WaveAudio.cpp
     physics/PlayerMovement.cpp
 )
 

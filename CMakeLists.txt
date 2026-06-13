@@ -30,6 +30,7 @@ if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/playermove)
     add_subdirectory(tools/spritedump)
     add_subdirectory(tools/texturepkgdump)
+    add_subdirectory(tools/wavplay)
 endif()
 
 if (OSK_BUILD_TESTS)

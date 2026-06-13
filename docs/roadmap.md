@@ -18,12 +18,12 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #16 | Player movement sandbox prototype with fixed-tick state, walk, jump, gravity, crouch hull selection, and synthetic debug output. | #40 |
 | #17 | Model metadata inspection tool with safe header/table parsing and read-only CLI output. | #41 |
 | #18 | Sprite metadata inspection tool with safe header, palette, and frame parsing. | #42 |
+| #19 | WAV playback prototype with PCM metadata validation and macOS AVFoundation CLI playback. | #43 |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P3 | #19 | Add WAV playback prototype. | Foundation for audio system. |
 | P4 | #20 | Create local sandbox app mode. | Integration milestone after viewer, collision, and basic movement. |
 
 ## Development principles
@@ -37,8 +37,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Implement #19 WAV playback prototype.
-2. Implement #20 local sandbox app mode.
+1. Implement #20 local sandbox app mode.
 
 ## Later roadmap
 

@@ -109,3 +109,19 @@ add_test(
     NAME openstrike_sprite_metadata_tests
     COMMAND openstrike_sprite_metadata_tests
 )
+
+add_executable(openstrike_wave_audio_tests
+    test_wave_audio.cpp
+)
+
+target_link_libraries(openstrike_wave_audio_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_wave_audio_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_wave_audio_tests
+    COMMAND openstrike_wave_audio_tests
+)

@@ -9,7 +9,7 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, and sprite metadata parsing
+engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, sprite metadata parsing, and WAV metadata parsing
 engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
@@ -20,6 +20,7 @@ tools/bspview/                macOS Metal textured debug viewer
 tools/modeldump/              model metadata CLI
 tools/spritedump/             sprite metadata CLI
 tools/texturepkgdump/         texture package metadata CLI
+tools/wavplay/                WAV metadata and macOS playback prototype CLI
 ```
 
 ## Current data flow
@@ -61,6 +62,11 @@ local model path
 local sprite path
   -> SpriteMetadataSummary
   -> OpenStrikeSpriteDump
+
+local WAV path
+  -> WaveAudioSummary
+  -> OpenStrikeWavPlay --dry-run
+  -> OpenStrikeWavPlay AVFoundation playback on macOS
 ```
 
 ## Resource model
@@ -213,6 +219,26 @@ Not implemented by design in the current milestone:
 - sprite rendering;
 - proprietary fixture loading;
 - writes or generated files next to user resources.
+
+## WAV audio prototype status
+
+Implemented:
+
+- RIFF/WAVE header validation;
+- PCM `fmt ` chunk validation for channels, sample rate, byte rate, block align, and bits per sample;
+- `data` chunk range, alignment, byte count, and duration accounting;
+- read-only `OpenStrikeWavPlay --dry-run` metadata validation;
+- macOS prototype playback through AVFoundation `AVAudioPlayer`;
+- non-macOS playback stub so CI can build the tool while metadata validation remains portable;
+- synthetic parser tests without proprietary fixtures.
+
+Not implemented by design in the current milestone:
+
+- compressed WAV formats;
+- streaming, looping, emitters, mixing, spatialization, or volume groups;
+- cross-platform runtime audio backend;
+- audio extraction, conversion, saving, or caching;
+- proprietary fixture loading.
 
 ## Debug viewer texture pass
 
