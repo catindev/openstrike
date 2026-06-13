@@ -1,5 +1,6 @@
 if (APPLE)
     add_executable(OpenStrikeBspView MACOSX_BUNDLE
+        BspViewRunner.mm
         main.mm
     )
 

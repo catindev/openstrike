@@ -4,6 +4,10 @@
 #include "config/ConfigPaths.h"
 #include "platform/Window.h"
 
+#if defined(__APPLE__)
+#include "BspViewRunner.h"
+#endif
+
 #include <exception>
 #include <filesystem>
 #include <iostream>
@@ -23,6 +27,7 @@ struct CliOptions {
     bool listResources = false;
     bool noWindow = false;
     std::optional<fs::path> configPath;
+    std::optional<fs::path> sandboxMap;
     std::vector<fs::path> resourceRoots;
 };
 
@@ -38,6 +43,7 @@ void printUsage(std::ostream& out) {
         << "  --validate-config              Load config, mount resource roots, print summary, and exit.\n"
         << "  --list-resources               Print indexed resource filenames.\n"
         << "  --no-window                    Initialize resources and exit without opening a window.\n"
+        << "  --sandbox-map <path>           Launch local sandbox mode with a map window.\n"
         << "  --config <path>                Use an explicit config file.\n"
         << "  --resource-root <path>         Add a temporary read-only resource root.\n"
         << "\n"
@@ -61,6 +67,11 @@ CliOptions parseArgs(int argc, char** argv) {
             options.listResources = true;
         } else if (arg == "--no-window") {
             options.noWindow = true;
+        } else if (arg == "--sandbox-map") {
+            if (i + 1 >= argc) {
+                throw std::runtime_error("--sandbox-map requires a path argument");
+            }
+            options.sandboxMap = fs::path(argv[++i]);
         } else if (arg == "--config") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--config requires a path argument");
@@ -185,6 +196,23 @@ int main(int argc, char** argv) {
         std::cout << "OpenStrike bootstrap client initialized.\n";
         std::cout << "Config: " << configPath.string() << '\n';
         std::cout << "Indexed resources: " << index.totalFiles() << '\n';
+
+        if (options.sandboxMap.has_value()) {
+#if defined(__APPLE__)
+            std::vector<fs::path> sandboxRoots = config.resources.roots;
+            sandboxRoots.insert(sandboxRoots.end(), options.resourceRoots.begin(), options.resourceRoots.end());
+            return osk::debug::runBspView(osk::debug::BspViewOptions{
+                .mapPath = *options.sandboxMap,
+                .resourceRoots = sandboxRoots,
+                .logName = "OpenStrikeSandbox",
+                .windowTitlePrefix = "OpenStrike Sandbox",
+                .loadDefaultConfigRoots = false,
+            });
+#else
+            std::cerr << "OpenStrike error: sandbox map mode is currently available only on macOS.\n";
+            return 1;
+#endif
+        }
 
         if (options.noWindow) {
             return rootsOk ? 0 : 2;
