@@ -12,7 +12,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #3 | Config and VFS test hardening. | #22 |
 | #11 | Debug viewer navigation controls. | #25 |
 | #12 | Texture package metadata reader and dump tool. | #33 |
-| #13 | Textured map viewer pass with in-memory texture decode and generated placeholders. | Current PR |
+| #13 | Textured map viewer pass with in-memory texture decode and generated placeholders. | #34 |
 
 ## Active near-term work
 
