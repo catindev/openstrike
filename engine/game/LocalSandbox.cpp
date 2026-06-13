@@ -19,6 +19,19 @@ namespace {
 constexpr auto FixedTickDuration = std::chrono::duration<float>(1.0F / 60.0F);
 
 void printCommandDebug(const input::PlayerCommand& command) {
+    // Only emit a log line when there is some actual input state to report.  Without this
+    // check the playable sandbox emits a line every tick, even when the player is idle,
+    // which produces long and noisy logs.  A tick is considered "active" if any of the
+    // movement axes are non-zero, a jump or crouch is triggered, the look deltas are
+    // non-zero, or the exit flag is set (escape key or window close).  If none of these
+    // conditions are true, return early and skip printing entirely.
+    if (command.forwardMove == 0 && command.sideMove == 0 &&
+        !command.jump && !command.crouch &&
+        command.lookDeltaX == 0 && command.lookDeltaY == 0 &&
+        !command.exit) {
+        return;
+    }
+
     std::cout << "playable tick " << command.tick
               << " forward=" << command.forwardMove
               << " side=" << command.sideMove
