@@ -2,12 +2,14 @@
 
 #include "input/PlayerCommand.h"
 #include "platform/Window.h"
+#include "assets/loaders/BspLoader.h"
 
 #include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <exception>
 
 namespace fs = std::filesystem;
 
@@ -37,6 +39,17 @@ int runLocalSandbox(const LocalSandboxOptions& options) {
 
     if (!fs::exists(options.mapPath)) {
         std::cerr << "OpenStrike error: playable map path does not exist: " << options.mapPath.string() << '\n';
+        return 1;
+    }
+
+    // Validate that the provided file is a BSP before opening a window.
+    try {
+        (void)osk::bsp::loadBspSummary(options.mapPath);
+    } catch (const osk::bsp::BspFormatError& e) {
+        std::cerr << "OpenStrike error: playable map file is not a valid BSP: " << e.what() << '\n';
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << "OpenStrike error: failed to load playable map: " << e.what() << '\n';
         return 1;
     }
 
