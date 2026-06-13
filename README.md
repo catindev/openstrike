@@ -38,6 +38,7 @@ The project currently contains:
 - PCM WAV metadata validation and macOS playback prototype.
 - Trace-backed fixed-tick player movement prototype with synthetic debug output.
 - Playable sandbox runtime shell with input sampling and fixed-tick player command debug output.
+- Minimal first-person BSP render mode (macOS): launching with `--playable-map <map> --spawn <x> <y> <z>` opens a first‑person view of the map at the given spawn position using a simple shaded pipeline. This slice does not implement player movement or collision.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
 - Tooling for asset audits and format inspection.
@@ -99,16 +100,23 @@ Launch the technical map-window integration on macOS:
 
 This technical integration uses the current BSP debug renderer path inside the app. It is not a playable first-person sandbox yet. It reads configured and temporary resource roots read-only, decodes textures in memory only, and does not extract, convert, save, cache, or commit user-provided assets.
 
-Launch the playable sandbox runtime shell on macOS:
+Launch the playable sandbox runtime shell or first-person map view on macOS:
 
 ```bash
+# Launch the sandbox runtime shell (no rendering; prints input state when --debug-input is set).
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
   --playable-map /absolute/path/to/local/map.bsp \
   --resource-root /absolute/path/to/local/files \
   --debug-input
+
+# Launch the first-person map view (renders the map from a spawn position).
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --playable-map /absolute/path/to/local/map.bsp \
+  --spawn 0 0 64 \
+  --resource-root /absolute/path/to/local/files
 ```
 
-This playable path opens an app-owned runtime window, samples keyboard and mouse input, builds a deterministic fixed-tick `PlayerCommand`, and prints command debug output when `--debug-input` is set. In this slice it does not yet render the map, run collision-backed movement, spawn entities, play weapons, or implement gameplay.
+When launched with `--playable-map` and `--spawn`, the client opens a first‑person view of the map at the specified spawn position using a simple shaded rendering pipeline. No player movement, collision, or gameplay is implemented yet. When launched without `--spawn`, the playable path opens an app-owned runtime window, samples keyboard and mouse input, builds a deterministic fixed-tick `PlayerCommand`, and prints command debug output when `--debug-input` is set.
 
 Default playable shell controls:
 

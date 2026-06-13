@@ -17,40 +17,45 @@ add_library(openstrike_engine STATIC
     input/PlayerCommand.cpp
     game/LocalSandbox.cpp
     physics/PlayerMovement.cpp
-)
-
-if (APPLE)
-    target_sources(openstrike_engine
-        PRIVATE
-            platform/macos/MacWindow.mm
-    )
-
-    target_link_libraries(openstrike_engine
-        PRIVATE
-            "-framework Cocoa"
-    )
+ )
+ 
+ if (APPLE)
+     target_sources(openstrike_engine
+         PRIVATE
+             platform/macos/MacWindow.mm
+             game/FirstPersonBspRunner.mm
+     )
+ 
+     target_link_libraries(openstrike_engine
+         PRIVATE
+             "-framework Cocoa"
+             "-framework Metal"
+             "-framework MetalKit"
+             "-framework QuartzCore"
+     )
 else()
     target_sources(openstrike_engine
         PRIVATE
+            game/FirstPersonBspRunner.cpp
             platform/HeadlessWindow.cpp
     )
 endif()
-
-target_include_directories(openstrike_engine
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_compile_features(openstrike_engine PUBLIC cxx_std_20)
-
-if (MSVC)
-    target_compile_options(openstrike_engine PRIVATE /W4)
-    if (OSK_WARNINGS_AS_ERRORS)
-        target_compile_options(openstrike_engine PRIVATE /WX)
-    endif()
-else()
-    target_compile_options(openstrike_engine PRIVATE -Wall -Wextra -Wpedantic)
-    if (OSK_WARNINGS_AS_ERRORS)
-        target_compile_options(openstrike_engine PRIVATE -Werror)
-    endif()
-endif()
+ 
+ target_include_directories(openstrike_engine
+     PUBLIC
+         ${CMAKE_CURRENT_SOURCE_DIR}
+ )
+ 
+ target_compile_features(openstrike_engine PUBLIC cxx_std_20)
+ 
+ if (MSVC)
+     target_compile_options(openstrike_engine PRIVATE /W4)
+     if (OSK_WARNINGS_AS_ERRORS)
+         target_compile_options(openstrike_engine PRIVATE /WX)
+     endif()
+ else()
+     target_compile_options(openstrike_engine PRIVATE -Wall -Wextra -Wpedantic)
+     if (OSK_WARNINGS_AS_ERRORS)
+         target_compile_options(openstrike_engine PRIVATE -Werror)
+     endif()
+ endif()

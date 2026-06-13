@@ -11,7 +11,7 @@ engine/config/                config path resolution, config template, minimal p
 engine/assets/                read-only VFS and resource indexing
 engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, sprite metadata parsing, and WAV metadata parsing
 engine/input/                 keyboard/mouse input state and fixed-tick player command mapping
-engine/game/                  local playable sandbox runtime shell
+engine/game/                  local playable sandbox runtime shell and minimal first-person BSP renderer
 engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction, input sampling, and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
@@ -82,10 +82,14 @@ OpenStrike --sandbox-map
 
 OpenStrike --playable-map
   -> configured and temporary read-only resource roots
-  -> LocalSandbox runtime shell
-  -> native window loop
-  -> sampled InputState
-  -> fixed-tick PlayerCommand debug output
+  -> if --spawn is provided:
+       FirstPersonBspRunner
+       -> native Metal first-person map window on macOS
+     else:
+       LocalSandbox runtime shell
+       -> native window loop
+       -> sampled InputState
+       -> fixed-tick PlayerCommand debug output
 ```
 
 ## Resource model
@@ -268,7 +272,7 @@ Implemented:
 - non-macOS playback stub so CI can build the tool while metadata validation remains portable;
 - synthetic parser tests without proprietary fixtures.
 
-Not implemented by design in the current milestone:
+Not implemented by design in this milestone:
 
 - compressed WAV formats;
 - streaming, looping, emitters, mixing, spatialization, or volume groups;
@@ -291,10 +295,10 @@ Implemented:
 - original OpenStrike window title/logging with no proprietary gameplay names or UI;
 - standalone `OpenStrikeBspView` preserved as a thin CLI wrapper around the same runner.
 
-Not implemented by design in the current milestone:
+Not implemented by design in this milestone:
 
 - final renderer abstraction;
-- playable first-person camera, input loop, player collision movement, spawn selection, weapons, UI, or audio integration;
+- player collision movement, weapons, UI, or audio integration;
 - lightmapped rendering;
 - non-macOS sandbox renderer.
 
@@ -304,6 +308,7 @@ Implemented:
 
 - `OpenStrike --playable-map <path>` app-level launch mode;
 - separate `LocalSandbox` runtime shell rather than reusing the BSP debug viewer runner;
+- optional `--spawn <x> <y> <z>` to launch a minimal first-person BSP render view;
 - app-owned native window loop with clean `Esc` or close-window exit;
 - fixed 60 Hz command tick loop;
 - input sampling through the platform window abstraction;
@@ -312,9 +317,8 @@ Implemented:
 
 Not implemented by design in this slice:
 
-- map rendering inside the playable window;
-- collision-backed player movement;
-- spawn point/entity adaptation;
+- collision-backed player movement or swept volumes;
+- dynamic spawn or entity adaptation beyond a fixed initial position;
 - weapon logic;
 - audio integration;
 - production UI/HUD;

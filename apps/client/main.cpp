@@ -3,11 +3,15 @@
 #include "config/Config.h"
 #include "config/ConfigPaths.h"
 #include "game/LocalSandbox.h"
+#include "game/SpawnParser.h"
 #include "platform/Window.h"
 
 #if defined(__APPLE__)
 #include "BspViewRunner.h"
 #endif
+
+#include "game/FirstPersonBspRunner.h"
+#include "assets/loaders/BspLoader.h"
 
 #include <exception>
 #include <filesystem>
@@ -32,6 +36,7 @@ struct CliOptions {
     std::optional<fs::path> sandboxMap;
     std::optional<fs::path> playableMap;
     std::vector<fs::path> resourceRoots;
+    std::optional<osk::bsp::Vec3> spawn;
 };
 
 void printUsage(std::ostream& out) {
@@ -48,6 +53,7 @@ void printUsage(std::ostream& out) {
         << "  --no-window                    Initialize resources and exit without opening a window.\n"
         << "  --sandbox-map <path>           Launch technical map-window mode with the BSP debug viewer.\n"
         << "  --playable-map <path>          Launch the playable sandbox runtime shell.\n"
+        << "  --spawn <x> <y> <z>            Set initial camera position for --playable-map (first-person mode).\n"
         << "  --debug-input                  Print fixed-tick player commands in playable mode.\n"
         << "  --config <path>                Use an explicit config file.\n"
         << "  --resource-root <path>         Add a temporary read-only resource root.\n"
@@ -84,6 +90,15 @@ CliOptions parseArgs(int argc, char** argv) {
                 throw std::runtime_error("--playable-map requires a path argument");
             }
             options.playableMap = fs::path(argv[++i]);
+        } else if (arg == "--spawn") {
+            if (i + 3 >= argc) {
+                throw std::runtime_error("--spawn requires three numeric arguments");
+            }
+            const std::vector<std::string> spawnTokens{argv[++i], argv[++i], argv[++i]};
+            options.spawn = osk::game::parseSpawn(spawnTokens);
+            if (!options.spawn.has_value()) {
+                throw std::runtime_error("--spawn requires three numeric arguments");
+            }
         } else if (arg == "--config") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--config requires a path argument");
@@ -104,6 +119,9 @@ CliOptions parseArgs(int argc, char** argv) {
     }
     if (options.debugInput && !options.playableMap.has_value()) {
         throw std::runtime_error("--debug-input requires --playable-map");
+    }
+    if (options.spawn.has_value() && !options.playableMap.has_value()) {
+        throw std::runtime_error("--spawn requires --playable-map");
     }
 
     return options;
@@ -234,11 +252,21 @@ int main(int argc, char** argv) {
         }
 
         if (options.playableMap.has_value()) {
-            return osk::game::runLocalSandbox(osk::game::LocalSandboxOptions{
-                .mapPath = *options.playableMap,
-                .resourceRoots = config.resources.roots,
-                .debugInput = options.debugInput,
-            });
+            if (options.spawn.has_value()) {
+                return osk::game::runFirstPersonBsp(osk::game::FirstPersonBspOptions{
+                    .mapPath = *options.playableMap,
+                    .resourceRoots = config.resources.roots,
+                    .spawn = *options.spawn,
+                    .logName = "OpenStrikePlayable",
+                    .windowTitlePrefix = "OpenStrike Playable",
+                });
+            } else {
+                return osk::game::runLocalSandbox(osk::game::LocalSandboxOptions{
+                    .mapPath = *options.playableMap,
+                    .resourceRoots = config.resources.roots,
+                    .debugInput = options.debugInput,
+                });
+            }
         }
 
         if (options.noWindow) {
