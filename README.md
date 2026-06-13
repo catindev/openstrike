@@ -31,7 +31,7 @@ The project currently contains:
 - Config-driven read-only resource roots.
 - Minimal config template generation and parser.
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
-- Map header, geometry, light metadata, and triangulated mesh summaries.
+- Map header, geometry, light metadata, collision trace, and triangulated mesh summaries.
 - Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
@@ -93,6 +93,14 @@ Map dump:
 ```
 
 `OpenStrikeBspDump` prints structural map metadata, geometry summary, world mesh summary, and light data / lightmap metadata without rendering or extracting assets.
+
+Point collision trace:
+
+```bash
+./build/macos-arm64-debug/tools/bsptrace/OpenStrikeBspTrace /absolute/path/to/local/map.bsp --start 0 0 64 --end 512 0 64
+```
+
+`OpenStrikeBspTrace` reads BSP collision clipnodes and traces a point segment. It is a debug prototype, not full player physics or movement.
 
 Texture package metadata dump:
 

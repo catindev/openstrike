@@ -9,10 +9,11 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summaries, mesh builders, light metadata, texture metadata, and texture decode helpers
+engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
+tools/bsptrace/               point collision trace CLI
 tools/bspview/                macOS Metal textured debug viewer
 tools/texturepkgdump/         texture package metadata CLI
 ```
@@ -29,7 +30,8 @@ config.toml
   -> BspGeometrySummary
   -> BspWorldMesh
   -> BspLightSummary
-  -> OpenStrikeBspDump / OpenStrikeBspView
+  -> BspCollisionData
+  -> OpenStrikeBspDump / OpenStrikeBspTrace / OpenStrikeBspView
 
 configured texture package roots
   -> read-only VirtualFileSystem
@@ -69,6 +71,8 @@ Implemented:
 - face, surfedge, edge, and vertex geometry validation;
 - triangulated world mesh generation;
 - per-face light offset, style, estimated lightmap dimension, sample count, and lighting range inspection;
+- collision plane, clipnode, and model hull metadata loading;
+- minimal point trace over BSP clipnodes with hit fraction, hit normal, and solid flags;
 - native Metal textured debug visualization.
 
 Not implemented yet:
@@ -76,8 +80,24 @@ Not implemented yet:
 - light data atlas construction;
 - lightmapped rendering;
 - visibility set traversal;
-- collision tracing;
+- full player movement and hull/crouch physics;
 - entity adaptation into gameplay objects.
+
+## Collision trace status
+
+Implemented:
+
+- read-only BSP plane, clipnode, and model headnode loading;
+- minimal point segment trace through one model/hull;
+- hit fraction, hit plane index, hit normal, start-solid, and all-solid reporting;
+- CLI trace tool for local user-provided maps;
+- synthetic clipnode tests without proprietary fixtures.
+
+Not implemented by design in this milestone:
+
+- player hull selection beyond explicit debug hull index;
+- swept player volumes, crouch, step movement, or full physics;
+- multiplayer or gameplay movement integration.
 
 ## Light data inspection status
 
