@@ -29,7 +29,7 @@ The project can:
 - #3 - config and VFS automated tests, completed by PR #22.
 - #11 - debug viewer navigation, completed by PR #25.
 - #12 - texture package metadata reader, completed by PR #33.
-- #13 - textured map viewer pass, completed by this PR.
+- #13 - textured map viewer pass, completed by PR #34.
 
 ## Open GitHub issues
 
