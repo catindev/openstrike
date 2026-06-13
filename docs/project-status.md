@@ -4,7 +4,7 @@ Last updated: 2026-06-13.
 
 ## Current milestone
 
-OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap, synthetic texture package decoding, synthetic model metadata parsing, synthetic sprite metadata parsing, synthetic WAV metadata parsing, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, and synthetic fixed-tick player movement with crouch basics.
+OpenStrike has reached the first textured map-inspection milestone on macOS and now includes a separate playable sandbox runtime shell foundation. Automated coverage exists for the config/VFS bootstrap, synthetic texture package decoding, synthetic model metadata parsing, synthetic sprite metadata parsing, synthetic WAV metadata parsing, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, synthetic fixed-tick player movement with crouch basics, and synthetic input-to-command mapping.
 
 The project can:
 
@@ -13,7 +13,7 @@ The project can:
 - read a config file from the user application support directory;
 - mount configured resource roots read-only;
 - index compatible local file types;
-- run automated tests for config parsing, template generation, VFS mounting, resource indexing, texture package metadata parsing, indexed texture decoding, model metadata parsing, sprite metadata parsing, WAV metadata parsing, BSP light metadata parsing, BSP collision point tracing, and trace-backed player movement including crouch hull selection;
+- run automated tests for config parsing, template generation, VFS mounting, resource indexing, texture package metadata parsing, indexed texture decoding, model metadata parsing, sprite metadata parsing, WAV metadata parsing, BSP light metadata parsing, BSP collision point tracing, trace-backed player movement including crouch hull selection, and playable input-to-command mapping;
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
@@ -28,6 +28,7 @@ The project can:
 - simulate a minimal fixed-tick player state with gravity, walking, jumping, crouch state, and stand/crouch hull selection against trace-backed collision;
 - print synthetic player movement debug ticks without reading user assets;
 - launch a technical map window from the main app on macOS using the current BSP debug renderer path;
+- launch a separate playable sandbox runtime shell with sampled input, fixed-tick `PlayerCommand` generation, debug command output, and clean exit;
 - show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
 
 ## Completed GitHub issues
@@ -45,21 +46,25 @@ The project can:
 - #17 - model metadata inspection tool, completed by PR #41.
 - #18 - sprite metadata inspection tool, completed by PR #42.
 - #19 - WAV playback prototype, completed by PR #43.
+- #20 - local sandbox app mode technical map-window integration, completed by PR #44.
+- #45 - playable sandbox runtime shell and input command pipeline, completed by this PR.
 
 ## Open GitHub issues
 
-- #20 - local sandbox app mode. PR #44 provides app/viewer integration only; playable first-person movement remains follow-up scope.
+- #46 and later playable follow-ups should build on the `--playable-map` runtime shell.
 
 ## Implemented components
 
 ```text
-apps/client/                  bootstrap client app and technical map-window launcher
+apps/client/                  bootstrap client app, technical map-window launcher, and playable sandbox launcher
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
 engine/assets/loaders/        map summaries, map mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, sprite metadata parsing, and WAV metadata parsing
+engine/input/                 input state and fixed-tick player command mapping
+engine/game/                  local playable sandbox runtime shell
 engine/physics/               fixed-tick trace-backed player movement prototype
-engine/platform/              native macOS window abstraction and headless fallback
-tests/                        config, VFS, texture, model, sprite, WAV, BSP light, BSP collision, and player movement regression tests
+engine/platform/              native macOS window abstraction, input sampling, and headless fallback
+tests/                        config, VFS, texture, model, sprite, WAV, BSP light, BSP collision, player movement, and input mapping regression tests
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/playermove/             synthetic fixed-tick player movement debug CLI
@@ -77,7 +82,8 @@ tools/wavplay/                WAV metadata and macOS playback prototype CLI
 - No full player physics, step movement, swept player volumes, or movement tuning profiles yet.
 - No production audio system, mixer, streaming, emitters, or cross-platform playback backend yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
-- The current `--sandbox-map` path reuses the debug BSP renderer and is macOS-only; it is not playable yet.
+- The current `--sandbox-map` path reuses the debug BSP renderer and remains a technical map-window mode.
+- The current `--playable-map` path is a runtime/input shell only; it does not yet render the map or run collision-backed movement.
 - No decoded texture cache or asset extraction path by design.
 
 ## Manual validation commands
@@ -107,7 +113,16 @@ Technical map-window integration:
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --sandbox-map /absolute/path/to/local/map.bsp
 ```
 
-With a temporary read-only resource root:
+Playable sandbox runtime shell:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --playable-map /absolute/path/to/local/map.bsp \
+  --resource-root /absolute/path/to/local/files \
+  --debug-input
+```
+
+With a temporary read-only resource root for technical map-window mode:
 
 ```bash
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
@@ -166,9 +181,7 @@ Textured map viewer:
 
 Controls:
 
-- Left mouse drag or arrow keys rotate/orbit the view.
-- Mouse wheel or `+` / `-` zooms the view.
-- `R` resets the view.
-- `Esc` closes the viewer.
+- `--playable-map`: `W`/`S` forward/back, `A`/`D` left/right, `Space` jump, `C` crouch, mouse movement look deltas, `Esc` exit.
+- OpenStrikeBspView: left mouse drag or arrow keys rotate/orbit the view, mouse wheel or `+` / `-` zooms the view, `R` resets the view, and `Esc` closes the viewer.
 
 Do not commit local files used for manual validation.

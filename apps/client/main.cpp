@@ -2,6 +2,7 @@
 #include "assets/VirtualFileSystem.h"
 #include "config/Config.h"
 #include "config/ConfigPaths.h"
+#include "game/LocalSandbox.h"
 #include "platform/Window.h"
 
 #if defined(__APPLE__)
@@ -26,8 +27,10 @@ struct CliOptions {
     bool validateConfig = false;
     bool listResources = false;
     bool noWindow = false;
+    bool debugInput = false;
     std::optional<fs::path> configPath;
     std::optional<fs::path> sandboxMap;
+    std::optional<fs::path> playableMap;
     std::vector<fs::path> resourceRoots;
 };
 
@@ -43,7 +46,9 @@ void printUsage(std::ostream& out) {
         << "  --validate-config              Load config, mount resource roots, print summary, and exit.\n"
         << "  --list-resources               Print indexed resource filenames.\n"
         << "  --no-window                    Initialize resources and exit without opening a window.\n"
-        << "  --sandbox-map <path>           Launch local sandbox mode with a map window.\n"
+        << "  --sandbox-map <path>           Launch technical map-window mode with the BSP debug viewer.\n"
+        << "  --playable-map <path>          Launch the playable sandbox runtime shell.\n"
+        << "  --debug-input                  Print fixed-tick player commands in playable mode.\n"
         << "  --config <path>                Use an explicit config file.\n"
         << "  --resource-root <path>         Add a temporary read-only resource root.\n"
         << "\n"
@@ -67,11 +72,18 @@ CliOptions parseArgs(int argc, char** argv) {
             options.listResources = true;
         } else if (arg == "--no-window") {
             options.noWindow = true;
+        } else if (arg == "--debug-input") {
+            options.debugInput = true;
         } else if (arg == "--sandbox-map") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--sandbox-map requires a path argument");
             }
             options.sandboxMap = fs::path(argv[++i]);
+        } else if (arg == "--playable-map") {
+            if (i + 1 >= argc) {
+                throw std::runtime_error("--playable-map requires a path argument");
+            }
+            options.playableMap = fs::path(argv[++i]);
         } else if (arg == "--config") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--config requires a path argument");
@@ -85,6 +97,13 @@ CliOptions parseArgs(int argc, char** argv) {
         } else {
             throw std::runtime_error("unknown argument: " + arg);
         }
+    }
+
+    if (options.sandboxMap.has_value() && options.playableMap.has_value()) {
+        throw std::runtime_error("--sandbox-map and --playable-map cannot be used together");
+    }
+    if (options.debugInput && !options.playableMap.has_value()) {
+        throw std::runtime_error("--debug-input requires --playable-map");
     }
 
     return options;
@@ -212,6 +231,14 @@ int main(int argc, char** argv) {
             std::cerr << "OpenStrike error: sandbox map mode is currently available only on macOS.\n";
             return 1;
 #endif
+        }
+
+        if (options.playableMap.has_value()) {
+            return osk::game::runLocalSandbox(osk::game::LocalSandboxOptions{
+                .mapPath = *options.playableMap,
+                .resourceRoots = config.resources.roots,
+                .debugInput = options.debugInput,
+            });
         }
 
         if (options.noWindow) {

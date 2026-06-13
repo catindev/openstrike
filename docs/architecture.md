@@ -1,17 +1,19 @@
 # OpenStrike Architecture
 
-OpenStrike is structured as a modular clean-room engine/client. The current focus is macOS-first resource inspection and map visualization.
+OpenStrike is structured as a modular clean-room engine/client. The current focus is macOS-first resource inspection and the first playable sandbox runtime shell.
 
 ## Current modules
 
 ```text
-apps/client/                  bootstrap executable and future game client
+apps/client/                  bootstrap executable, technical map-window launcher, and playable sandbox launcher
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
 engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, sprite metadata parsing, and WAV metadata parsing
+engine/input/                 keyboard/mouse input state and fixed-tick player command mapping
+engine/game/                  local playable sandbox runtime shell
 engine/physics/               fixed-tick trace-backed player movement prototype
-engine/platform/              native macOS window abstraction and headless fallback
+engine/platform/              native macOS window abstraction, input sampling, and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/playermove/             synthetic fixed-tick player movement debug CLI
@@ -43,6 +45,11 @@ BspCollisionData
   -> PlayerMovementState fixed-tick update
   -> OpenStrikePlayerMove synthetic debug ticks
 
+Window events
+  -> InputState
+  -> PlayerCommand fixed-tick mapping
+  -> LocalSandbox runtime shell
+
 configured texture package roots
   -> read-only VirtualFileSystem
   -> ResourceIndex.wads
@@ -72,6 +79,13 @@ OpenStrike --sandbox-map
   -> configured and temporary read-only resource roots
   -> shared BSP viewer runner
   -> native Metal technical map window on macOS
+
+OpenStrike --playable-map
+  -> configured and temporary read-only resource roots
+  -> LocalSandbox runtime shell
+  -> native window loop
+  -> sampled InputState
+  -> fixed-tick PlayerCommand debug output
 ```
 
 ## Resource model
@@ -151,6 +165,23 @@ Not implemented by design in this step:
 - friction, acceleration, air control, or game-specific movement tuning;
 - player height, eye offset, and smooth crouch transitions;
 - map entity adaptation into spawn points or gameplay objects.
+
+## Input and command pipeline status
+
+Implemented:
+
+- `InputState` for movement buttons, jump, crouch, exit, and per-frame look deltas;
+- macOS window event sampling for `W`, `A`, `S`, `D`, `Space`, `C`, `Esc`, and mouse motion;
+- `PlayerCommand` fixed-tick mapping with forward/side axes, look deltas, jump, crouch, and exit;
+- synthetic CTest coverage for input-to-command mapping, opposite-axis cancellation, key release, look-delta reset, and exit mapping.
+
+Not implemented by design in this step:
+
+- configurable key bindings;
+- raw relative mouse capture or cursor lock;
+- controller input;
+- input serialization or networking;
+- gameplay actions beyond movement-shell command fields.
 
 ## Light data inspection status
 
@@ -267,10 +298,31 @@ Not implemented by design in the current milestone:
 - lightmapped rendering;
 - non-macOS sandbox renderer.
 
+## Playable sandbox runtime shell
+
+Implemented:
+
+- `OpenStrike --playable-map <path>` app-level launch mode;
+- separate `LocalSandbox` runtime shell rather than reusing the BSP debug viewer runner;
+- app-owned native window loop with clean `Esc` or close-window exit;
+- fixed 60 Hz command tick loop;
+- input sampling through the platform window abstraction;
+- `--debug-input` command-line option for fixed-tick command output;
+- read-only resource-root plumbing shared with existing config/bootstrap flow.
+
+Not implemented by design in this slice:
+
+- map rendering inside the playable window;
+- collision-backed player movement;
+- spawn point/entity adaptation;
+- weapon logic;
+- audio integration;
+- production UI/HUD;
+- final renderer abstraction.
+
 ## Near-term modules
 
 ```text
-engine/input/           keyboard, mouse, action maps
 engine/renderer/        future renderer abstraction beyond debug tools
 engine/world/           map/world representation and entity adapter
 engine/game/            local game rules, weapons, damage, rounds

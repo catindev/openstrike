@@ -78,6 +78,22 @@ add_test(
     COMMAND openstrike_player_movement_tests
 )
 
+add_executable(openstrike_input_mapping_tests
+    test_input_mapping.cpp
+)
+
+target_link_libraries(openstrike_input_mapping_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_input_mapping_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_input_mapping_tests
+    COMMAND openstrike_input_mapping_tests
+)
+
 add_executable(openstrike_model_metadata_tests
     test_model_metadata.cpp
 )

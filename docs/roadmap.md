@@ -19,12 +19,14 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #17 | Model metadata inspection tool with safe header/table parsing and read-only CLI output. | #41 |
 | #18 | Sprite metadata inspection tool with safe header, palette, and frame parsing. | #42 |
 | #19 | WAV playback prototype with PCM metadata validation and macOS AVFoundation CLI playback. | #43 |
+| #20 | Technical app map-window integration using the current BSP viewer runner. | #44 |
+| #45 | Playable sandbox runtime shell and input command pipeline. | this PR |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P4 | #20 | Create local sandbox app mode. | PR #44 provides technical app/viewer integration only. Playable first-person movement remains follow-up scope. |
+| P4 | #46 | Continue playable sandbox after the runtime/input shell. | Build on `--playable-map`; likely first-person camera, placeholder render path, or collision-backed movement depending on issue scope. |
 
 ## Development principles
 
@@ -37,9 +39,10 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Finish PR #44 as a technical integration PR without closing #20.
-2. Open and implement a first playable slice: first-person camera, input, map collision movement, spawn/debug controls.
-3. Follow with weapon placeholder, hitscan debug, and WAV event sounds.
+1. Build on #45 with the next numbered playable issue.
+2. Add first-person playable camera and/or placeholder runtime rendering without breaking `OpenStrikeBspView`.
+3. Add collision-backed movement through existing `PlayerMovement` and `BspCollisionData` once renderer/runtime plumbing is stable.
+4. Follow with debug HUD/telemetry, weapon placeholder, hitscan debug, and WAV event sounds.
 
 ## Later roadmap
 

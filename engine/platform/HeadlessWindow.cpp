@@ -10,6 +10,7 @@ namespace osk {
 
 struct Window::Impl {
     bool closeRequested = true;
+    input::InputState inputState;
 };
 
 Window::Window() = default;
@@ -34,6 +35,15 @@ std::unique_ptr<Window> Window::create(const WindowDesc& desc, std::string* erro
 }
 
 void Window::pollEvents() {
+}
+
+const input::InputState& Window::inputState() const {
+    static const input::InputState EmptyInputState;
+    if (!impl_) {
+        return EmptyInputState;
+    }
+
+    return impl_->inputState;
 }
 
 bool Window::shouldClose() const {
