@@ -5,28 +5,20 @@
 // on macOS; on other platforms the run function will emit an error.
 
 #include "game/FirstPersonBspRunner.h"
-
 #include "assets/loaders/BspMesh.h"
+#include "assets/loaders/BspLoader.h" // for loadBspSummary
+#include "game/FirstPersonCamera.h"
 #include <iostream>
 #include <memory>
 #include <string>
 #include <cmath>
+#include <simd/simd.h>
 
 #if defined(__APPLE__)
 
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
-
-namespace {
-
-// Simple camera structure used for computing relative vertex positions.
-struct FirstPersonCamera {
-    float yaw = 0.0F;
-    float pitch = 0.0F;
-    float zoom = 1.0F;
-    osk::bsp::Vec3 position{};
-};
 
 // Compact vertex structure used for the Metal vertex buffer.  It
 // contains a position and normal only; texture coordinates are
@@ -36,109 +28,106 @@ struct FirstPersonVertex {
     vector_float3 normal;
 };
 
-// Compute the Euclidean length of a 3‑vector.
-float length3(const osk::bsp::Vec3& v) {
-    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-}
-
-// Rotate a vector around yaw (about the Z axis) and pitch (about the X
-// axis) to transform from world space into camera space.  This
-// implementation is identical to the helper used in the debug BSP
-// viewer.
-osk::bsp::Vec3 rotateView(const osk::bsp::Vec3& value, const FirstPersonCamera& camera) {
-    const float cy = std::cos(camera.yaw);
-    const float sy = std::sin(camera.yaw);
-    const float cp = std::cos(camera.pitch);
-    const float sp = std::sin(camera.pitch);
-    const float x0 = value.x * cy - value.y * sy;
-    const float y0 = value.x * sy + value.y * cy;
-    const float z0 = value.z;
-    return osk::bsp::Vec3{
-        .x = x0,
-        .y = y0 * cp - z0 * sp,
-        .z = y0 * sp + z0 * cp,
-    };
-}
-
-// Clamp a floating value to the [0,1] range.  Non‑finite inputs map to 0.
-float clamp01(float v) {
-    if (!std::isfinite(v)) {
-        return 0.0F;
-    }
-    return v < 0.0F ? 0.0F : (v > 1.0F ? 1.0F : v);
-}
-
-// Build a list of vertices for the world mesh relative to the camera.
-// The mesh is scaled by the radius of its bounding box to keep the
-// scene within Metal's clip space.  Depth is encoded in the z
-// component but true perspective projection is not implemented.
-std::vector<FirstPersonVertex> buildVertices(
-    const osk::bsp::BspWorldMesh& mesh,
-    const FirstPersonCamera& camera) {
+// Build a list of vertices for the world mesh.  The positions and normals
+// are copied directly from the BSP mesh without any camera transform.  The
+// vertex buffer thus stores world‑space coordinates and normals.
+static std::vector<FirstPersonVertex> buildWorldVertices(const osk::bsp::BspWorldMesh& mesh) {
     std::vector<FirstPersonVertex> vertices(mesh.vertices.size());
-    osk::bsp::Vec3 extent{};
-    if (mesh.bounds.valid) {
-        extent = osk::bsp::Vec3{
-            .x = mesh.bounds.max.x - mesh.bounds.min.x,
-            .y = mesh.bounds.max.y - mesh.bounds.min.y,
-            .z = mesh.bounds.max.z - mesh.bounds.min.z,
-        };
-    }
-    float radius = length3(extent) * 0.5F;
-    if (radius <= 0.0F) {
-        radius = 1.0F;
-    }
-    const float viewScale = 0.9F * camera.zoom;
     for (std::size_t i = 0; i < mesh.vertices.size(); ++i) {
         const osk::bsp::BspMeshVertex& src = mesh.vertices[i];
-        const osk::bsp::Vec3 rel{
-            .x = src.position.x - camera.position.x,
-            .y = src.position.y - camera.position.y,
-            .z = src.position.z - camera.position.z,
-        };
-        const osk::bsp::Vec3 p = rotateView(rel, camera);
-        const osk::bsp::Vec3 n = rotateView(src.normal, camera);
-        const float zNorm = clamp01(p.z / (radius * 2.0F) + 0.5F);
         vertices[i] = FirstPersonVertex{
-            .position = vector_float3{p.x / radius * viewScale, p.y / radius * viewScale, zNorm},
-            .normal = vector_float3{n.x, n.y, n.z},
+            .position = vector_float3{src.position.x, src.position.y, src.position.z},
+            .normal = vector_float3{src.normal.x, src.normal.y, src.normal.z},
         };
     }
     return vertices;
 }
 
-// Metal shader source for the minimal first‑person renderer.  It uses
-// per‑vertex normals to compute a simple diffuse shading with a fixed
-// light direction and constant base colour.  No texture sampling is
-// performed.
-NSString* shaderSource() {
-    return @R"(
-#include <metal_stdlib>
-using namespace metal;
-struct VertexIn {
-    float3 position;
-    float3 normal;
-};
-struct VertexOut {
-    float4 position [[position]];
-    float3 normal;
-};
-vertex VertexOut vertex_main(
-    const device VertexIn* vertices [[buffer(0)]],
-    uint vertexId [[vertex_id]]) {
-    VertexIn input = vertices[vertexId];
-    VertexOut output;
-    output.position = float4(input.position, 1.0);
-    output.normal = normalize(input.normal);
-    return output;
+// Construct a right‑handed perspective projection matrix.  This helper
+// produces a matrix compatible with Metal's clip space (z range 0..1).
+static matrix_float4x4 makePerspectiveMatrix(float fovY, float aspect, float nearZ, float farZ) {
+    const float yScale = 1.0f / std::tan(fovY * 0.5f);
+    const float xScale = yScale / aspect;
+    const float zRange = farZ - nearZ;
+    matrix_float4x4 m = {};
+    m.columns[0] = { xScale, 0.0f, 0.0f, 0.0f };
+    m.columns[1] = { 0.0f, yScale, 0.0f, 0.0f };
+    m.columns[2] = { 0.0f, 0.0f, farZ / zRange, 1.0f };
+    m.columns[3] = { 0.0f, 0.0f, (-nearZ * farZ) / zRange, 0.0f };
+    return m;
 }
-fragment float4 fragment_main(VertexOut input [[stage_in]]) {
-    float3 lightDir = normalize(float3(0.5, 1.0, 0.5));
-    float intensity = clamp(dot(normalize(input.normal), lightDir), 0.0, 1.0);
-    float3 colour = float3(0.7, 0.7, 0.7) * intensity + float3(0.3, 0.3, 0.3);
-    return float4(colour, 1.0);
+
+// Construct a view matrix from a camera position and orientation.  The
+// yaw rotates around the Z axis and pitch rotates around the X axis.  This
+// helper produces a matrix that transforms world coordinates into
+// camera space.
+static matrix_float4x4 makeViewMatrix(const osk::bsp::Vec3& pos, float yaw, float pitch) {
+    const float cy = std::cos(yaw);
+    const float sy = std::sin(yaw);
+    const float cp = std::cos(pitch);
+    const float sp = std::sin(pitch);
+    // Orientation rows (world -> camera).
+    const simd::float3 row0 = { cy, -sy, 0.0f };
+    const simd::float3 row1 = { sy * cp, cy * cp, -sp };
+    const simd::float3 row2 = { sy * sp, cy * sp, cp };
+    // Translation part: -dot(row, pos)
+    const float tx = -simd::dot(row0, simd::float3{pos.x, pos.y, pos.z});
+    const float ty = -simd::dot(row1, simd::float3{pos.x, pos.y, pos.z});
+    const float tz = -simd::dot(row2, simd::float3{pos.x, pos.y, pos.z});
+    matrix_float4x4 m;
+    m.columns[0] = { row0.x, row1.x, row2.x, 0.0f };
+    m.columns[1] = { row0.y, row1.y, row2.y, 0.0f };
+    m.columns[2] = { row0.z, row1.z, row2.z, 0.0f };
+    m.columns[3] = { tx, ty, tz, 1.0f };
+    return m;
 }
-)";
+
+// Uniform structure passed to the vertex shader.  It currently only
+// contains the combined view‑projection matrix.
+typedef struct {
+    matrix_float4x4 viewProj;
+} FirstPersonUniforms;
+
+// Metal shader source for the first‑person renderer.  The vertex
+// shader multiplies each vertex by the view‑projection matrix and
+// passes the normal through.  The fragment shader computes a simple
+// diffuse colour.
+static NSString* shaderSource() {
+    return @"\
+#include <metal_stdlib>\
+using namespace metal;\
+\
+struct VertexIn {\
+    float3 position;\
+    float3 normal;\
+};\
+\
+struct Uniforms {\
+    float4x4 viewProj;\
+};\
+\
+struct VertexOut {\
+    float4 position [[position]];\
+    float3 normal;\
+};\
+\
+vertex VertexOut vertex_main(const device VertexIn* vertices [[buffer(0)]],\
+                              constant Uniforms& uniforms [[buffer(1)]],\
+                              uint vertexId [[vertex_id]]) {\
+    VertexIn input = vertices[vertexId];\
+    VertexOut out;\
+    out.position = uniforms.viewProj * float4(input.position, 1.0);\
+    out.normal = normalize(input.normal);\
+    return out;\
+}\
+\
+fragment float4 fragment_main(VertexOut in [[stage_in]]) {\
+    float3 lightDir = normalize(float3(0.5, 1.0, 0.5));\
+    float intensity = clamp(dot(normalize(in.normal), lightDir), 0.0, 1.0);\
+    float3 colour = float3(0.7, 0.7, 0.7) * intensity + float3(0.3, 0.3, 0.3);\
+    return float4(colour, 1.0);\
+}\
+";
 }
 
 // Simple window delegate used to detect when the user closes the
@@ -158,8 +147,9 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
 
 // Objective‑C++ class that acts as the MTKView delegate for the
 // first‑person renderer.  It holds Metal objects and draws the mesh
-// using the simple shading pipeline.  It does not update the camera
-// orientation or zoom after initialization.
+// using the simple shading pipeline.  It keeps mutable yaw and pitch
+// values that are updated by the run loop.  Before each frame the
+// view‑projection matrix is recomputed and stored in a uniform buffer.
 @interface OSKFirstPersonMetalRenderer : NSObject <MTKViewDelegate> {
 @private
     id<MTLDevice> _device;
@@ -168,12 +158,18 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
     id<MTLDepthStencilState> _depthState;
     id<MTLBuffer> _vertexBuffer;
     id<MTLBuffer> _indexBuffer;
+    id<MTLBuffer> _uniformBuffer;
     NSUInteger _indexCount;
+    osk::bsp::Vec3 _position;
+    float _yaw;
+    float _pitch;
+    float _fovY;
 }
 - (instancetype)initWithView:(MTKView*)view
                          mesh:(const osk::bsp::BspWorldMesh&)mesh
                         spawn:(const osk::bsp::Vec3&)spawn
                  errorMessage:(std::string*)errorMessage;
+- (void)adjustYawDelta:(float)deltaX pitchDelta:(float)deltaY;
 @end
 
 @implementation OSKFirstPersonMetalRenderer
@@ -186,14 +182,6 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
     if (self == nil) {
         return nil;
     }
-    // Create a camera with the given spawn.  Yaw and pitch default
-    // to zero so the camera looks down the positive X axis by
-    // convention.  Zoom defaults to 1.
-    FirstPersonCamera camera;
-    camera.position = spawn;
-    camera.yaw = 0.0F;
-    camera.pitch = 0.0F;
-    camera.zoom = 1.0F;
     _device = [view.device retain];
     _commandQueue = [_device newCommandQueue];
     if (_commandQueue == nil) {
@@ -203,18 +191,17 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
         [self release];
         return nil;
     }
-    {
-        const std::vector<FirstPersonVertex> verts = buildVertices(mesh, camera);
-        _vertexBuffer = [_device newBufferWithBytes:verts.data()
-                                              length:verts.size() * sizeof(FirstPersonVertex)
-                                             options:MTLResourceStorageModeManaged];
-        if (_vertexBuffer == nil) {
-            if (errorMessage != nullptr) {
-                *errorMessage = "failed to create Metal vertex buffer";
-            }
-            [self release];
-            return nil;
+    // Build vertex buffer with world positions.
+    const std::vector<FirstPersonVertex> verts = buildWorldVertices(mesh);
+    _vertexBuffer = [_device newBufferWithBytes:verts.data()
+                                         length:verts.size() * sizeof(FirstPersonVertex)
+                                        options:MTLResourceStorageModeManaged];
+    if (_vertexBuffer == nil) {
+        if (errorMessage != nullptr) {
+            *errorMessage = "failed to create Metal vertex buffer";
         }
+        [self release];
+        return nil;
     }
     _indexBuffer = [_device newBufferWithBytes:mesh.indices.data()
                                         length:mesh.indices.size() * sizeof(std::uint32_t)
@@ -223,6 +210,16 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
     if (_indexBuffer == nil) {
         if (errorMessage != nullptr) {
             *errorMessage = "failed to create Metal index buffer";
+        }
+        [self release];
+        return nil;
+    }
+    // Create uniform buffer for the view‑projection matrix.
+    _uniformBuffer = [_device newBufferWithLength:sizeof(FirstPersonUniforms)
+                                           options:MTLResourceStorageModeManaged];
+    if (_uniformBuffer == nil) {
+        if (errorMessage != nullptr) {
+            *errorMessage = "failed to create Metal uniform buffer";
         }
         [self release];
         return nil;
@@ -268,6 +265,11 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
         [self release];
         return nil;
     }
+    // Initialize camera state.
+    _position = spawn;
+    _yaw = 0.0f;
+    _pitch = 0.0f;
+    _fovY = 1.134464f; // ~65 degrees in radians
     return self;
 }
 
@@ -276,9 +278,19 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
     [_pipelineState release];
     [_indexBuffer release];
     [_vertexBuffer release];
+    [_uniformBuffer release];
     [_commandQueue release];
     [_device release];
     [super dealloc];
+}
+
+- (void)adjustYawDelta:(float)deltaX pitchDelta:(float)deltaY {
+    // Convert pixel deltas into radians using a small sensitivity factor.
+    constexpr float sensitivity = 0.0025f;
+    osk::game::updateYawPitch(_yaw, _pitch, deltaX, -deltaY, sensitivity);
+    // Clamp pitch to avoid looking too far up or down.  Use slightly less than ±90°.
+    constexpr float maxPitch = 1.553343f; // about 89° in radians
+    osk::game::clampPitch(_pitch, -maxPitch, maxPitch);
 }
 
 - (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {
@@ -292,12 +304,22 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
     if (drawable == nil || passDescriptor == nil) {
         return;
     }
+    // Update uniform buffer with the latest view‑projection matrix.
+    const float aspect = (float)view.drawableSize.width / (float)view.drawableSize.height;
+    const matrix_float4x4 proj = makePerspectiveMatrix(_fovY, aspect, 0.1f, 2000.0f);
+    const matrix_float4x4 viewMat = makeViewMatrix(_position, _yaw, _pitch);
+    const matrix_float4x4 vp = simd_mul(proj, viewMat);
+    FirstPersonUniforms uniforms;
+    uniforms.viewProj = vp;
+    memcpy([_uniformBuffer contents], &uniforms, sizeof(uniforms));
+    [_uniformBuffer didModifyRange:NSMakeRange(0, sizeof(uniforms))];
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     id<MTLRenderCommandEncoder> encoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     [encoder setRenderPipelineState:_pipelineState];
     [encoder setDepthStencilState:_depthState];
     [encoder setCullMode:MTLCullModeNone];
     [encoder setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+    [encoder setVertexBuffer:_uniformBuffer offset:0 atIndex:1];
     [encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                         indexCount:_indexCount
                          indexType:MTLIndexTypeUInt32
@@ -310,7 +332,8 @@ fragment float4 fragment_main(VertexOut input [[stage_in]]) {
 
 @end
 
-} // namespace
+// End of macOS section
+#endif // defined(__APPLE__)
 
 // Begin public API implementation.
 namespace osk::game {
@@ -366,6 +389,8 @@ int runFirstPersonBsp(const FirstPersonBspOptions& options) {
         view.clearColor = MTLClearColorMake(0.03, 0.035, 0.045, 1.0);
         view.paused = YES;
         view.enableSetNeedsDisplay = NO;
+        // Enable mouse movement events so we can update the camera.
+        [window setAcceptsMouseMovedEvents:YES];
         std::string rendererError;
         OSKFirstPersonMetalRenderer* renderer = [[OSKFirstPersonMetalRenderer alloc] initWithView:view
                                                                                             mesh:mesh
@@ -395,7 +420,8 @@ int runFirstPersonBsp(const FirstPersonBspOptions& options) {
                     if (event == nil) {
                         break;
                     }
-                    if ([event type] == NSEventTypeKeyDown) {
+                    NSEventType type = [event type];
+                    if (type == NSEventTypeKeyDown) {
                         NSString* characters = [event charactersIgnoringModifiers];
                         if ([characters length] > 0) {
                             const unichar key = [characters characterAtIndex:0];
@@ -405,6 +431,13 @@ int runFirstPersonBsp(const FirstPersonBspOptions& options) {
                                 continue;
                             }
                         }
+                    }
+                    // Handle mouse movement to rotate the camera.  We use deltaX and deltaY
+                    // directly from the event to adjust yaw and pitch via the renderer.
+                    if (type == NSEventTypeMouseMoved || type == NSEventTypeLeftMouseDragged || type == NSEventTypeRightMouseDragged || type == NSEventTypeOtherMouseDragged) {
+                        const float dx = [event deltaX];
+                        const float dy = [event deltaY];
+                        [renderer adjustYawDelta:dx pitchDelta:dy];
                     }
                     [NSApp sendEvent:event];
                 }
