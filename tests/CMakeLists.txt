@@ -29,3 +29,19 @@ add_test(
     NAME openstrike_texture_package_tests
     COMMAND openstrike_texture_package_tests
 )
+
+add_executable(openstrike_bsp_light_tests
+    test_bsp_light.cpp
+)
+
+target_link_libraries(openstrike_bsp_light_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_bsp_light_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_bsp_light_tests
+    COMMAND openstrike_bsp_light_tests
+)
