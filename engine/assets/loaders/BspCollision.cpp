@@ -17,6 +17,7 @@ namespace osk::bsp {
 namespace {
 
 constexpr float TraceEpsilon = 0.03125F;
+constexpr const char* UnsupportedHullWarning = "trace hull index is unsupported; clipnode prototype supports hulls 1..3";
 
 std::uint8_t byteAt(std::span<const std::byte> bytes, std::size_t offset) {
     return std::to_integer<std::uint8_t>(bytes[offset]);
@@ -318,12 +319,12 @@ BspTraceResult tracePoint(const BspCollisionData& collision, const BspTraceInput
     result.endPosition = input.end;
 
     result.warnings.insert(result.warnings.end(), collision.warnings.begin(), collision.warnings.end());
-    if (input.modelIndex >= collision.models.size()) {
-        result.warnings.emplace_back("trace model index is outside the model table");
+    if (input.hullIndex == 0 || input.hullIndex >= BspCollisionHullCount) {
+        result.warnings.emplace_back(UnsupportedHullWarning);
         return result;
     }
-    if (input.hullIndex >= BspCollisionHullCount) {
-        result.warnings.emplace_back("trace hull index is outside the supported hull range");
+    if (input.modelIndex >= collision.models.size()) {
+        result.warnings.emplace_back("trace model index is outside the model table");
         return result;
     }
 
