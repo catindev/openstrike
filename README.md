@@ -34,6 +34,7 @@ The project currently contains:
 - Map header, geometry, light metadata, collision trace, and triangulated mesh summaries.
 - Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
 - Legacy model header, body part, sequence, texture, and hitbox metadata inspection.
+- Legacy sprite header, palette, and frame metadata inspection.
 - Trace-backed fixed-tick player movement prototype with synthetic debug output.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
@@ -125,6 +126,14 @@ Model metadata dump:
 ```
 
 `OpenStrikeModelDump` prints legacy model header, body part, sequence, texture, and hitbox metadata. It does not extract meshes, decode texture pixels, write assets, or cache user data.
+
+Sprite metadata dump:
+
+```bash
+./build/macos-arm64-debug/tools/spritedump/OpenStrikeSpriteDump /absolute/path/to/local/sprite.spr
+```
+
+`OpenStrikeSpriteDump` prints legacy sprite header, palette, and frame metadata. It does not decode pixels, extract frames, write assets, or cache user data.
 
 Map debug viewer:
 

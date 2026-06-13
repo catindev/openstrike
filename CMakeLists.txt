@@ -28,6 +28,7 @@ if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/bspview)
     add_subdirectory(tools/modeldump)
     add_subdirectory(tools/playermove)
+    add_subdirectory(tools/spritedump)
     add_subdirectory(tools/texturepkgdump)
 endif()
 
