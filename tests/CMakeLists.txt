@@ -61,3 +61,19 @@ add_test(
     NAME openstrike_bsp_collision_tests
     COMMAND openstrike_bsp_collision_tests
 )
+
+add_executable(openstrike_player_movement_tests
+    test_player_movement.cpp
+)
+
+target_link_libraries(openstrike_player_movement_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_player_movement_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_player_movement_tests
+    COMMAND openstrike_player_movement_tests
+)
