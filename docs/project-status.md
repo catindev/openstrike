@@ -29,7 +29,8 @@ The project can:
 - print synthetic player movement debug ticks without reading user assets;
 - launch a technical map window from the main app on macOS using the current BSP debug renderer path;
 - launch a separate playable sandbox runtime shell with sampled input, fixed-tick `PlayerCommand` generation, debug command output, and clean exit;
-- show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
+- show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures;
+- open a minimal first-person view of a BSP map from a user-specified spawn position using `--playable-map` together with `--spawn`.
 
 ## Completed GitHub issues
 
@@ -47,15 +48,16 @@ The project can:
 - #18 - sprite metadata inspection tool, completed by PR #42.
 - #19 - WAV playback prototype, completed by PR #43.
 - #20 - local sandbox app mode technical map-window integration, completed by PR #44.
-- #45 - playable sandbox runtime shell and input command pipeline, completed by this PR.
+- #45 - playable sandbox runtime shell and input command pipeline, completed by PR #54.
+- #46 - first-person BSP render mode for playable sandbox, completed by this PR.
 
 ## Open GitHub issues
 
-- #46 and later playable follow-ups should build on the `--playable-map` runtime shell.
+There are no active near-term issues at the time of this milestone. Future work will build on the first-person playable path with collision-backed movement, renderer abstraction, and gameplay features. See the roadmap for suggested next tasks.
 
 ## Implemented components
 
-```text
+```
 apps/client/                  bootstrap client app, technical map-window launcher, and playable sandbox launcher
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
@@ -83,7 +85,7 @@ tools/wavplay/                WAV metadata and macOS playback prototype CLI
 - No production audio system, mixer, streaming, emitters, or cross-platform playback backend yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
 - The current `--sandbox-map` path reuses the debug BSP renderer and remains a technical map-window mode.
-- The current `--playable-map` path is a runtime/input shell only; it does not yet render the map or run collision-backed movement.
+- The `--playable-map` path still does not implement collision-backed movement or full player physics. Without `--spawn` it runs as a runtime/input shell; with `--spawn` it renders the map from the given position using a minimal first-person shader but does not allow movement.
 - No decoded texture cache or asset extraction path by design.
 
 ## Manual validation commands
@@ -113,13 +115,22 @@ Technical map-window integration:
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --sandbox-map /absolute/path/to/local/map.bsp
 ```
 
-Playable sandbox runtime shell:
+Playable sandbox runtime shell (no render, debug commands):
 
 ```bash
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
   --playable-map /absolute/path/to/local/map.bsp \
   --resource-root /absolute/path/to/local/files \
   --debug-input
+```
+
+First-person BSP render mode:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --playable-map /absolute/path/to/local/map.bsp \
+  --spawn 0 0 64 \
+  --resource-root /absolute/path/to/local/files
 ```
 
 With a temporary read-only resource root for technical map-window mode:
@@ -181,7 +192,7 @@ Textured map viewer:
 
 Controls:
 
-- `--playable-map`: `W`/`S` forward/back, `A`/`D` left/right, `Space` jump, `C` crouch, mouse movement look deltas, `Esc` exit.
+- `--playable-map`: `W`/`S` forward/back, `A`/`D` left/right, `Space` jump, `C` crouch, mouse movement look deltas, `Esc` exit. When used with `--spawn`, movement is not implemented yet and the view is fixed; `Esc` closes the window.
 - OpenStrikeBspView: left mouse drag or arrow keys rotate/orbit the view, mouse wheel or `+` / `-` zooms the view, `R` resets the view, and `Esc` closes the viewer.
 
 Do not commit local files used for manual validation.
