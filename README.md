@@ -37,6 +37,7 @@ The project currently contains:
 - Legacy sprite header, palette, and frame metadata inspection.
 - PCM WAV metadata validation and macOS playback prototype.
 - Trace-backed fixed-tick player movement prototype with synthetic debug output.
+- Playable sandbox runtime shell with input sampling and fixed-tick player command debug output.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
 - Tooling for asset audits and format inspection.
@@ -79,7 +80,7 @@ OpenStrike --validate-config
 Use a temporary resource root without editing config:
 
 ```bash
-OpenStrike --validate-config --resource-root /absolute/path/to/user/owned/files
+OpenStrike --validate-config --resource-root /absolute/path/to/local/files
 ```
 
 On macOS CMake builds, the executable is inside the generated app bundle:
@@ -93,10 +94,30 @@ Launch the technical map-window integration on macOS:
 ```bash
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
   --sandbox-map /absolute/path/to/local/map.bsp \
-  --resource-root /absolute/path/to/user/owned/files
+  --resource-root /absolute/path/to/local/files
 ```
 
 This technical integration uses the current BSP debug renderer path inside the app. It is not a playable first-person sandbox yet. It reads configured and temporary resource roots read-only, decodes textures in memory only, and does not extract, convert, save, cache, or commit user-provided assets.
+
+Launch the playable sandbox runtime shell on macOS:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --playable-map /absolute/path/to/local/map.bsp \
+  --resource-root /absolute/path/to/local/files \
+  --debug-input
+```
+
+This playable path opens an app-owned runtime window, samples keyboard and mouse input, builds a deterministic fixed-tick `PlayerCommand`, and prints command debug output when `--debug-input` is set. In this slice it does not yet render the map, run collision-backed movement, spawn entities, play weapons, or implement gameplay.
+
+Default playable shell controls:
+
+- `W` / `S`: forward and back command axis.
+- `A` / `D`: left and right command axis.
+- `Space`: jump command button.
+- `C`: crouch command button.
+- Mouse movement: look delta command fields.
+- `Esc` or window close: clean exit.
 
 ## Tools
 
@@ -164,7 +185,7 @@ Map debug viewer:
 The viewer reads texture packages from configured read-only resource roots. You can add a temporary local root for manual validation without editing config:
 
 ```bash
-./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp --resource-root /absolute/path/to/user/owned/files
+./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp --resource-root /absolute/path/to/local/files
 ```
 
 Texture data is decoded in memory only for debug rendering. The viewer does not extract, convert, save, cache, or commit user-provided textures. Missing textures use a generated checker placeholder.
