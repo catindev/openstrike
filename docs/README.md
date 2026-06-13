@@ -21,7 +21,9 @@ Current ADRs:
 - [`0001-clean-room-and-local-resources.md`](adr/0001-clean-room-and-local-resources.md)
 - [`0002-config-first-resource-roots.md`](adr/0002-config-first-resource-roots.md)
 - [`0003-native-macos-bootstrap-before-final-renderer.md`](adr/0003-native-macos-bootstrap-before-final-renderer.md)
-- [`0004-separate-technical-and-playable-map-modes.md`](adr/0004-separate-technical-and-playable-map-modes.md)
+- [`0004-macos-avfoundation-wav-prototype.md`](adr/0004-macos-avfoundation-wav-prototype.md)
+- [`0005-reuse-debug-bsp-viewer-for-sandbox-mode.md`](adr/0005-reuse-debug-bsp-viewer-for-sandbox-mode.md)
+- [`0006-separate-technical-and-playable-map-modes.md`](adr/0006-separate-technical-and-playable-map-modes.md)
 
 ## Documentation rules
 
