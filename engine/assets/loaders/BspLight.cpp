@@ -4,6 +4,7 @@
 #include "assets/loaders/BspLoader.h"
 
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <cmath>
 #include <cstddef>
@@ -140,10 +141,6 @@ std::size_t activeStyleCount(const std::array<std::uint8_t, 4>& styles) {
 
 bool mulWouldOverflow(std::size_t a, std::size_t b) {
     return a != 0 && b > std::numeric_limits<std::size_t>::max() / a;
-}
-
-bool addWouldOverflow(std::size_t a, std::size_t b) {
-    return b > std::numeric_limits<std::size_t>::max() - a;
 }
 
 bool computeLightmapSize(
