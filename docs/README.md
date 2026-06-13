@@ -8,6 +8,7 @@ This directory is the source of truth for project context. New agents and contri
 - [`project-status.md`](project-status.md) - current implemented state and manual validation record.
 - [`roadmap.md`](roadmap.md) - issue-backed roadmap.
 - [`architecture.md`](architecture.md) - module layout and current technical architecture.
+- [`first_vision.md`](first_vision.md) - original long-form technical vision and staged MVP plan.
 - [`legal_policy.md`](legal_policy.md) - clean-room legal guardrails.
 - [`asset_policy.md`](asset_policy.md) - what may and may not be committed.
 

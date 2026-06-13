@@ -15,6 +15,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Documentation
 
+- Added the long-form first vision document to the project documentation index.
 - Documented fixed-tick player movement prototype status and remaining #16 sandbox limitations.
 - Documented BSP collision trace prototype usage, status, architecture, and roadmap progress for #15.
 - Documented BSP light data inspection status, dump output, architecture, and roadmap progress for #14.
