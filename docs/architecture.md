@@ -9,10 +9,10 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summaries, mesh builders, texture package metadata, and texture decode helpers
+engine/assets/loaders/        map summaries, mesh builders, light metadata, texture metadata, and texture decode helpers
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
-tools/bspdump/                map metadata CLI
+tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/bspview/                macOS Metal textured debug viewer
 tools/texturepkgdump/         texture package metadata CLI
 ```
@@ -28,6 +28,7 @@ config.toml
   -> BspSummary
   -> BspGeometrySummary
   -> BspWorldMesh
+  -> BspLightSummary
   -> OpenStrikeBspDump / OpenStrikeBspView
 
 configured texture package roots
@@ -67,14 +68,33 @@ Implemented:
 - embedded texture metadata summary with texture names and dimensions;
 - face, surfedge, edge, and vertex geometry validation;
 - triangulated world mesh generation;
+- per-face light offset, style, estimated lightmap dimension, sample count, and lighting range inspection;
 - native Metal textured debug visualization.
 
 Not implemented yet:
 
 - light data atlas construction;
+- lightmapped rendering;
 - visibility set traversal;
 - collision tracing;
 - entity adaptation into gameplay objects.
+
+## Light data inspection status
+
+Implemented:
+
+- read-only BSP lighting lump range accounting;
+- face style and light offset inspection;
+- estimated per-face lightmap width and height from face vertices and texinfo axes;
+- sample count and byte-range validation for RGB light samples;
+- missing, empty, malformed, or truncated lighting data reporting without crashes;
+- synthetic BSP-like tests without proprietary fixtures.
+
+Not implemented by design in this milestone:
+
+- lightmap pixel decoding beyond metadata/range accounting;
+- lightmap rendering or texture atlas composition;
+- collision, movement, model, sprite, or audio integration.
 
 ## Texture package loader status
 
