@@ -10,6 +10,7 @@ engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
 engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
+engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
@@ -32,6 +33,10 @@ config.toml
   -> BspLightSummary
   -> BspCollisionData
   -> OpenStrikeBspDump / OpenStrikeBspTrace / OpenStrikeBspView
+
+BspCollisionData
+  -> tracePoint()
+  -> PlayerMovementState fixed-tick update
 
 configured texture package roots
   -> read-only VirtualFileSystem
@@ -73,6 +78,7 @@ Implemented:
 - per-face light offset, style, estimated lightmap dimension, sample count, and lighting range inspection;
 - collision plane, clipnode, and model hull metadata loading;
 - minimal point trace over BSP clipnodes with hit fraction, hit normal, and solid flags;
+- trace-backed fixed-tick player movement state update for gravity, walking, and jumping;
 - native Metal textured debug visualization.
 
 Not implemented yet:
@@ -80,7 +86,7 @@ Not implemented yet:
 - light data atlas construction;
 - lightmapped rendering;
 - visibility set traversal;
-- full player movement and hull/crouch physics;
+- full player movement sandbox, swept player volumes, crouch, and step movement;
 - entity adaptation into gameplay objects.
 
 ## Collision trace status
@@ -98,6 +104,28 @@ Not implemented by design in this milestone:
 - player hull selection beyond explicit debug hull index;
 - swept player volumes, crouch, step movement, or full physics;
 - multiplayer or gameplay movement integration.
+
+## Player movement prototype status
+
+Implemented:
+
+- `PlayerMovementState` with position, velocity, and grounded flag;
+- fixed-tick `stepPlayerMovement()` update;
+- clamped X/Y walking velocity;
+- gravity integration;
+- single-tick jump impulse from grounded state;
+- collision integration through `tracePoint()` against `BspCollisionData`;
+- synthetic ground-plane tests for walking, falling/landing, jumping, and missing trace context warnings.
+
+Not implemented by design in this step:
+
+- full gameplay loop;
+- weapon logic;
+- step climbing;
+- crouch or hull switching policy;
+- swept hull movement;
+- friction, acceleration, air control, or game-specific movement tuning;
+- map entity adaptation into spawn points or gameplay objects.
 
 ## Light data inspection status
 
@@ -143,7 +171,6 @@ Not implemented by design in the current milestone:
 engine/input/           keyboard, mouse, action maps
 engine/renderer/        future renderer abstraction beyond debug tools
 engine/world/           map/world representation and entity adapter
-engine/physics/         collision, traces, player movement
 engine/game/            local game rules, weapons, damage, rounds
 engine/audio/           audio backend, mixer, emitters
 engine/ui/              original debug/runtime UI
