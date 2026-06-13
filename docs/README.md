@@ -21,10 +21,11 @@ Current ADRs:
 - [`0001-clean-room-and-local-resources.md`](adr/0001-clean-room-and-local-resources.md)
 - [`0002-config-first-resource-roots.md`](adr/0002-config-first-resource-roots.md)
 - [`0003-native-macos-bootstrap-before-final-renderer.md`](adr/0003-native-macos-bootstrap-before-final-renderer.md)
+- [`0004-separate-technical-and-playable-map-modes.md`](adr/0004-separate-technical-and-playable-map-modes.md)
 
 ## Documentation rules
 
 - If a PR changes architecture, update docs in the same PR.
 - If a PR completes a roadmap task, close or update the linked GitHub issue.
 - If a decision changes, add a new ADR rather than silently rewriting history.
-- Keep terms neutral and independent. Do not make OpenStrike branding depend on third-party product names.
+- Keep terms neutral and independent.
