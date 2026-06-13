@@ -20,13 +20,14 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #18 | Sprite metadata inspection tool with safe header, palette, and frame parsing. | #42 |
 | #19 | WAV playback prototype with PCM metadata validation and macOS AVFoundation CLI playback. | #43 |
 | #20 | Technical app map-window integration using the current BSP viewer runner. | #44 |
-| #45 | Playable sandbox runtime shell and input command pipeline. | this PR |
+| #45 | Playable sandbox runtime shell and input command pipeline. | PR #54 |
+| #46 | First-person BSP render mode for playable sandbox. | this PR |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P4 | #46 | Continue playable sandbox after the runtime/input shell. | Build on `--playable-map`; likely first-person camera, placeholder render path, or collision-backed movement depending on issue scope. |
+| P4 | #47 | Collision-backed player movement for playable sandbox. | Build on `--playable-map` first-person render mode; reuse `PlayerMovement` and `BspCollisionData` to allow walking, jumping, crouching, and collision detection. |
 
 ## Development principles
 
@@ -39,10 +40,9 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Build on #45 with the next numbered playable issue.
-2. Add first-person playable camera and/or placeholder runtime rendering without breaking `OpenStrikeBspView`.
-3. Add collision-backed movement through existing `PlayerMovement` and `BspCollisionData` once renderer/runtime plumbing is stable.
-4. Follow with debug HUD/telemetry, weapon placeholder, hitscan debug, and WAV event sounds.
+1. Build on #46 with the next numbered playable issue (#47) to add collision-backed player movement using existing `PlayerMovement` and `BspCollisionData`.
+2. Add a debug HUD/telemetry and placeholder weapon/hitscan prototypes.
+3. Implement audio events and WAV mixing once the renderer/runtime plumbing is stable.
 
 ## Later roadmap
 
