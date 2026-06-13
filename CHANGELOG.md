@@ -18,6 +18,7 @@ All notable OpenStrike changes should be documented here.
 - Added BSP collision plane/clipnode/model metadata loading and a minimal point trace CLI, `OpenStrikeBspTrace`.
 - Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
 - Added a textured BSP debug viewer pass with memory-only indexed texture decode, read-only WAD lookup, generated missing-texture placeholders, and a transient Metal texture atlas.
+- Added `--spawn <x> <y> <z>` option for `OpenStrike`. When used together with `--playable-map`, it opens a minimal first-person BSP render view from the specified spawn position on macOS. This path is powered by the new `engine/game/FirstPersonBspRunner` and is compiled only on macOS (#46).
 
 ### Documentation
 
@@ -37,6 +38,7 @@ All notable OpenStrike changes should be documented here.
 - Added repository handoff documentation for agents and contributors.
 - Added ADR structure and current project status documents.
 - Added issue-backed roadmap documentation.
+- Documented the new first-person BSP render mode, spawn option, and updated project status, roadmap, architecture, and README accordingly (#46).
 
 ### Testing
 
