@@ -6,6 +6,9 @@ All notable OpenStrike changes should be documented here.
 
 ### Added
 
+- Added `OpenStrike --playable-map` as a separate playable sandbox runtime shell with native window loop, sampled input state, fixed-tick `PlayerCommand` generation, `--debug-input` output, and clean exit for #45.
+- Added `engine/input` with `InputState` and `PlayerCommand` mapping for keyboard/mouse runtime input.
+- Added `engine/game/LocalSandbox` as the first app-owned playable sandbox loop.
 - Added crouch state, stand/crouch hull selection, blocked-uncrouch reporting, and the `OpenStrikePlayerMove` synthetic movement debug CLI for #16.
 - Added read-only legacy model metadata parsing and the `OpenStrikeModelDump` CLI for #17.
 - Added read-only legacy sprite metadata parsing and the `OpenStrikeSpriteDump` CLI for #18.
@@ -20,6 +23,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Documentation
 
+- Documented the separate technical `--sandbox-map` and playable `--playable-map` launch modes and added ADR 0004 for the split.
 - Documented player movement debug CLI usage and moved #16 to completed roadmap/status.
 - Documented model metadata inspection usage, architecture, and roadmap/status progress for #17.
 - Documented sprite metadata inspection usage, architecture, and roadmap/status progress for #18.
@@ -38,6 +42,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Testing
 
+- Added synthetic input-to-command mapping coverage for movement axes, jump/crouch/exit buttons, key release, and look delta reset.
 - Added synthetic player movement coverage for crouch hull selection, uncrouch, blocked uncrouch, and grounded gravity stability.
 - Added synthetic coverage for legacy model metadata parsing and malformed-file rejection.
 - Added synthetic coverage for legacy sprite metadata parsing, grouped frames, and malformed-file rejection.
