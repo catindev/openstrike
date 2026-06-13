@@ -1,5 +1,6 @@
 #include "assets/loaders/BspCollision.h"
 
+#include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
