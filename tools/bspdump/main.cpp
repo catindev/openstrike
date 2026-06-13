@@ -1,7 +1,10 @@
 #include "assets/loaders/BspGeometry.h"
+#include "assets/loaders/BspLight.h"
 #include "assets/loaders/BspLoader.h"
 #include "assets/loaders/BspMesh.h"
 
+#include <array>
+#include <cstdint>
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
@@ -33,11 +36,81 @@ void printBounds(const osk::bsp::Bounds3& bounds) {
         << bounds.max.x << ", " << bounds.max.y << ", " << bounds.max.z << '\n';
 }
 
+std::string lightStylesText(const std::array<std::uint8_t, 4>& styles) {
+    std::string out;
+    for (std::size_t i = 0; i < styles.size(); ++i) {
+        if (i > 0) {
+            out += ",";
+        }
+        if (styles[i] == 255U) {
+            out += "-";
+        } else {
+            out += std::to_string(static_cast<unsigned int>(styles[i]));
+        }
+    }
+    return out;
+}
+
+void printLightSummary(const osk::bsp::BspLightSummary& light) {
+    std::cout << "\nLight data / Lightmaps summary:\n";
+    std::cout << "  lighting bytes:   " << light.lightingByteCount << '\n';
+    std::cout << "  faces:            " << light.faceCount << '\n';
+    std::cout << "  lit faces:        " << light.litFaceCount << '\n';
+    std::cout << "  valid lightmaps:  " << light.validLightmapCount << '\n';
+    std::cout << "  missing lightmaps:" << light.missingLightmapCount << '\n';
+    std::cout << "  invalid lightmaps:" << light.invalidLightmapCount << '\n';
+
+    if (light.faces.empty()) {
+        return;
+    }
+
+    std::cout << "\nLightmaps per face:\n";
+    std::cout << "  " << std::left
+        << std::setw(8) << "Face"
+        << std::setw(12) << "Offset"
+        << std::setw(10) << "Size"
+        << std::setw(10) << "Samples"
+        << std::setw(8) << "Styles"
+        << std::setw(14) << "StyleIds"
+        << std::setw(10) << "Texture"
+        << "Status\n";
+
+    for (const osk::bsp::BspLightFaceInfo& face : light.faces) {
+        std::string status = "missing";
+        if (face.hasLightingData && face.rangeValid) {
+            status = "ok";
+        } else if (face.hasLightingData) {
+            status = face.geometryValid ? "bad-range" : "bad-geometry";
+        }
+
+        std::string offsetText = "-";
+        if (face.lightOffset >= 0) {
+            offsetText = std::to_string(face.lightOffset);
+        }
+
+        std::string sizeText = "-";
+        if (face.lightmapWidth > 0 && face.lightmapHeight > 0) {
+            sizeText = std::to_string(face.lightmapWidth) + "x" + std::to_string(face.lightmapHeight);
+        }
+
+        std::cout << "  " << std::left
+            << std::setw(8) << face.faceIndex
+            << std::setw(12) << offsetText
+            << std::setw(10) << sizeText
+            << std::setw(10) << face.sampleCount
+            << std::setw(8) << face.activeStyleCount
+            << std::setw(14) << lightStylesText(face.styles)
+            << std::setw(10) << face.textureIndex
+            << status << '\n';
+    }
+}
+
 void printSummary(
     const fs::path& path,
     const osk::bsp::BspSummary& summary,
     const osk::bsp::BspGeometrySummary& geometry,
-    const osk::bsp::BspWorldMesh& mesh) {
+    const osk::bsp::BspWorldMesh& mesh,
+    const osk::bsp::BspLightSummary& light) {
     std::cout << "BSP file: " << path.string() << '\n';
     std::cout << "Version:  " << summary.version << '\n';
     std::cout << "Size:     " << summary.fileSize << " bytes\n";
@@ -101,7 +174,9 @@ void printSummary(
     std::cout << "  skipped faces:    " << mesh.skippedFaceCount << '\n';
     printBounds(mesh.bounds);
 
-    if (!summary.warnings.empty() || !geometry.warnings.empty() || !mesh.warnings.empty()) {
+    printLightSummary(light);
+
+    if (!summary.warnings.empty() || !geometry.warnings.empty() || !mesh.warnings.empty() || !light.warnings.empty()) {
         std::cout << "\nWarnings:\n";
         for (const std::string& warning : summary.warnings) {
             std::cout << "  - " << warning << '\n';
@@ -110,6 +185,9 @@ void printSummary(
             std::cout << "  - " << warning << '\n';
         }
         for (const std::string& warning : mesh.warnings) {
+            std::cout << "  - " << warning << '\n';
+        }
+        for (const std::string& warning : light.warnings) {
             std::cout << "  - " << warning << '\n';
         }
     }
@@ -136,8 +214,9 @@ int main(int argc, char** argv) {
         const osk::bsp::BspSummary summary = osk::bsp::loadBspSummary(path);
         const osk::bsp::BspGeometrySummary geometry = osk::bsp::loadBspGeometrySummary(path);
         const osk::bsp::BspWorldMesh mesh = osk::bsp::loadBspWorldMesh(path);
-        printSummary(path, summary, geometry, mesh);
-        return summary.warnings.empty() && geometry.warnings.empty() && mesh.warnings.empty() ? 0 : 2;
+        const osk::bsp::BspLightSummary light = osk::bsp::loadBspLightSummary(path);
+        printSummary(path, summary, geometry, mesh, light);
+        return summary.warnings.empty() && geometry.warnings.empty() && mesh.warnings.empty() && light.warnings.empty() ? 0 : 2;
     } catch (const std::exception& e) {
         std::cerr << "OpenStrikeBspDump error: " << e.what() << '\n';
         return 1;

@@ -6,12 +6,14 @@ All notable OpenStrike changes should be documented here.
 
 ### Added
 
+- Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
 - Added a textured BSP debug viewer pass with memory-only indexed texture decode, read-only WAD lookup, generated missing-texture placeholders, and a transient Metal texture atlas.
 - Added read-only legacy texture package metadata parsing and the `OpenStrikeTexturePkgDump` CLI.
 - Added debug BSP viewer navigation controls for rotation, zoom, and view reset.
 
 ### Documentation
 
+- Documented BSP light data inspection status, dump output, architecture, and roadmap progress for #14.
 - Documented textured map viewer usage, status, architecture, and roadmap progress for #13.
 - Documented texture package metadata inspection status, tool usage, and roadmap progress for #12.
 - Documented debug BSP viewer controls and updated project status/roadmap after #11.
@@ -21,6 +23,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Testing
 
+- Added synthetic coverage for BSP light metadata, missing lighting, and truncated light data handling.
 - Added synthetic coverage for indexed texture decode into RGBA buffers.
 - Added synthetic coverage for texture package header, directory, mip metadata, and malformed-file rejection.
 - Added CTest-based regression coverage for config parsing, config template generation, VFS mount validation, resource indexing, physical-file deduplication, and virtual-path shadowing.

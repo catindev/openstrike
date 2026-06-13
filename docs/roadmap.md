@@ -13,12 +13,12 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #11 | Debug viewer navigation controls. | #25 |
 | #12 | Texture package metadata reader and dump tool. | #33 |
 | #13 | Textured map viewer pass with in-memory texture decode and generated placeholders. | #34 |
+| #14 | Map light data inspection with per-face lightmap metadata. | #35 |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P2 | #14 | Add map light data inspection. | Required before lightmapped world rendering. |
 | P2 | #15 | Add map collision trace prototype. | Required before movement and sandbox. |
 | P2 | #16 | Add player movement sandbox prototype. | Requires collision trace prototype. |
 | P3 | #17 | Add model metadata inspection tool. | Foundation for model rendering. |
@@ -37,11 +37,11 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Implement #14 map light data inspection.
-2. Implement #15 map collision trace prototype.
-3. Implement #16 player movement sandbox prototype.
-4. Implement #17 model metadata inspection tool.
-5. Implement #18 sprite metadata inspection tool.
+1. Implement #15 map collision trace prototype.
+2. Implement #16 player movement sandbox prototype.
+3. Implement #17 model metadata inspection tool.
+4. Implement #18 sprite metadata inspection tool.
+5. Implement #19 WAV playback prototype.
 
 ## Later roadmap
 
