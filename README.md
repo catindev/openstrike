@@ -33,6 +33,7 @@ The project currently contains:
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
 - Map header, geometry, light metadata, collision trace, and triangulated mesh summaries.
 - Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
+- Legacy model header, body part, sequence, texture, and hitbox metadata inspection.
 - Trace-backed fixed-tick player movement prototype with synthetic debug output.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
@@ -116,6 +117,14 @@ Texture package metadata dump:
 ```bash
 ./build/macos-arm64-debug/tools/texturepkgdump/OpenStrikeTexturePkgDump /absolute/path/to/local/package.wad
 ```
+
+Model metadata dump:
+
+```bash
+./build/macos-arm64-debug/tools/modeldump/OpenStrikeModelDump /absolute/path/to/local/model.mdl
+```
+
+`OpenStrikeModelDump` prints legacy model header, body part, sequence, texture, and hitbox metadata. It does not extract meshes, decode texture pixels, write assets, or cache user data.
 
 Map debug viewer:
 
