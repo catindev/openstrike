@@ -17,6 +17,9 @@ void printUsage(std::ostream& out) {
         << "Usage:\n"
         << "  OpenStrikeBspTrace <path/to/map.bsp> --start x y z --end x y z [--model n] [--hull n]\n"
         << "\n"
+        << "Options:\n"
+        << "  --hull n  Clipnode hull index, supported 1..3, default 1.\n"
+        << "\n"
         << "This read-only tool traces a point through BSP collision clipnodes.\n"
         << "It does not modify, extract, cache, or copy user-provided assets.\n";
 }
