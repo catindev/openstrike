@@ -13,6 +13,9 @@ add_library(openstrike_engine STATIC
     assets/loaders/ModelMetadata.cpp
     assets/loaders/SpriteMetadata.cpp
     assets/loaders/WaveAudio.cpp
+    input/InputState.cpp
+    input/PlayerCommand.cpp
+    game/LocalSandbox.cpp
     physics/PlayerMovement.cpp
 )
 
