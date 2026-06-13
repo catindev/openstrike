@@ -3,6 +3,7 @@
 #include "config/Config.h"
 #include "config/ConfigPaths.h"
 #include "game/LocalSandbox.h"
+#include "game/SpawnParser.h"
 #include "platform/Window.h"
 
 #if defined(__APPLE__)
@@ -19,7 +20,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cstdlib>
 
 namespace fs = std::filesystem;
 
@@ -94,20 +94,11 @@ CliOptions parseArgs(int argc, char** argv) {
             if (i + 3 >= argc) {
                 throw std::runtime_error("--spawn requires three numeric arguments");
             }
-            char* endp = nullptr;
-            const float x = std::strtof(argv[++i], &endp);
-            if (endp == nullptr || *endp != '\0') {
-                throw std::runtime_error("invalid float for --spawn x coordinate");
+            const std::vector<std::string> spawnTokens{argv[++i], argv[++i], argv[++i]};
+            options.spawn = osk::game::parseSpawn(spawnTokens);
+            if (!options.spawn.has_value()) {
+                throw std::runtime_error("--spawn requires three numeric arguments");
             }
-            const float y = std::strtof(argv[++i], &endp);
-            if (endp == nullptr || *endp != '\0') {
-                throw std::runtime_error("invalid float for --spawn y coordinate");
-            }
-            const float z = std::strtof(argv[++i], &endp);
-            if (endp == nullptr || *endp != '\0') {
-                throw std::runtime_error("invalid float for --spawn z coordinate");
-            }
-            options.spawn = osk::bsp::Vec3{.x = x, .y = y, .z = z};
         } else if (arg == "--config") {
             if (i + 1 >= argc) {
                 throw std::runtime_error("--config requires a path argument");
