@@ -18,12 +18,10 @@ All notable OpenStrike changes should be documented here.
 - Added BSP collision plane/clipnode/model metadata loading and a minimal point trace CLI, `OpenStrikeBspTrace`.
 - Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
 - Added a textured BSP debug viewer pass with memory-only indexed texture decode, read-only WAD lookup, generated missing-texture placeholders, and a transient Metal texture atlas.
-- Added read-only legacy texture package metadata parsing and the `OpenStrikeTexturePkgDump` CLI.
-- Added debug BSP viewer navigation controls for rotation, zoom, and view reset.
 
 ### Documentation
 
-- Documented the separate technical `--sandbox-map` and playable `--playable-map` launch modes and added ADR 0004 for the split.
+- Documented the separate technical `--sandbox-map` and playable `--playable-map` launch modes and added ADR 0006 for the split.
 - Documented player movement debug CLI usage and moved #16 to completed roadmap/status.
 - Documented model metadata inspection usage, architecture, and roadmap/status progress for #17.
 - Documented sprite metadata inspection usage, architecture, and roadmap/status progress for #18.
