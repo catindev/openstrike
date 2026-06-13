@@ -21,7 +21,7 @@ The project can:
 - decode indexed mip textures into memory-only RGBA buffers;
 - inspect BSP per-face light offsets, styles, estimated lightmap sizes, sample counts, and light data ranges;
 - load BSP collision planes, clipnodes, and model hull metadata;
-- run a minimal point trace through BSP clipnodes with hit fraction, hit plane, hit normal, and start/all-solid flags;
+- run a minimal point trace through BSP clipnodes with fraction, plane, normal, and solid flags;
 - show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
 
 ## Completed GitHub issues
@@ -34,7 +34,7 @@ The project can:
 - #12 - texture package metadata reader, completed by PR #33.
 - #13 - textured map viewer pass, completed by PR #34.
 - #14 - map light data inspection, completed by PR #35.
-- #15 - map collision trace prototype, completed by this PR.
+- #15 - map collision trace prototype, completed by PR #36.
 
 ## Open GitHub issues
 
@@ -50,7 +50,7 @@ The project can:
 apps/client/                  bootstrap client app
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
-engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
+engine/assets/loaders/        map summaries, map mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
 engine/platform/              native macOS window abstraction and headless fallback
 tests/                        config, VFS, texture, BSP light, and BSP collision regression tests
 tools/asset_audit/            repository asset guardrail
@@ -98,7 +98,7 @@ Map and light metadata dump:
 Point collision trace:
 
 ```bash
-./build/macos-arm64-debug/tools/bsptrace/OpenStrikeBspTrace /absolute/path/to/local/map.bsp --start 0 0 64 --end 512 0 64
+./build/macos-arm64-debug/tools/bsptrace/OpenStrikeBspTrace /absolute/path/to/local/map.bsp --start <x> <y> <z> --end <x> <y> <z>
 ```
 
 Texture package metadata dump:
