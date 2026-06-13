@@ -51,7 +51,16 @@ struct TexturePackageSummary {
     std::vector<std::string> warnings;
 };
 
+struct DecodedTexture {
+    std::string name;
+    std::uint32_t width = 0;
+    std::uint32_t height = 0;
+    std::vector<std::uint8_t> rgba;
+};
+
 TexturePackageSummary parseTexturePackageSummary(std::span<const std::byte> bytes);
 TexturePackageSummary loadTexturePackageSummary(const std::filesystem::path& path);
+std::vector<std::byte> loadTexturePackageBytes(const std::filesystem::path& path);
+DecodedTexture decodeIndexedMipTexture(std::span<const std::byte> bytes, const TexturePackageEntry& entry);
 
 } // namespace osk::texture

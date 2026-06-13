@@ -9,11 +9,11 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summary, geometry summary, mesh builders, and texture package metadata readers
+engine/assets/loaders/        map summaries, mesh builders, texture package metadata, and texture decode helpers
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
 tools/bspdump/                map metadata CLI
-tools/bspview/                macOS Metal wireframe debug viewer
+tools/bspview/                macOS Metal textured debug viewer
 tools/texturepkgdump/         texture package metadata CLI
 ```
 
@@ -29,6 +29,14 @@ config.toml
   -> BspGeometrySummary
   -> BspWorldMesh
   -> OpenStrikeBspDump / OpenStrikeBspView
+
+configured texture package roots
+  -> read-only VirtualFileSystem
+  -> ResourceIndex.wads
+  -> TexturePackageSummary
+  -> memory-only decoded texture RGBA
+  -> generated debug atlas
+  -> OpenStrikeBspView textured pass
 
 local texture package path
   -> TexturePackageSummary
@@ -56,14 +64,13 @@ Implemented:
 - BSP v30 header and 15-lump table validation;
 - lump range and element-size validation;
 - entity block count summary;
-- embedded texture metadata summary;
+- embedded texture metadata summary with texture names and dimensions;
 - face, surfedge, edge, and vertex geometry validation;
 - triangulated world mesh generation;
-- native Metal wireframe visualization.
+- native Metal textured debug visualization.
 
 Not implemented yet:
 
-- normalized texture UVs using texture dimensions;
 - light data atlas construction;
 - visibility set traversal;
 - collision tracing;
@@ -76,15 +83,19 @@ Implemented:
 - WAD2/WAD3-style header validation;
 - directory range and entry metadata validation;
 - safe texture name, width, height, and mip-offset metadata inspection;
+- indexed mip texture decode into memory-only RGBA buffers;
 - read-only metadata dump CLI;
-- synthetic parser tests without proprietary fixtures.
+- synthetic parser and decode tests without proprietary fixtures.
 
-Not implemented yet:
+Not implemented by design in the current milestone:
 
-- texture pixel decoding;
-- texture extraction or conversion;
-- renderer upload path;
-- integration with textured map rendering.
+- texture extraction, conversion, saving, or caching;
+- proprietary fixture loading;
+- lightmap composition.
+
+## Debug viewer texture pass
+
+`OpenStrikeBspView` uses `BspWorldMesh` face texture indices to look up BSP texture names, then resolves those names against decoded textures loaded from configured read-only user resource roots. Missing or unsupported textures use a generated checker placeholder. The viewer builds a transient in-memory texture atlas for Metal and does not write decoded texture data to disk.
 
 ## Near-term modules
 
@@ -106,4 +117,4 @@ OpenStrike provides format compatibility for user-provided files. It does not lo
 
 ## Renderer note
 
-The current Metal viewer is a debug tool. It exists to validate mesh extraction visually. It should not be treated as the final engine renderer without an ADR that promotes or replaces it.
+The current Metal viewer is a debug tool. It exists to validate mesh extraction and texture lookup visually. It should not be treated as the final engine renderer without an ADR that promotes or replaces it.

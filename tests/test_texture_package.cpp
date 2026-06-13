@@ -43,6 +43,11 @@ void appendMagic(std::vector<std::byte>& bytes, std::string_view magic) {
     }
 }
 
+void appendU16LE(std::vector<std::byte>& bytes, std::uint16_t value) {
+    appendByte(bytes, static_cast<std::uint8_t>(value & 0xFFU));
+    appendByte(bytes, static_cast<std::uint8_t>((value >> 8U) & 0xFFU));
+}
+
 void appendU32LE(std::vector<std::byte>& bytes, std::uint32_t value) {
     appendByte(bytes, static_cast<std::uint8_t>(value & 0xFFU));
     appendByte(bytes, static_cast<std::uint8_t>((value >> 8U) & 0xFFU));
@@ -98,7 +103,8 @@ std::vector<std::byte> makeSyntheticPackage(std::string_view magic = "WAD3") {
     constexpr std::uint32_t Width = 64;
     constexpr std::uint32_t Height = 32;
     constexpr std::array<std::uint32_t, 4> MipOffsets{40, 2088, 2600, 2728};
-    constexpr std::uint32_t StoneSize = 2760;
+    constexpr std::uint32_t PaletteOffset = 2760;
+    constexpr std::uint32_t StoneSize = PaletteOffset + 2 + 256 * 3;
 
     const auto stoneOffset = static_cast<std::uint32_t>(bytes.size());
     bytes.resize(bytes.size() + StoneSize, std::byte{0});
@@ -107,6 +113,20 @@ std::vector<std::byte> makeSyntheticPackage(std::string_view magic = "WAD3") {
     putU32LE(bytes, stoneOffset + 20, Height);
     for (std::size_t i = 0; i < MipOffsets.size(); ++i) {
         putU32LE(bytes, stoneOffset + 24 + i * 4, MipOffsets[i]);
+    }
+
+    const std::size_t mip0 = stoneOffset + MipOffsets[0];
+    bytes.at(mip0) = static_cast<std::byte>(1);
+    bytes.at(mip0 + 1) = static_cast<std::byte>(2);
+    bytes.at(mip0 + 2) = static_cast<std::byte>(3);
+
+    const std::size_t palette = stoneOffset + PaletteOffset;
+    bytes.at(palette) = static_cast<std::byte>(0);
+    bytes.at(palette + 1) = static_cast<std::byte>(1);
+    for (std::size_t i = 0; i < 256; ++i) {
+        bytes.at(palette + 2 + i * 3) = static_cast<std::byte>(i);
+        bytes.at(palette + 2 + i * 3 + 1) = static_cast<std::byte>(255 - i);
+        bytes.at(palette + 2 + i * 3 + 2) = static_cast<std::byte>((i * 2) & 0xFFU);
     }
 
     const auto infoOffset = static_cast<std::uint32_t>(bytes.size());
@@ -147,6 +167,21 @@ void testValidSyntheticPackage() {
     const osk::texture::TexturePackageEntry& info = summary.entries[1];
     requireEqual(info.name, std::string("INFO"), "non-texture entry name");
     require(!info.mipMetadataAvailable, "non-texture entry should not expose mip metadata");
+}
+
+void testDecodeSyntheticTexture() {
+    const std::vector<std::byte> bytes = makeSyntheticPackage();
+    const osk::texture::TexturePackageSummary summary = osk::texture::parseTexturePackageSummary(bytes);
+    const osk::texture::DecodedTexture decoded = osk::texture::decodeIndexedMipTexture(bytes, summary.entries[0]);
+
+    requireEqual(decoded.name, std::string("STONE"), "decoded texture name");
+    requireEqual(decoded.width, static_cast<std::uint32_t>(64), "decoded width");
+    requireEqual(decoded.height, static_cast<std::uint32_t>(32), "decoded height");
+    requireEqual(decoded.rgba.size(), static_cast<std::size_t>(64 * 32 * 4), "decoded byte count");
+    requireEqual(decoded.rgba[0], static_cast<std::uint8_t>(1), "first pixel red channel");
+    requireEqual(decoded.rgba[1], static_cast<std::uint8_t>(254), "first pixel green channel");
+    requireEqual(decoded.rgba[2], static_cast<std::uint8_t>(2), "first pixel blue channel");
+    requireEqual(decoded.rgba[3], static_cast<std::uint8_t>(255), "first pixel alpha channel");
 }
 
 void testWad2Magic() {
@@ -214,6 +249,17 @@ void testMalformedInputs() {
         entryRangeFailed = true;
     }
     require(entryRangeFailed, "entry range outside file should throw");
+
+    bool missingPaletteFailed = false;
+    try {
+        std::vector<std::byte> bytes = makeSyntheticPackage();
+        osk::texture::TexturePackageSummary summary = osk::texture::parseTexturePackageSummary(bytes);
+        bytes.resize(bytes.size() - 768);
+        (void)osk::texture::decodeIndexedMipTexture(bytes, summary.entries[0]);
+    } catch (const osk::texture::TexturePackageFormatError&) {
+        missingPaletteFailed = true;
+    }
+    require(missingPaletteFailed, "truncated palette should throw");
 }
 
 using TestFn = void (*)();
@@ -228,6 +274,7 @@ struct TestCase {
 int main() {
     const std::vector<TestCase> tests{
         {"valid synthetic package", testValidSyntheticPackage},
+        {"decode synthetic texture", testDecodeSyntheticTexture},
         {"WAD2 magic", testWad2Magic},
         {"malformed inputs", testMalformedInputs},
     };

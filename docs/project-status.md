@@ -4,7 +4,7 @@ Last updated: 2026-06-13.
 
 ## Current milestone
 
-OpenStrike has reached the first visual map-inspection milestone on macOS and now has automated coverage for the config/VFS bootstrap.
+OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap and synthetic texture package decoding.
 
 The project can:
 
@@ -13,12 +13,13 @@ The project can:
 - read a config file from the user application support directory;
 - mount configured resource roots read-only;
 - index compatible local file types;
-- run automated tests for config parsing, template generation, VFS mounting, resource indexing, and texture package metadata parsing;
+- run automated tests for config parsing, template generation, VFS mounting, resource indexing, texture package metadata parsing, and indexed texture decoding;
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
-- show and navigate that mesh in a native Metal debug wireframe viewer;
-- inspect legacy texture package headers, directory entries, and safe mip metadata.
+- inspect legacy texture package headers, directory entries, and safe mip metadata;
+- decode indexed mip textures into memory-only RGBA buffers;
+- show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
 
 ## Completed GitHub issues
 
@@ -28,10 +29,10 @@ The project can:
 - #3 - config and VFS automated tests, completed by PR #22.
 - #11 - debug viewer navigation, completed by PR #25.
 - #12 - texture package metadata reader, completed by PR #33.
+- #13 - textured map viewer pass, completed by PR #34.
 
 ## Open GitHub issues
 
-- #13 - textured map viewer pass.
 - #14 - map light data inspection.
 - #15 - map collision trace prototype.
 - #16 - player movement sandbox prototype.
@@ -46,24 +47,23 @@ The project can:
 apps/client/                  bootstrap client app
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
-engine/assets/loaders/        map summaries, map mesh builders, and texture package metadata readers
+engine/assets/loaders/        map summaries, map mesh builders, texture package metadata, and texture decode helpers
 engine/platform/              native macOS window abstraction and headless fallback
-tests/                        config, VFS, and texture package metadata regression tests
+tests/                        config, VFS, texture package metadata, and texture decode regression tests
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map metadata CLI
-tools/bspview/                macOS Metal wireframe debug viewer
+tools/bspview/                macOS Metal textured debug viewer
 tools/texturepkgdump/         texture package metadata CLI
 ```
 
 ## Current limitations
 
-- No texture pixel decoding or renderer upload path yet.
-- No textured map rendering yet.
-- No light data visualization yet.
+- No lightmap decoding or lightmapped rendering yet.
 - No collision tracing yet.
 - No player movement yet.
 - No model, sprite, or audio decoding yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
+- No decoded texture cache or asset extraction path by design.
 
 ## Manual validation commands
 
@@ -98,10 +98,10 @@ Texture package metadata dump:
 ./build/macos-arm64-debug/tools/texturepkgdump/OpenStrikeTexturePkgDump /absolute/path/to/local/package.wad
 ```
 
-Map wireframe viewer:
+Textured map viewer:
 
 ```bash
-./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp
+./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp --resource-root /absolute/path/to/user/owned/files
 ```
 
 Controls:

@@ -32,9 +32,9 @@ The project currently contains:
 - Minimal config template generation and parser.
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
 - Map header, geometry summary, and triangulated mesh generation.
-- Texture package header, directory, and mip metadata inspection.
+- Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
 - Native macOS window lifecycle.
-- Native Metal debug viewer for untextured map wireframes.
+- Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
 - Tooling for asset audits and format inspection.
 - GitHub Actions build/audit workflow.
 
@@ -103,6 +103,14 @@ Map debug viewer:
 ```bash
 ./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp
 ```
+
+The viewer reads texture packages from configured read-only resource roots. You can add a temporary local root for manual validation without editing config:
+
+```bash
+./build/macos-arm64-debug/tools/bspview/OpenStrikeBspView.app/Contents/MacOS/OpenStrikeBspView /absolute/path/to/local/map.bsp --resource-root /absolute/path/to/user/owned/files
+```
+
+Texture data is decoded in memory only for debug rendering. The viewer does not extract, convert, save, cache, or commit user-provided textures. Missing textures use a generated checker placeholder.
 
 OpenStrikeBspView controls:
 
