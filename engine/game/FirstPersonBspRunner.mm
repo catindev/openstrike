@@ -332,9 +332,6 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {\
 
 @end
 
-// End of macOS section
-#endif // defined(__APPLE__)
-
 // Begin public API implementation.
 namespace osk::game {
 
@@ -377,7 +374,7 @@ int runFirstPersonBsp(const FirstPersonBspOptions& options) {
             std::cerr << options.logName << " error: failed to create NSWindow\n";
             return 1;
         }
-        NSString* title = [[NSString alloc] initWithFormat:"%s - %s", options.windowTitlePrefix.c_str(), options.mapPath.filename().string().c_str()];
+        NSString* title = [[NSString alloc] initWithFormat:@"%s - %s", options.windowTitlePrefix.c_str(), options.mapPath.filename().string().c_str()];
         [window setTitle:title];
         [title release];
         OSKFirstPersonWindowDelegate* windowDelegate = [[OSKFirstPersonWindowDelegate alloc] init];
