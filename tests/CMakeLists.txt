@@ -45,3 +45,19 @@ add_test(
     NAME openstrike_bsp_light_tests
     COMMAND openstrike_bsp_light_tests
 )
+
+add_executable(openstrike_bsp_collision_tests
+    test_bsp_collision.cpp
+)
+
+target_link_libraries(openstrike_bsp_collision_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_bsp_collision_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_bsp_collision_tests
+    COMMAND openstrike_bsp_collision_tests
+)
