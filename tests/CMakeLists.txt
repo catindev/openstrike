@@ -141,3 +141,37 @@ add_test(
     NAME openstrike_wave_audio_tests
     COMMAND openstrike_wave_audio_tests
 )
+
+# First-person camera tests
+add_executable(openstrike_first_person_camera_tests
+    test_first_person_camera.cpp
+)
+
+target_link_libraries(openstrike_first_person_camera_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_first_person_camera_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_first_person_camera_tests
+    COMMAND openstrike_first_person_camera_tests
+)
+
+# Spawn parser tests
+add_executable(openstrike_spawn_parser_tests
+    test_parse_spawn.cpp
+)
+
+target_link_libraries(openstrike_spawn_parser_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_spawn_parser_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_spawn_parser_tests
+    COMMAND openstrike_spawn_parser_tests
+)
