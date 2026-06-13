@@ -26,6 +26,7 @@ if (OSK_BUILD_TOOLS)
     add_subdirectory(tools/bspdump)
     add_subdirectory(tools/bsptrace)
     add_subdirectory(tools/bspview)
+    add_subdirectory(tools/playermove)
     add_subdirectory(tools/texturepkgdump)
 endif()
 

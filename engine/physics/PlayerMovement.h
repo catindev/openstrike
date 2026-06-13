@@ -20,24 +20,29 @@ struct PlayerMovementInput {
     float forwardMove = 0.0F;
     float sideMove = 0.0F;
     bool jump = false;
+    bool crouch = false;
 };
 
 struct PlayerMovementState {
     bsp::Vec3 position{};
     bsp::Vec3 velocity{};
     bool grounded = false;
+    bool crouched = false;
 };
 
 struct PlayerMovementTraceContext {
     const bsp::BspCollisionData* collision = nullptr;
     std::size_t modelIndex = 0;
-    std::size_t hullIndex = 1;
+    std::size_t standHullIndex = 1;
+    std::size_t crouchHullIndex = 2;
 };
 
 struct PlayerMovementStepResult {
     PlayerMovementState state;
     bsp::BspTraceResult trace;
+    std::size_t hullIndex = 1;
     bool jumped = false;
+    bool uncrouchBlocked = false;
     std::vector<std::string> warnings;
 };
 

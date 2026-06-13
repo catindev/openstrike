@@ -6,6 +6,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Added
 
+- Added crouch state, stand/crouch hull selection, blocked-uncrouch reporting, and the `OpenStrikePlayerMove` synthetic movement debug CLI for #16.
 - Added a trace-backed fixed-tick player movement prototype with gravity, walking, and jumping state updates.
 - Added BSP collision plane/clipnode/model metadata loading and a minimal point trace CLI, `OpenStrikeBspTrace`.
 - Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
@@ -15,6 +16,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Documentation
 
+- Documented player movement debug CLI usage and moved #16 to completed roadmap/status.
 - Added the long-form first vision document to the project documentation index.
 - Documented fixed-tick player movement prototype status and remaining #16 sandbox limitations.
 - Documented BSP collision trace prototype usage, status, architecture, and roadmap progress for #15.
@@ -28,6 +30,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Testing
 
+- Added synthetic player movement coverage for crouch hull selection, uncrouch, blocked uncrouch, and grounded gravity stability.
 - Added synthetic coverage for trace-backed fixed-tick player movement, gravity landing, jumping, and missing trace context warnings.
 - Added synthetic coverage for BSP collision tables, clear traces, hit traces, start-solid traces, and malformed collision data.
 - Added synthetic coverage for BSP light metadata, missing lighting, and truncated light data handling.
