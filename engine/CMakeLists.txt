@@ -8,6 +8,7 @@ add_library(openstrike_engine STATIC
     assets/loaders/BspGeometry.cpp
     assets/loaders/BspMesh.cpp
     assets/loaders/BspLight.cpp
+    assets/loaders/BspCollision.cpp
     assets/loaders/TexturePackage.cpp
 )
 
