@@ -27,6 +27,7 @@ The project can:
 - run a minimal point trace through BSP clipnodes with fraction, plane, normal, and solid flags;
 - simulate a minimal fixed-tick player state with gravity, walking, jumping, crouch state, and stand/crouch hull selection against trace-backed collision;
 - print synthetic player movement debug ticks without reading user assets;
+- launch a technical map window from the main app on macOS using the current BSP debug renderer path;
 - show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
 
 ## Completed GitHub issues
@@ -47,12 +48,12 @@ The project can:
 
 ## Open GitHub issues
 
-- #20 - local sandbox app mode.
+- #20 - local sandbox app mode. PR #44 provides app/viewer integration only; playable first-person movement remains follow-up scope.
 
 ## Implemented components
 
 ```text
-apps/client/                  bootstrap client app
+apps/client/                  bootstrap client app and technical map-window launcher
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
 engine/assets/loaders/        map summaries, map mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, sprite metadata parsing, and WAV metadata parsing
@@ -76,6 +77,7 @@ tools/wavplay/                WAV metadata and macOS playback prototype CLI
 - No full player physics, step movement, swept player volumes, or movement tuning profiles yet.
 - No production audio system, mixer, streaming, emitters, or cross-platform playback backend yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
+- The current `--sandbox-map` path reuses the debug BSP renderer and is macOS-only; it is not playable yet.
 - No decoded texture cache or asset extraction path by design.
 
 ## Manual validation commands
@@ -97,6 +99,20 @@ Config validation:
 
 ```bash
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --validate-config
+```
+
+Technical map-window integration:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --sandbox-map /absolute/path/to/local/map.bsp
+```
+
+With a temporary read-only resource root:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --sandbox-map /absolute/path/to/local/map.bsp \
+  --resource-root /absolute/path/to/local/files
 ```
 
 Map and light metadata dump:

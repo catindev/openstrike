@@ -16,7 +16,7 @@ tools/asset_audit/            repository guardrail against proprietary asset com
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/playermove/             synthetic fixed-tick player movement debug CLI
 tools/bsptrace/               point collision trace CLI
-tools/bspview/                macOS Metal textured debug viewer
+tools/bspview/                shared macOS Metal BSP viewer runner and standalone debug viewer
 tools/modeldump/              model metadata CLI
 tools/spritedump/             sprite metadata CLI
 tools/texturepkgdump/         texture package metadata CLI
@@ -67,6 +67,11 @@ local WAV path
   -> WaveAudioSummary
   -> OpenStrikeWavPlay --dry-run
   -> OpenStrikeWavPlay AVFoundation playback on macOS
+
+OpenStrike --sandbox-map
+  -> configured and temporary read-only resource roots
+  -> shared BSP viewer runner
+  -> native Metal technical map window on macOS
 ```
 
 ## Resource model
@@ -243,6 +248,24 @@ Not implemented by design in the current milestone:
 ## Debug viewer texture pass
 
 `OpenStrikeBspView` uses `BspWorldMesh` face texture indices to look up BSP texture names, then resolves those names against decoded textures loaded from configured read-only user resource roots. Missing or unsupported textures use a generated checker placeholder. The viewer builds a transient in-memory texture atlas for Metal and does not write decoded texture data to disk.
+
+## Technical app map-window integration
+
+Implemented:
+
+- `OpenStrike --sandbox-map <path>` app-level launch mode on macOS;
+- reuse of the current BSP debug viewer runner for app map rendering;
+- configured read-only resource root loading from the selected config;
+- temporary `--resource-root` paths for manual validation without editing config;
+- original OpenStrike window title/logging with no proprietary gameplay names or UI;
+- standalone `OpenStrikeBspView` preserved as a thin CLI wrapper around the same runner.
+
+Not implemented by design in the current milestone:
+
+- final renderer abstraction;
+- playable first-person camera, input loop, player collision movement, spawn selection, weapons, UI, or audio integration;
+- lightmapped rendering;
+- non-macOS sandbox renderer.
 
 ## Near-term modules
 

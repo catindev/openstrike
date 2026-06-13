@@ -88,6 +88,16 @@ On macOS CMake builds, the executable is inside the generated app bundle:
 ./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike --validate-config
 ```
 
+Launch the technical map-window integration on macOS:
+
+```bash
+./build/macos-arm64-debug/apps/client/OpenStrike.app/Contents/MacOS/OpenStrike \
+  --sandbox-map /absolute/path/to/local/map.bsp \
+  --resource-root /absolute/path/to/user/owned/files
+```
+
+This technical integration uses the current BSP debug renderer path inside the app. It is not a playable first-person sandbox yet. It reads configured and temporary resource roots read-only, decodes textures in memory only, and does not extract, convert, save, cache, or commit user-provided assets.
+
 ## Tools
 
 Map dump:

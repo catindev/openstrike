@@ -24,7 +24,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P4 | #20 | Create local sandbox app mode. | Integration milestone after viewer, collision, and basic movement. |
+| P4 | #20 | Create local sandbox app mode. | PR #44 provides technical app/viewer integration only. Playable first-person movement remains follow-up scope. |
 
 ## Development principles
 
@@ -37,7 +37,9 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Implement #20 local sandbox app mode.
+1. Finish PR #44 as a technical integration PR without closing #20.
+2. Open and implement a first playable slice: first-person camera, input, map collision movement, spawn/debug controls.
+3. Follow with weapon placeholder, hitscan debug, and WAV event sounds.
 
 ## Later roadmap
 

@@ -7,6 +7,25 @@ target_link_libraries(OpenStrike
         openstrike_engine
 )
 
+if (APPLE)
+    target_sources(OpenStrike
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/tools/bspview/BspViewRunner.mm
+    )
+
+    target_include_directories(OpenStrike
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/tools/bspview
+    )
+
+    target_link_libraries(OpenStrike
+        PRIVATE
+            "-framework Metal"
+            "-framework MetalKit"
+            "-framework QuartzCore"
+    )
+endif()
+
 set_target_properties(OpenStrike PROPERTIES
     OUTPUT_NAME "OpenStrike"
 )
