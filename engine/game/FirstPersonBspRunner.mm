@@ -93,41 +93,42 @@ typedef struct {
 // passes the normal through.  The fragment shader computes a simple
 // diffuse colour.
 static NSString* shaderSource() {
-    return @"\
-#include <metal_stdlib>\
-using namespace metal;\
-\
-struct VertexIn {\
-    float3 position;\
-    float3 normal;\
-};\
-\
-struct Uniforms {\
-    float4x4 viewProj;\
-};\
-\
-struct VertexOut {\
-    float4 position [[position]];\
-    float3 normal;\
-};\
-\
-vertex VertexOut vertex_main(const device VertexIn* vertices [[buffer(0)]],\
-                              constant Uniforms& uniforms [[buffer(1)]],\
-                              uint vertexId [[vertex_id]]) {\
-    VertexIn input = vertices[vertexId];\
-    VertexOut out;\
-    out.position = uniforms.viewProj * float4(input.position, 1.0);\
-    out.normal = normalize(input.normal);\
-    return out;\
-}\
-\
-fragment float4 fragment_main(VertexOut in [[stage_in]]) {\
-    float3 lightDir = normalize(float3(0.5, 1.0, 0.5));\
-    float intensity = clamp(dot(normalize(in.normal), lightDir), 0.0, 1.0);\
-    float3 colour = float3(0.7, 0.7, 0.7) * intensity + float3(0.3, 0.3, 0.3);\
-    return float4(colour, 1.0);\
-}\
-";
+    return @R"(
+#include <metal_stdlib>
+using namespace metal;
+
+struct VertexIn {
+    float3 position;
+    float3 normal;
+};
+
+struct Uniforms {
+    float4x4 viewProj;
+};
+
+struct VertexOut {
+    float4 position [[position]];
+    float3 normal;
+};
+
+vertex VertexOut vertex_main(
+    const device VertexIn* vertices [[buffer(0)]],
+    constant Uniforms& uniforms [[buffer(1)]],
+    uint vertexId [[vertex_id]]) {
+    VertexIn input = vertices[vertexId];
+    VertexOut output;
+    output.position = uniforms.viewProj * float4(input.position, 1.0);
+    output.normal = normalize(input.normal);
+    return output;
+}
+
+fragment float4 fragment_main(VertexOut input [[stage_in]]) {
+    float3 lightDir = normalize(float3(0.5, 1.0, 0.5));
+    float intensity = clamp(dot(normalize(input.normal), lightDir), 0.0, 1.0);
+    float3 colour = float3(0.7, 0.7, 0.7) * intensity + float3(0.3, 0.3, 0.3);
+    return float4(colour, 1.0);
+}
+)";
 }
 
 // Simple window delegate used to detect when the user closes the
@@ -235,6 +236,16 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {\
     }
     id<MTLFunction> vertexFunction = [library newFunctionWithName:@"vertex_main"];
     id<MTLFunction> fragmentFunction = [library newFunctionWithName:@"fragment_main"];
+    if (vertexFunction == nil || fragmentFunction == nil) {
+        if (errorMessage != nullptr) {
+            *errorMessage = "failed to load Metal shader entry points";
+        }
+        [vertexFunction release];
+        [fragmentFunction release];
+        [library release];
+        [self release];
+        return nil;
+    }
     MTLRenderPipelineDescriptor* pipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
     pipelineDescriptor.vertexFunction = vertexFunction;
     pipelineDescriptor.fragmentFunction = fragmentFunction;
