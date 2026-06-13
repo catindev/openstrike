@@ -10,6 +10,7 @@ add_library(openstrike_engine STATIC
     assets/loaders/BspLight.cpp
     assets/loaders/BspCollision.cpp
     assets/loaders/TexturePackage.cpp
+    assets/loaders/ModelMetadata.cpp
     physics/PlayerMovement.cpp
 )
 

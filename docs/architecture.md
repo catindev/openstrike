@@ -9,7 +9,7 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
+engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, and model metadata parsing
 engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
@@ -17,6 +17,7 @@ tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/playermove/             synthetic fixed-tick player movement debug CLI
 tools/bsptrace/               point collision trace CLI
 tools/bspview/                macOS Metal textured debug viewer
+tools/modeldump/              model metadata CLI
 tools/texturepkgdump/         texture package metadata CLI
 ```
 
@@ -51,6 +52,10 @@ configured texture package roots
 local texture package path
   -> TexturePackageSummary
   -> OpenStrikeTexturePkgDump
+
+local model path
+  -> ModelMetadataSummary
+  -> OpenStrikeModelDump
 ```
 
 ## Resource model
@@ -164,6 +169,26 @@ Not implemented by design in the current milestone:
 - texture extraction, conversion, saving, or caching;
 - proprietary fixture loading;
 - lightmap composition.
+
+## Model metadata loader status
+
+Implemented:
+
+- legacy model header magic/version/name/length validation;
+- safe table range validation for body parts, sequences, textures, and hitboxes;
+- body part name, model count, base, and model offset inspection;
+- sequence label, fps, frame count, activity, event count, bounding box, and sequence group metadata inspection;
+- texture name, dimensions, flags, and data-offset metadata inspection without pixel decoding;
+- hitbox bone, group, and bounds metadata inspection;
+- read-only metadata dump CLI;
+- synthetic parser tests without proprietary fixtures.
+
+Not implemented by design in the current milestone:
+
+- mesh, bone, animation, or texture extraction;
+- model rendering;
+- proprietary fixture loading;
+- writes, caches, or generated files next to user resources.
 
 ## Debug viewer texture pass
 

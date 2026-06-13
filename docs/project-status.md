@@ -4,7 +4,7 @@ Last updated: 2026-06-13.
 
 ## Current milestone
 
-OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap, synthetic texture package decoding, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, and synthetic fixed-tick player movement with crouch basics.
+OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap, synthetic texture package decoding, synthetic model metadata parsing, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, and synthetic fixed-tick player movement with crouch basics.
 
 The project can:
 
@@ -19,6 +19,7 @@ The project can:
 - build a triangulated world mesh;
 - inspect legacy texture package headers, directory entries, and safe mip metadata;
 - decode indexed mip textures into memory-only RGBA buffers;
+- inspect legacy model headers, body part tables, sequence descriptors, texture metadata, and hitboxes;
 - inspect BSP per-face light offsets, styles, estimated lightmap sizes, sample counts, and light data ranges;
 - load BSP collision planes, clipnodes, and model hull metadata;
 - run a minimal point trace through BSP clipnodes with fraction, plane, normal, and solid flags;
@@ -38,10 +39,10 @@ The project can:
 - #14 - map light data inspection, completed by PR #35.
 - #15 - map collision trace prototype, completed by PR #36.
 - #16 - player movement sandbox prototype, completed by PR #40.
+- #17 - model metadata inspection tool, completed by PR #41.
 
 ## Open GitHub issues
 
-- #17 - model metadata inspection tool.
 - #18 - sprite metadata inspection tool.
 - #19 - WAV playback prototype.
 - #20 - local sandbox app mode.
@@ -52,7 +53,7 @@ The project can:
 apps/client/                  bootstrap client app
 engine/config/                config path, template, and parser
 engine/assets/                read-only VFS and resource index
-engine/assets/loaders/        map summaries, map mesh builders, light metadata, collision trace, texture metadata, and texture decode helpers
+engine/assets/loaders/        map summaries, map mesh builders, light metadata, collision trace, texture metadata/decode helpers, and model metadata parsing
 engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction and headless fallback
 tests/                        config, VFS, texture, BSP light, BSP collision, and player movement regression tests
@@ -61,6 +62,7 @@ tools/bspdump/                map, geometry, mesh, and light metadata CLI
 tools/playermove/             synthetic fixed-tick player movement debug CLI
 tools/bsptrace/               point collision trace CLI
 tools/bspview/                macOS Metal textured debug viewer
+tools/modeldump/              model metadata CLI
 tools/texturepkgdump/         texture package metadata CLI
 ```
 
@@ -68,7 +70,7 @@ tools/texturepkgdump/         texture package metadata CLI
 
 - No lightmap decoding or lightmapped rendering yet.
 - No full player physics, step movement, swept player volumes, or movement tuning profiles yet.
-- No model, sprite, or audio decoding yet.
+- No model rendering, sprite decoding/rendering, or audio playback yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
 - No decoded texture cache or asset extraction path by design.
 
@@ -115,6 +117,12 @@ Texture package metadata dump:
 
 ```bash
 ./build/macos-arm64-debug/tools/texturepkgdump/OpenStrikeTexturePkgDump /absolute/path/to/local/package.wad
+```
+
+Model metadata dump:
+
+```bash
+./build/macos-arm64-debug/tools/modeldump/OpenStrikeModelDump /absolute/path/to/local/model.mdl
 ```
 
 Textured map viewer:
