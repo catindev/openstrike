@@ -11,13 +11,16 @@
 #import <MetalKit/MetalKit.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -31,14 +34,15 @@ struct ViewerVertex {
 };
 
 struct ViewerCamera {
-    float yaw = 0.7853981633974483F;    // 45 degrees.
-    float pitch = -0.9599310885968813F; // -55 degrees.
+    float yaw = 0.7853981633974483F;
+    float pitch = -0.9599310885968813F;
     float zoom = 1.0F;
 };
 
 struct ViewerArgs {
     fs::path mapPath;
     std::vector<fs::path> resourceRoots;
+    bool helpRequested = false;
 };
 
 struct TextureLibrary {
@@ -308,9 +312,7 @@ TextureAtlas buildTextureAtlas(
         for (std::uint32_t y = 0; y < texture.height; ++y) {
             const std::size_t src = static_cast<std::size_t>(y) * texture.width * 4;
             const std::size_t dst = (static_cast<std::size_t>(placement.y + y) * atlas.width + placement.x) * 4;
-            std::copy(texture.rgba.begin() + static_cast<std::ptrdiff_t>(src),
-                texture.rgba.begin() + static_cast<std::ptrdiff_t>(src + static_cast<std::size_t>(texture.width) * 4),
-                atlas.pixels.begin() + static_cast<std::ptrdiff_t>(dst));
+            std::copy_n(texture.rgba.data() + src, static_cast<std::size_t>(texture.width) * 4, atlas.pixels.data() + dst);
         }
 
         regions.emplace(sources[i].key, AtlasRegion{
@@ -466,6 +468,7 @@ bool parseArgs(int argc, char** argv, ViewerArgs& args) {
         const std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") {
             printUsage(std::cout);
+            args.helpRequested = true;
             return false;
         }
         if (arg == "--resource-root") {
@@ -804,7 +807,7 @@ BOOL handleViewerEvent(NSEvent* event, OSKBspMetalRenderer* renderer, OSKBspView
 int main(int argc, char** argv) {
     ViewerArgs args;
     if (!parseArgs(argc, argv, args)) {
-        return args.mapPath.empty() ? 1 : 0;
+        return args.helpRequested ? 0 : 1;
     }
 
     try {
