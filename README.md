@@ -35,6 +35,7 @@ The project currently contains:
 - Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
 - Legacy model header, body part, sequence, texture, and hitbox metadata inspection.
 - Legacy sprite header, palette, and frame metadata inspection.
+- PCM WAV metadata validation and macOS playback prototype.
 - Trace-backed fixed-tick player movement prototype with synthetic debug output.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
@@ -134,6 +135,15 @@ Sprite metadata dump:
 ```
 
 `OpenStrikeSpriteDump` prints legacy sprite header, palette, and frame metadata. It does not decode pixels, extract frames, write assets, or cache user data.
+
+WAV playback prototype:
+
+```bash
+./build/macos-arm64-debug/tools/wavplay/OpenStrikeWavPlay --dry-run /absolute/path/to/local/audio.wav
+./build/macos-arm64-debug/tools/wavplay/OpenStrikeWavPlay /absolute/path/to/local/audio.wav
+```
+
+`OpenStrikeWavPlay` validates simple PCM WAV metadata and plays the file on macOS through the prototype AVFoundation path. It does not write, extract, convert, cache, or copy user-provided audio.
 
 Map debug viewer:
 

@@ -8,6 +8,7 @@ ADRs capture decisions that future contributors and agents should not accidental
 - `0001-clean-room-and-local-resources.md` - clean-room resource policy.
 - `0002-config-first-resource-roots.md` - config-first resource roots.
 - `0003-native-macos-bootstrap-before-final-renderer.md` - native macOS bootstrap and debug viewer before final renderer abstraction.
+- `0004-macos-avfoundation-wav-prototype.md` - macOS AVFoundation WAV playback prototype.
 
 ## Rules
 
