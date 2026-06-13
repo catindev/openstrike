@@ -10,6 +10,7 @@ ADRs capture decisions that future contributors and agents should not accidental
 - `0003-native-macos-bootstrap-before-final-renderer.md` - native macOS bootstrap and debug viewer before final renderer abstraction.
 - `0004-macos-avfoundation-wav-prototype.md` - macOS AVFoundation WAV playback prototype.
 - `0005-reuse-debug-bsp-viewer-for-sandbox-mode.md` - reuse debug BSP viewer for local sandbox mode.
+- `0006-separate-technical-and-playable-map-modes.md` - separate technical map-window and playable sandbox modes.
 
 ## Rules
 
