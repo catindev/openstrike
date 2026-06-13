@@ -15,6 +15,7 @@
 namespace {
 
 constexpr std::size_t BspHeaderSize = 4 + osk::bsp::LumpCount * 8;
+constexpr const char* UnsupportedHullWarning = "trace hull index is unsupported; clipnode prototype supports hulls 1..3";
 
 struct TestFailure : std::runtime_error {
     using std::runtime_error::runtime_error;
@@ -124,6 +125,20 @@ void testParseCollisionTables() {
     requireEqual(collision.models.front().headNodes[1], 0, "model hull 1 headnode");
 }
 
+void testHullZeroRejected() {
+    const osk::bsp::BspCollisionData collision = loadSyntheticCollision();
+    osk::bsp::BspTraceInput input;
+    input.hullIndex = 0;
+    input.start = osk::bsp::Vec3{.x = 10.0F, .y = 0.0F, .z = 0.0F};
+    input.end = osk::bsp::Vec3{.x = -10.0F, .y = 0.0F, .z = 0.0F};
+
+    const osk::bsp::BspTraceResult result = osk::bsp::tracePoint(collision, input);
+    require(!result.valid, "hull 0 trace should be invalid in clipnode prototype");
+    require(!result.hit, "hull 0 trace should not report a hit");
+    require(!result.warnings.empty(), "hull 0 trace should warn");
+    requireEqual(result.warnings.front(), std::string(UnsupportedHullWarning), "hull 0 warning");
+}
+
 void testClearTrace() {
     const osk::bsp::BspCollisionData collision = loadSyntheticCollision();
     osk::bsp::BspTraceInput input;
@@ -191,6 +206,7 @@ struct TestCase {
 int main() {
     const std::vector<TestCase> tests{
         {"parse collision tables", testParseCollisionTables},
+        {"hull 0 rejected", testHullZeroRejected},
         {"clear trace", testClearTrace},
         {"hit trace", testHitTrace},
         {"start solid trace", testStartSolidTrace},
