@@ -1,5 +1,7 @@
 #pragma once
 
+#include "input/InputState.h"
+
 #include <memory>
 #include <string>
 
@@ -25,6 +27,7 @@ public:
     static std::unique_ptr<Window> create(const WindowDesc& desc, std::string* error = nullptr);
 
     void pollEvents();
+    const input::InputState& inputState() const;
     bool shouldClose() const;
     void runUntilClosed();
 
