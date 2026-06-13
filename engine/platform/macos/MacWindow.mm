@@ -26,31 +26,20 @@
 namespace {
 
 std::optional<osk::input::InputKey> mapKeyEvent(NSEvent* event) {
-    NSString* characters = [event charactersIgnoringModifiers];
-    if (characters == nil || [characters length] == 0) {
-        return std::nullopt;
-    }
-
-    const unichar character = [characters characterAtIndex:0];
-    switch (character) {
-    case 'w':
-    case 'W':
+    switch ([event keyCode]) {
+    case 13: // W
         return osk::input::InputKey::Forward;
-    case 's':
-    case 'S':
+    case 1: // S
         return osk::input::InputKey::Back;
-    case 'a':
-    case 'A':
+    case 0: // A
         return osk::input::InputKey::Left;
-    case 'd':
-    case 'D':
+    case 2: // D
         return osk::input::InputKey::Right;
-    case ' ':
+    case 49: // Space
         return osk::input::InputKey::Jump;
-    case 'c':
-    case 'C':
+    case 8: // C
         return osk::input::InputKey::Crouch;
-    case 27:
+    case 53: // Escape
         return osk::input::InputKey::Exit;
     default:
         return std::nullopt;
@@ -139,6 +128,8 @@ std::unique_ptr<Window> Window::create(const WindowDesc& desc, std::string* erro
 
         OSKWindowDelegate* delegate = [[OSKWindowDelegate alloc] init];
         [nativeWindow setDelegate:delegate];
+        // Enable normal mouse-moved events so look deltas are delivered without dragging.
+        [nativeWindow setAcceptsMouseMovedEvents:YES];
         [nativeWindow center];
         [nativeWindow makeKeyAndOrderFront:nil];
         [NSApp activateIgnoringOtherApps:YES];
