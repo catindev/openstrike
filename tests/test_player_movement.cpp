@@ -92,6 +92,29 @@ void testWalkMovesAtFixedTick() {
     requireNear(result.state.velocity.x, 10.0F, 0.0001F, "walk x velocity");
 }
 
+void testDefaultStateIsStationary() {
+    const osk::bsp::BspCollisionData collision = makeGroundCollision();
+    osk::physics::PlayerMovementConfig config;
+    config.tickSeconds = 0.1F;
+    config.walkSpeed = 10.0F;
+    config.gravity = 0.0F;
+
+    const osk::physics::PlayerMovementStepResult result = osk::physics::stepPlayerMovement(
+        osk::physics::PlayerMovementState{},
+        osk::physics::PlayerMovementInput{},
+        traceContext(collision),
+        config);
+
+    require(result.trace.valid, "default-state trace should be valid");
+    require(!result.trace.hit, "default state should not hit with zero gravity");
+    requireNear(result.state.position.x, 0.0F, 0.0001F, "default x position");
+    requireNear(result.state.position.y, 0.0F, 0.0001F, "default y position");
+    requireNear(result.state.position.z, 0.0F, 0.0001F, "default z position");
+    requireNear(result.state.velocity.x, 0.0F, 0.0001F, "default x velocity");
+    requireNear(result.state.velocity.y, 0.0F, 0.0001F, "default y velocity");
+    requireNear(result.state.velocity.z, 0.0F, 0.0001F, "default z velocity");
+}
+
 void testGravityLandsOnGroundPlane() {
     const osk::bsp::BspCollisionData collision = makeGroundCollision();
     osk::physics::PlayerMovementConfig config;
@@ -164,6 +187,7 @@ struct TestCase {
 int main() {
     const std::vector<TestCase> tests{
         {"walk moves at fixed tick", testWalkMovesAtFixedTick},
+        {"default state is stationary", testDefaultStateIsStationary},
         {"gravity lands on ground plane", testGravityLandsOnGroundPlane},
         {"jump leaves ground", testJumpLeavesGround},
         {"missing trace context warns", testMissingTraceContextWarns},

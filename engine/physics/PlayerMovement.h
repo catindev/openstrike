@@ -23,8 +23,8 @@ struct PlayerMovementInput {
 };
 
 struct PlayerMovementState {
-    bsp::Vec3 position;
-    bsp::Vec3 velocity;
+    bsp::Vec3 position{};
+    bsp::Vec3 velocity{};
     bool grounded = false;
 };
 
