@@ -54,7 +54,15 @@ osk::bsp::BspCollisionData makeGroundCollision() {
     model.modelIndex = 0;
     model.headNodes.fill(-1);
     model.headNodes[1] = 0;
+    model.headNodes[2] = 0;
     collision.models.push_back(model);
+    return collision;
+}
+
+osk::bsp::BspCollisionData makeBlockedUncrouchCollision() {
+    osk::bsp::BspCollisionData collision = makeGroundCollision();
+    collision.models.front().headNodes[1] = osk::bsp::BspContentsSolid;
+    collision.models.front().headNodes[2] = 0;
     return collision;
 }
 
@@ -62,7 +70,8 @@ osk::physics::PlayerMovementTraceContext traceContext(const osk::bsp::BspCollisi
     return osk::physics::PlayerMovementTraceContext{
         .collision = &collision,
         .modelIndex = 0,
-        .hullIndex = 1,
+        .standHullIndex = 1,
+        .crouchHullIndex = 2,
     };
 }
 
@@ -92,6 +101,74 @@ void testWalkMovesAtFixedTick() {
     requireNear(result.state.velocity.x, 10.0F, 0.0001F, "walk x velocity");
 }
 
+void testCrouchSelectsCrouchHull() {
+    const osk::bsp::BspCollisionData collision = makeGroundCollision();
+    osk::physics::PlayerMovementConfig config;
+    config.tickSeconds = 0.1F;
+    config.gravity = 0.0F;
+
+    osk::physics::PlayerMovementState state;
+    state.position = osk::bsp::Vec3{.x = 0.0F, .y = 0.0F, .z = 0.03125F};
+    state.grounded = true;
+
+    const osk::physics::PlayerMovementStepResult result = osk::physics::stepPlayerMovement(
+        state,
+        osk::physics::PlayerMovementInput{.crouch = true},
+        traceContext(collision),
+        config);
+
+    require(result.trace.valid, "crouch trace should be valid");
+    require(result.state.crouched, "crouch input should set crouched state");
+    requireEqual(result.hullIndex, static_cast<std::size_t>(2), "crouch should use crouch hull");
+}
+
+void testUncrouchSelectsStandHull() {
+    const osk::bsp::BspCollisionData collision = makeGroundCollision();
+    osk::physics::PlayerMovementConfig config;
+    config.tickSeconds = 0.1F;
+    config.gravity = 0.0F;
+
+    osk::physics::PlayerMovementState state;
+    state.position = osk::bsp::Vec3{.x = 0.0F, .y = 0.0F, .z = 0.03125F};
+    state.grounded = true;
+    state.crouched = true;
+
+    const osk::physics::PlayerMovementStepResult result = osk::physics::stepPlayerMovement(
+        state,
+        osk::physics::PlayerMovementInput{},
+        traceContext(collision),
+        config);
+
+    require(result.trace.valid, "uncrouch trace should be valid");
+    require(!result.state.crouched, "released crouch should restore stand state");
+    require(!result.uncrouchBlocked, "clear stand hull should not block uncrouch");
+    requireEqual(result.hullIndex, static_cast<std::size_t>(1), "uncrouch should use stand hull");
+}
+
+void testBlockedUncrouchStaysCrouched() {
+    const osk::bsp::BspCollisionData collision = makeBlockedUncrouchCollision();
+    osk::physics::PlayerMovementConfig config;
+    config.tickSeconds = 0.1F;
+    config.gravity = 0.0F;
+
+    osk::physics::PlayerMovementState state;
+    state.position = osk::bsp::Vec3{.x = 0.0F, .y = 0.0F, .z = 0.03125F};
+    state.grounded = true;
+    state.crouched = true;
+
+    const osk::physics::PlayerMovementStepResult result = osk::physics::stepPlayerMovement(
+        state,
+        osk::physics::PlayerMovementInput{},
+        traceContext(collision),
+        config);
+
+    require(result.trace.valid, "blocked uncrouch fallback trace should be valid");
+    require(result.state.crouched, "blocked uncrouch should keep crouched state");
+    require(result.uncrouchBlocked, "blocked uncrouch should be reported");
+    require(!result.warnings.empty(), "blocked uncrouch should warn");
+    requireEqual(result.hullIndex, static_cast<std::size_t>(2), "blocked uncrouch should keep crouch hull");
+}
+
 void testDefaultStateIsStationary() {
     const osk::bsp::BspCollisionData collision = makeGroundCollision();
     osk::physics::PlayerMovementConfig config;
@@ -113,6 +190,30 @@ void testDefaultStateIsStationary() {
     requireNear(result.state.velocity.x, 0.0F, 0.0001F, "default x velocity");
     requireNear(result.state.velocity.y, 0.0F, 0.0001F, "default y velocity");
     requireNear(result.state.velocity.z, 0.0F, 0.0001F, "default z velocity");
+}
+
+void testGroundedGravityDoesNotPullBelowGround() {
+    const osk::bsp::BspCollisionData collision = makeGroundCollision();
+    osk::physics::PlayerMovementConfig config;
+    config.tickSeconds = 0.1F;
+    config.gravity = 800.0F;
+
+    osk::physics::PlayerMovementState state;
+    state.position = osk::bsp::Vec3{.x = 0.0F, .y = 0.0F, .z = 0.03125F};
+    state.velocity = osk::bsp::Vec3{.x = 0.0F, .y = 0.0F, .z = -20.0F};
+    state.grounded = true;
+
+    const osk::physics::PlayerMovementStepResult result = osk::physics::stepPlayerMovement(
+        state,
+        osk::physics::PlayerMovementInput{},
+        traceContext(collision),
+        config);
+
+    require(result.trace.valid, "grounded gravity trace should be valid");
+    require(!result.trace.hit, "grounded non-jump tick should not trace downward into ground");
+    require(result.state.grounded, "grounded non-jump tick should remain grounded");
+    requireNear(result.state.position.z, 0.03125F, 0.0001F, "grounded z position");
+    requireNear(result.state.velocity.z, 0.0F, 0.0001F, "grounded z velocity");
 }
 
 void testGravityLandsOnGroundPlane() {
@@ -187,7 +288,11 @@ struct TestCase {
 int main() {
     const std::vector<TestCase> tests{
         {"walk moves at fixed tick", testWalkMovesAtFixedTick},
+        {"crouch selects crouch hull", testCrouchSelectsCrouchHull},
+        {"uncrouch selects stand hull", testUncrouchSelectsStandHull},
+        {"blocked uncrouch stays crouched", testBlockedUncrouchStaysCrouched},
         {"default state is stationary", testDefaultStateIsStationary},
+        {"grounded gravity does not pull below ground", testGroundedGravityDoesNotPullBelowGround},
         {"gravity lands on ground plane", testGravityLandsOnGroundPlane},
         {"jump leaves ground", testJumpLeavesGround},
         {"missing trace context warns", testMissingTraceContextWarns},

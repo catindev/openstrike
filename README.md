@@ -33,6 +33,7 @@ The project currently contains:
 - Read-only directory VFS and resource index for `.bsp`, `.wad`, `.mdl`, `.spr`, and `.wav` files.
 - Map header, geometry, light metadata, collision trace, and triangulated mesh summaries.
 - Texture package header, directory, mip metadata inspection, and memory-only indexed texture decode.
+- Trace-backed fixed-tick player movement prototype with synthetic debug output.
 - Native macOS window lifecycle.
 - Native Metal debug viewer for textured map inspection with generated missing-texture placeholders.
 - Tooling for asset audits and format inspection.
@@ -101,6 +102,14 @@ Point collision trace:
 ```
 
 `OpenStrikeBspTrace` reads BSP collision clipnodes and traces a point segment. It is a debug prototype, not full player physics or movement.
+
+Player movement debug simulation:
+
+```bash
+./build/macos-arm64-debug/tools/playermove/OpenStrikePlayerMove --ticks 8 --forward 1 --jump-tick 2 --crouch-from 4
+```
+
+`OpenStrikePlayerMove` runs fixed-tick player movement against an in-memory synthetic ground plane. It prints position, velocity, grounded/crouched state, selected hull, jump, blocked-uncrouch, hit, fraction, and warning data without reading, writing, extracting, caching, or copying user-provided assets.
 
 Texture package metadata dump:
 

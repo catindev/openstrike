@@ -4,7 +4,7 @@ Last updated: 2026-06-13.
 
 ## Current milestone
 
-OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap, synthetic texture package decoding, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, and synthetic fixed-tick player movement.
+OpenStrike has reached the first textured map-inspection milestone on macOS and has automated coverage for the config/VFS bootstrap, synthetic texture package decoding, synthetic BSP light metadata parsing, synthetic BSP collision trace parsing, and synthetic fixed-tick player movement with crouch basics.
 
 The project can:
 
@@ -13,7 +13,7 @@ The project can:
 - read a config file from the user application support directory;
 - mount configured resource roots read-only;
 - index compatible local file types;
-- run automated tests for config parsing, template generation, VFS mounting, resource indexing, texture package metadata parsing, indexed texture decoding, BSP light metadata parsing, BSP collision point tracing, and trace-backed player movement;
+- run automated tests for config parsing, template generation, VFS mounting, resource indexing, texture package metadata parsing, indexed texture decoding, BSP light metadata parsing, BSP collision point tracing, and trace-backed player movement including crouch hull selection;
 - inspect map headers and lump metadata;
 - validate map geometry references;
 - build a triangulated world mesh;
@@ -22,7 +22,8 @@ The project can:
 - inspect BSP per-face light offsets, styles, estimated lightmap sizes, sample counts, and light data ranges;
 - load BSP collision planes, clipnodes, and model hull metadata;
 - run a minimal point trace through BSP clipnodes with fraction, plane, normal, and solid flags;
-- simulate a minimal fixed-tick player state with gravity, walking, and jumping against trace-backed collision;
+- simulate a minimal fixed-tick player state with gravity, walking, jumping, crouch state, and stand/crouch hull selection against trace-backed collision;
+- print synthetic player movement debug ticks without reading user assets;
 - show and navigate textured map geometry in a native Metal debug viewer with generated placeholders for missing textures.
 
 ## Completed GitHub issues
@@ -36,10 +37,10 @@ The project can:
 - #13 - textured map viewer pass, completed by PR #34.
 - #14 - map light data inspection, completed by PR #35.
 - #15 - map collision trace prototype, completed by PR #36.
+- #16 - player movement sandbox prototype, completed by PR #40.
 
 ## Open GitHub issues
 
-- #16 - player movement sandbox prototype (partial: fixed-tick movement state, gravity, walking, and jumping core; no full sandbox gameplay yet).
 - #17 - model metadata inspection tool.
 - #18 - sprite metadata inspection tool.
 - #19 - WAV playback prototype.
@@ -57,6 +58,7 @@ engine/platform/              native macOS window abstraction and headless fallb
 tests/                        config, VFS, texture, BSP light, BSP collision, and player movement regression tests
 tools/asset_audit/            repository asset guardrail
 tools/bspdump/                map, geometry, mesh, and light metadata CLI
+tools/playermove/             synthetic fixed-tick player movement debug CLI
 tools/bsptrace/               point collision trace CLI
 tools/bspview/                macOS Metal textured debug viewer
 tools/texturepkgdump/         texture package metadata CLI
@@ -65,7 +67,7 @@ tools/texturepkgdump/         texture package metadata CLI
 ## Current limitations
 
 - No lightmap decoding or lightmapped rendering yet.
-- No full player physics, crouch hull selection, step movement, or movement tuning profiles yet.
+- No full player physics, step movement, swept player volumes, or movement tuning profiles yet.
 - No model, sprite, or audio decoding yet.
 - No final renderer abstraction yet; current viewer is a native Metal debug tool.
 - No decoded texture cache or asset extraction path by design.
@@ -101,6 +103,12 @@ Point collision trace:
 
 ```bash
 ./build/macos-arm64-debug/tools/bsptrace/OpenStrikeBspTrace /absolute/path/to/local/map.bsp --start <x> <y> <z> --end <x> <y> <z>
+```
+
+Player movement debug simulation:
+
+```bash
+./build/macos-arm64-debug/tools/playermove/OpenStrikePlayerMove --ticks 8 --forward 1 --jump-tick 2 --crouch-from 4
 ```
 
 Texture package metadata dump:

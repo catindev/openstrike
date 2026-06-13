@@ -15,12 +15,12 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #13 | Textured map viewer pass with in-memory texture decode and generated placeholders. | #34 |
 | #14 | Map light data inspection with per-face lightmap metadata. | #35 |
 | #15 | Point collision trace prototype over BSP clipnodes. | #36 |
+| #16 | Player movement sandbox prototype with fixed-tick state, walk, jump, gravity, crouch hull selection, and synthetic debug output. | #40 |
 
 ## Active near-term work
 
 | Priority | Issue | Task | Notes |
 |---|---|---|---|
-| P2 | #16 | Add player movement sandbox prototype. | Collision trace prototype is available. Fixed-tick movement state, gravity, walking, and jumping are partially implemented; full sandbox gameplay remains out of scope for the first step. |
 | P3 | #17 | Add model metadata inspection tool. | Foundation for model rendering. |
 | P3 | #18 | Add sprite metadata inspection tool. | Foundation for sprite rendering. |
 | P3 | #19 | Add WAV playback prototype. | Foundation for audio system. |
@@ -37,11 +37,10 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 
 ## Suggested next sequence
 
-1. Continue #16 from fixed-tick movement core toward a local movement sandbox app mode.
-2. Implement #17 model metadata inspection tool.
-3. Implement #18 sprite metadata inspection tool.
-4. Implement #19 WAV playback prototype.
-5. Implement #20 local sandbox app mode.
+1. Implement #17 model metadata inspection tool.
+2. Implement #18 sprite metadata inspection tool.
+3. Implement #19 WAV playback prototype.
+4. Implement #20 local sandbox app mode.
 
 ## Later roadmap
 

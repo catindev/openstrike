@@ -43,6 +43,10 @@ bool isGroundHit(const bsp::BspTraceResult& trace, const PlayerMovementConfig& c
     return trace.valid && trace.hit && trace.hitNormal.z >= config.groundNormalMinZ;
 }
 
+void appendWarnings(std::vector<std::string>& target, const std::vector<std::string>& source) {
+    target.insert(target.end(), source.begin(), source.end());
+}
+
 bsp::Vec3 clipVelocity(bsp::Vec3 velocity, bsp::Vec3 normal) {
     const float intoPlane = dot(velocity, normal);
     if (intoPlane >= 0.0F) {
@@ -61,6 +65,7 @@ PlayerMovementStepResult stepPlayerMovement(
     const PlayerMovementConfig& config) {
     PlayerMovementStepResult result;
     result.state = current;
+    result.hullIndex = current.crouched ? traceContext.crouchHullIndex : traceContext.standHullIndex;
 
     if (traceContext.collision == nullptr) {
         result.warnings.emplace_back("player movement trace context has no collision data");
@@ -72,6 +77,28 @@ PlayerMovementStepResult stepPlayerMovement(
     }
 
     PlayerMovementState next = current;
+    next.crouched = input.crouch;
+    std::size_t hullIndex = next.crouched ? traceContext.crouchHullIndex : traceContext.standHullIndex;
+
+    if (current.crouched && !input.crouch) {
+        const bsp::BspTraceResult standProbe = bsp::tracePoint(
+            *traceContext.collision,
+            bsp::BspTraceInput{
+                .start = current.position,
+                .end = current.position,
+                .modelIndex = traceContext.modelIndex,
+                .hullIndex = traceContext.standHullIndex,
+            });
+        appendWarnings(result.warnings, standProbe.warnings);
+        if (standProbe.valid && standProbe.startSolid) {
+            next.crouched = true;
+            hullIndex = traceContext.crouchHullIndex;
+            result.uncrouchBlocked = true;
+            result.warnings.emplace_back("player uncrouch blocked by stand hull");
+        }
+    }
+    result.hullIndex = hullIndex;
+
     const bsp::Vec3 desiredVelocity = desiredHorizontalVelocity(input, config.walkSpeed);
     next.velocity.x = desiredVelocity.x;
     next.velocity.y = desiredVelocity.y;
@@ -81,11 +108,13 @@ PlayerMovementStepResult stepPlayerMovement(
         next.velocity.z = config.jumpSpeed;
         next.grounded = false;
         result.jumped = true;
-    } else if (current.grounded && next.velocity.z < 0.0F) {
+    } else if (current.grounded) {
         next.velocity.z = 0.0F;
     }
 
-    next.velocity.z -= config.gravity * config.tickSeconds;
+    if (!current.grounded || jumping) {
+        next.velocity.z -= config.gravity * config.tickSeconds;
+    }
 
     const bsp::Vec3 target = add(next.position, scale(next.velocity, config.tickSeconds));
     result.trace = bsp::tracePoint(
@@ -94,9 +123,9 @@ PlayerMovementStepResult stepPlayerMovement(
             .start = next.position,
             .end = target,
             .modelIndex = traceContext.modelIndex,
-            .hullIndex = traceContext.hullIndex,
+            .hullIndex = hullIndex,
         });
-    result.warnings.insert(result.warnings.end(), result.trace.warnings.begin(), result.trace.warnings.end());
+    appendWarnings(result.warnings, result.trace.warnings);
 
     if (!result.trace.valid) {
         next.grounded = false;
