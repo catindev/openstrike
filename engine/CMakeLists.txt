@@ -33,12 +33,13 @@ add_library(openstrike_engine STATIC
              "-framework MetalKit"
              "-framework QuartzCore"
      )
- else()
-     target_sources(openstrike_engine
-         PRIVATE
-             platform/HeadlessWindow.cpp
-     )
- endif()
+else()
+    target_sources(openstrike_engine
+        PRIVATE
+            game/FirstPersonBspRunner.cpp
+            platform/HeadlessWindow.cpp
+    )
+endif()
  
  target_include_directories(openstrike_engine
      PUBLIC

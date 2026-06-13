@@ -1,8 +1,8 @@
 // This file defines a minimal first‑person BSP renderer for macOS.  The
 // implementation mirrors the debug BSP viewer but fixes the camera
 // translation to a user‑supplied spawn position and removes orbit
-// controls and texture atlas handling.  The renderer is compiled only
-// on macOS; on other platforms the run function will emit an error.
+// controls and texture atlas handling. The renderer is compiled only
+// on macOS; the portable fallback lives in FirstPersonBspRunner.cpp.
 
 #include "game/FirstPersonBspRunner.h"
 #include "assets/loaders/BspMesh.h"
@@ -463,18 +463,6 @@ int runFirstPersonBsp(const FirstPersonBspOptions& options) {
         [window release];
     }
     return 0;
-}
-
-} // namespace osk::game
-
-#else  // defined(__APPLE__)
-
-namespace osk::game {
-
-int runFirstPersonBsp(const FirstPersonBspOptions& options) {
-    (void)options;
-    std::cerr << "OpenStrike error: first‑person BSP view is currently available only on macOS.\n";
-    return 1;
 }
 
 } // namespace osk::game
