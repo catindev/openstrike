@@ -31,7 +31,7 @@ The project can:
 - #11 - debug viewer navigation, completed by PR #25.
 - #12 - texture package metadata reader, completed by PR #33.
 - #13 - textured map viewer pass, completed by PR #34.
-- #14 - map light data inspection, completed by this PR.
+- #14 - map light data inspection, completed by PR #35.
 
 ## Open GitHub issues
 
