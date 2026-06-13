@@ -151,6 +151,7 @@ void testClearTrace() {
     require(!result.startSolid, "clear trace should not start solid");
     require(!result.allSolid, "clear trace should not be all solid");
     requireEqual(result.fraction, 1.0F, "clear trace fraction");
+    requireEqual(result.contents, osk::bsp::BspContentsEmpty, "clear trace should report end contents");
 }
 
 void testHitTrace() {
@@ -180,6 +181,7 @@ void testStartSolidTrace() {
     require(result.startSolid, "trace should start solid");
     require(result.allSolid, "trace should be all solid");
     requireEqual(result.fraction, 0.0F, "start solid fraction");
+    requireEqual(result.contents, osk::bsp::BspContentsSolid, "start-solid trace should report solid contents");
 }
 
 void testMalformedCollisionDoesNotCrash() {
@@ -209,7 +211,7 @@ int main() {
         {"hull 0 rejected", testHullZeroRejected},
         {"clear trace", testClearTrace},
         {"hit trace", testHitTrace},
-        {"start solid trace", testStartSolidTrace},
+        {"start solid trace reports solid contents", testStartSolidTrace},
         {"malformed collision does not crash", testMalformedCollisionDoesNotCrash},
     };
 
