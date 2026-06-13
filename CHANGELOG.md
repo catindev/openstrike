@@ -6,6 +6,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Added
 
+- Added a trace-backed fixed-tick player movement prototype with gravity, walking, and jumping state updates.
 - Added BSP collision plane/clipnode/model metadata loading and a minimal point trace CLI, `OpenStrikeBspTrace`.
 - Added BSP light data inspection with per-face light offsets, styles, estimated lightmap dimensions, sample counts, and range validation in `OpenStrikeBspDump`.
 - Added a textured BSP debug viewer pass with memory-only indexed texture decode, read-only WAD lookup, generated missing-texture placeholders, and a transient Metal texture atlas.
@@ -14,6 +15,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Documentation
 
+- Documented fixed-tick player movement prototype status and remaining #16 sandbox limitations.
 - Documented BSP collision trace prototype usage, status, architecture, and roadmap progress for #15.
 - Documented BSP light data inspection status, dump output, architecture, and roadmap progress for #14.
 - Documented textured map viewer usage, status, architecture, and roadmap progress for #13.
@@ -25,6 +27,7 @@ All notable OpenStrike changes should be documented here.
 
 ### Testing
 
+- Added synthetic coverage for trace-backed fixed-tick player movement, gravity landing, jumping, and missing trace context warnings.
 - Added synthetic coverage for BSP collision tables, clear traces, hit traces, start-solid traces, and malformed collision data.
 - Added synthetic coverage for BSP light metadata, missing lighting, and truncated light data handling.
 - Added synthetic coverage for indexed texture decode into RGBA buffers.
