@@ -93,3 +93,19 @@ add_test(
     NAME openstrike_model_metadata_tests
     COMMAND openstrike_model_metadata_tests
 )
+
+add_executable(openstrike_sprite_metadata_tests
+    test_sprite_metadata.cpp
+)
+
+target_link_libraries(openstrike_sprite_metadata_tests
+    PRIVATE
+        openstrike_engine
+)
+
+target_compile_features(openstrike_sprite_metadata_tests PRIVATE cxx_std_20)
+
+add_test(
+    NAME openstrike_sprite_metadata_tests
+    COMMAND openstrike_sprite_metadata_tests
+)

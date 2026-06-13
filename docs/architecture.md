@@ -9,7 +9,7 @@ apps/client/                  bootstrap executable and future game client
 engine/core/                  logging and low-level utilities
 engine/config/                config path resolution, config template, minimal parser
 engine/assets/                read-only VFS and resource indexing
-engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, and model metadata parsing
+engine/assets/loaders/        map summaries, mesh builders, light metadata, collision trace, texture metadata/decode helpers, model metadata parsing, and sprite metadata parsing
 engine/physics/               fixed-tick trace-backed player movement prototype
 engine/platform/              native macOS window abstraction and headless fallback
 tools/asset_audit/            repository guardrail against proprietary asset commits
@@ -18,6 +18,7 @@ tools/playermove/             synthetic fixed-tick player movement debug CLI
 tools/bsptrace/               point collision trace CLI
 tools/bspview/                macOS Metal textured debug viewer
 tools/modeldump/              model metadata CLI
+tools/spritedump/             sprite metadata CLI
 tools/texturepkgdump/         texture package metadata CLI
 ```
 
@@ -56,6 +57,10 @@ local texture package path
 local model path
   -> ModelMetadataSummary
   -> OpenStrikeModelDump
+
+local sprite path
+  -> SpriteMetadataSummary
+  -> OpenStrikeSpriteDump
 ```
 
 ## Resource model
@@ -189,6 +194,25 @@ Not implemented by design in the current milestone:
 - model rendering;
 - proprietary fixture loading;
 - writes, caches, or generated files next to user resources.
+
+## Sprite metadata loader status
+
+Implemented:
+
+- legacy sprite header magic/version/type/texture-format validation;
+- palette color-count and RGB table range validation;
+- single-frame metadata inspection with origin, dimensions, pixel data offset, and pixel byte count;
+- grouped-frame metadata inspection with subframe count and intervals;
+- read-only metadata dump CLI;
+- synthetic parser tests without proprietary fixtures.
+
+Not implemented by design in the current milestone:
+
+- sprite pixel decoding;
+- frame extraction, conversion, saving, or caching;
+- sprite rendering;
+- proprietary fixture loading;
+- writes or generated files next to user resources.
 
 ## Debug viewer texture pass
 
