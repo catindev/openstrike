@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 #include <utility>
@@ -22,12 +23,56 @@
 
 @end
 
+namespace {
+
+std::optional<osk::input::InputKey> mapKeyEvent(NSEvent* event) {
+    NSString* characters = [event charactersIgnoringModifiers];
+    if (characters == nil || [characters length] == 0) {
+        return std::nullopt;
+    }
+
+    const unichar character = [characters characterAtIndex:0];
+    switch (character) {
+    case 'w':
+    case 'W':
+        return osk::input::InputKey::Forward;
+    case 's':
+    case 'S':
+        return osk::input::InputKey::Back;
+    case 'a':
+    case 'A':
+        return osk::input::InputKey::Left;
+    case 'd':
+    case 'D':
+        return osk::input::InputKey::Right;
+    case ' ':
+        return osk::input::InputKey::Jump;
+    case 'c':
+    case 'C':
+        return osk::input::InputKey::Crouch;
+    case 27:
+        return osk::input::InputKey::Exit;
+    default:
+        return std::nullopt;
+    }
+}
+
+bool isMouseMotionEvent(NSEventType type) {
+    return type == NSEventTypeMouseMoved
+        || type == NSEventTypeLeftMouseDragged
+        || type == NSEventTypeRightMouseDragged
+        || type == NSEventTypeOtherMouseDragged;
+}
+
+} // namespace
+
 namespace osk {
 
 struct Window::Impl {
     NSWindow* window = nil;
     OSKWindowDelegate* delegate = nil;
     bool closeRequested = false;
+    input::InputState inputState;
 };
 
 Window::Window() = default;
@@ -111,6 +156,8 @@ void Window::pollEvents() {
         return;
     }
 
+    input::resetFrameDeltas(impl_->inputState);
+
     @autoreleasepool {
         for (;;) {
             NSEvent* event = [NSApp
@@ -123,13 +170,23 @@ void Window::pollEvents() {
                 break;
             }
 
-            if ([event type] == NSEventTypeKeyDown) {
-                NSString* characters = [event charactersIgnoringModifiers];
-                if ([characters length] > 0 && [characters characterAtIndex:0] == 27) {
-                    impl_->closeRequested = true;
-                    [impl_->window close];
-                    break;
+            const NSEventType type = [event type];
+            if (type == NSEventTypeKeyDown || type == NSEventTypeKeyUp) {
+                const bool down = type == NSEventTypeKeyDown;
+                const std::optional<input::InputKey> mappedKey = mapKeyEvent(event);
+                if (mappedKey.has_value()) {
+                    input::setKey(impl_->inputState, *mappedKey, down);
+                    if (down && *mappedKey == input::InputKey::Exit) {
+                        impl_->closeRequested = true;
+                        [impl_->window close];
+                        break;
+                    }
                 }
+            } else if (isMouseMotionEvent(type)) {
+                input::addLookDelta(
+                    impl_->inputState,
+                    static_cast<float>([event deltaX]),
+                    static_cast<float>([event deltaY]));
             }
 
             [NSApp sendEvent:event];
@@ -137,6 +194,15 @@ void Window::pollEvents() {
 
         [NSApp updateWindows];
     }
+}
+
+const input::InputState& Window::inputState() const {
+    static const input::InputState EmptyInputState;
+    if (!impl_) {
+        return EmptyInputState;
+    }
+
+    return impl_->inputState;
 }
 
 bool Window::shouldClose() const {
