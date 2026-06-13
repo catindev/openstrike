@@ -345,19 +345,25 @@ BspTraceResult tracePoint(const BspCollisionData& collision, const BspTraceInput
     }
 
     result.valid = true;
-    result.startSolid = isSolidContents(pointContents(collision, headNode, input.start, &result.warnings));
-    const bool endSolid = isSolidContents(pointContents(collision, headNode, input.end, &result.warnings));
-    result.allSolid = result.startSolid && endSolid;
+    const auto startContents = pointContents(collision, headNode, input.start, &result.warnings);
+    const auto endContents = pointContents(collision, headNode, input.end, &result.warnings);
+    result.startSolid = isSolidContents(startContents);
+    result.allSolid = result.startSolid && isSolidContents(endContents);
+    result.contents = endContents;
+
+    if (result.startSolid) {
+        result.contents = startContents;
+        result.hit = true;
+        result.fraction = 0.0F;
+        result.endPosition = input.start;
+        return result;
+    }
 
     recursiveTrace(collision, headNode, 0.0F, 1.0F, input.start, input.end, result, 0);
     if (!result.hit) {
         result.fraction = 1.0F;
         result.endPosition = input.end;
-    }
-    if (result.startSolid) {
-        result.hit = true;
-        result.fraction = 0.0F;
-        result.endPosition = input.start;
+        result.contents = endContents;
     }
 
     return result;
