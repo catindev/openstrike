@@ -14,7 +14,7 @@ This roadmap is backed by GitHub issues. Open issue means not done. Closed issue
 | #12 | Texture package metadata reader and dump tool. | #33 |
 | #13 | Textured map viewer pass with in-memory texture decode and generated placeholders. | #34 |
 | #14 | Map light data inspection with per-face lightmap metadata. | #35 |
-| #15 | Point collision trace prototype over BSP clipnodes. | Current PR |
+| #15 | Point collision trace prototype over BSP clipnodes. | #36 |
 
 ## Active near-term work
 
