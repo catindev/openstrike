@@ -16,7 +16,7 @@ For the bootstrap milestone, manual verification is sufficient:
 For the core utilities and diagnostics milestone, perform the following checks:
 
 * **Godot project smoke test:** Open the project in Godot 4.x and run the main scene. Verify that the bootstrap screen appears with the project name, version, legal notice, Godot version and diagnostics status. There should be no errors or warnings in the output.
-* **Diagnostics overlay:** Ensure that a diagnostics overlay or label appears on screen (or can be enabled via a debug flag) showing at least the Godot version and a basic diagnostics status.
+* **Diagnostics overlay:** Ensure that a diagnostics overlay or label appears on screen (or can be enabled via a debug flag) and that the bootstrap scene uses the `bootstrap_screen.gd` script to retrieve the Godot version and status from the diagnostics utility. The labels should update dynamically to reflect these values.
 * **Logging utility:** Import `Logger` from `src/core/logging.gd` in a test script and confirm that `Logger.info()`, `Logger.warn()` and `Logger.error()` output messages appropriately in the Godot console.
 * **Configuration loader:** Confirm that `ConfigLoader.load_config()` can be called without errors (functionality is a placeholder for now).
 * **No bundled Valve assets:** Search the repository for any prohibited file types (.bsp, .mdl, .spr, .wad, .wav, .bmp). Ensure none are present.
