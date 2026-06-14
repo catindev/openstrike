@@ -1,0 +1,33 @@
+# Godot editor caches
+.godot/
+.import/
+
+# macOS system files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Project telemetry and cache directories
+telemetry/
+.local_goldsrc_cache/
+imported_goldsrc_assets/
+
+# User‑specific configuration
+local_goldsrc.json
+local_goldsrc.*.json
+
+# Exclude proprietary GoldSrc/Valve asset formats by default.
+# Synthetic/open test fixtures must be explicitly allowlisted under tests/fixtures/open/.
+*.bsp
+*.mdl
+*.spr
+*.wad
+*.wav
+*.bmp
+
+!tests/
+!tests/fixtures/
+!tests/fixtures/open/
+!tests/fixtures/open/**

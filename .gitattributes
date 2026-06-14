@@ -1,0 +1,18 @@
+* text=auto
+
+# Ensure consistent LF line endings for text files
+*.md text eol=lf
+*.tscn text eol=lf
+*.godot text eol=lf
+*.cfg text eol=lf
+
+# Treat common binary formats as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.wav binary
+*.bsp binary
+*.mdl binary
+*.spr binary
+*.wad binary
+*.bmp binary
