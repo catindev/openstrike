@@ -32,6 +32,10 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md`. If you discover a new verified
   asset mapping, sequence fact, event timing, fallback rule or gap, update that
   atlas in the same PR.
+* Before changing asset scanner output, generated asset atlas files, coverage
+  reports or coverage status fields, read `docs/COVERAGE_STATUS_CONTRACT.md`.
+  Edit only `gen/coverage_status_matrix.json` by hand for status vocabulary
+  changes, then regenerate the schema/document artifacts with `gen/generate.py`.
 * Before accepting a subjective feel claim, read `docs/DEV_LABS_METHODOLOGY.md` and map the claim to telemetry, a smoke test, a debug overlay or a planned dev lab.
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.
 * Before editing GDScript, read `docs/GDSCRIPT_AGENT_NOTES.md`.  When a Godot/GDScript parser, type-system, runtime or tooling issue slows work down, append a dated finding with the pitfall and fix there in the same PR; preserve previous agents' notes.

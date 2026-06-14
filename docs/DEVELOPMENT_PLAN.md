@@ -516,6 +516,10 @@ per-weapon scale/position/FOV tuning.
   no-per-weapon-transform rules.
 * `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required asset and lifecycle
   contract for weapon/viewmodel/audio/effect work.
+* `docs/COVERAGE_STATUS_CONTRACT.md`,
+  `gen/coverage_status_matrix.json` and the generated
+  `data/schemas/coverage_status.schema.json` contract for scanner, generated
+  atlas and coverage report status fields.
 * GoldSrc GDExtension adapter boundary for `alanfischer/goldsrc-godot` rather
   than project-owned MDL/SPR decoders.
 * `goldsrc_asset_atlas` scanner skeleton or equivalent local inspection command
@@ -545,6 +549,9 @@ per-weapon scale/position/FOV tuning.
 * `VIEWMODEL_WORLD_PROFILE.md` source values exist in config or a profile
   resource and profile smoke covers scale, coordinate determinant, eye heights,
   FOV derivation, `KEEP_HEIGHT`, anti-`58.7155` and no per-weapon transform keys.
+* Coverage status smoke proves the generated schema/document sections are in
+  sync with `gen/coverage_status_matrix.json`, validates status fixtures and
+  directly asserts the verified/absence/provenance invariants.
 * Weapon/viewmodel code consumes semantic IDs and atlas-backed contracts, not
   direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
 * Scanner/inspection output produces reviewable diagnostics for actual local MDL

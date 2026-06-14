@@ -6,6 +6,11 @@
 
 Внутренний контракт уже сформулирован правильно: gameplay не должен знать GoldSrc-файлы; он знает `weapon_id`, `state`, semantic events, а `GoldSrcAssetProvider` и `AssetOrchestrator` связывают это с `.mdl/.spr/.wav/.bsp/.wad`. Ниже — карта, которую OpenStrike хранит как `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md`.
 
+Status vocabulary for generated atlas fields is defined separately in
+`docs/COVERAGE_STATUS_CONTRACT.md`. This atlas defines what must be covered; the
+coverage contract defines how each field is marked as `stage` + `confidence` and
+which status pairs are allowed.
+
 
 ## 1. Главный принцип покрытия
 

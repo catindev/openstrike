@@ -12,9 +12,19 @@ All notable changes to this project will be documented in this file.  The format
 * Added `docs/VIEWMODEL_WORLD_PROFILE.md` as the required PR-06A profile
   contract for GoldSrc unit scale, coordinate mapping, eye height, world FOV,
   viewmodel FOV, no-per-weapon-transform rules and profile smoke obligations.
+* Added `docs/COVERAGE_STATUS_CONTRACT.md`,
+  `gen/coverage_status_matrix.json`, `gen/generate.py` and the generated
+  `data/schemas/coverage_status.schema.json` contract for scanner, generated
+  atlas and coverage report status pairs.
+* Added `src/dev/smoke/coverage_status_smoke.gd` and wired it into the shared
+  smoke script to verify generated coverage status artifacts, schema fixtures
+  and the verified/absence/provenance invariants.
 * Added agent/documentation instructions requiring future world/viewmodel scale,
   coordinate mapping, eye height, camera FOV and first-person placement work to
   read and update the viewmodel/world profile.
+* Added agent/documentation instructions requiring future asset scanner,
+  generated atlas and coverage report status changes to read the coverage
+  status contract and edit only the matrix source of truth by hand.
 * Added agent/documentation instructions requiring future weapon/viewmodel,
   animation, audio, muzzle flash, shell ejection, impact, grenade and HUD
   weapon-sprite work to read and update the asset orchestration atlas.

@@ -72,5 +72,7 @@ World/viewmodel scale, coordinate mapping, eye height and FOV profile rules
 live in `VIEWMODEL_WORLD_PROFILE.md`.
 Weapon, model, animation, audio, effect and lifecycle orchestration rules live
 in `CS16_ASSET_ORCHESTRATION_ATLAS.md`.
+Scanner, generated atlas and coverage report status vocabulary rules live in
+`COVERAGE_STATUS_CONTRACT.md`.
 
 Whenever citing numbers or behaviours from these sources, mark them as **reference only**.  Further testing should confirm their correctness within the Godot implementation.

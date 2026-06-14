@@ -1,0 +1,19 @@
+{
+  "_comment": "SINGLE hand-edited source of truth. schema + markdown table are GENERATED from this. CI fails if generated artifacts differ from committed.",
+  "stages": ["unknown","not_applicable","source_missing","source_found","parsed","semantic_mapped","orchestration_ready","blocked"],
+  "confidence": ["none","hand_seeded","manual_unverified","unverified_read","local_verified","synthetic_verified","local_verified_absence"],
+  "allowed": {
+    "unknown": ["none"],
+    "not_applicable": ["none"],
+    "source_missing": ["none","local_verified_absence"],
+    "source_found": ["none","unverified_read"],
+    "parsed": ["none","unverified_read","local_verified","synthetic_verified"],
+    "semantic_mapped": ["none","hand_seeded","unverified_read","manual_unverified","local_verified","synthetic_verified"],
+    "orchestration_ready": ["none","hand_seeded","unverified_read","manual_unverified","local_verified","synthetic_verified"],
+    "blocked": ["none","unverified_read"]
+  },
+  "invariants": {
+    "value_verified_requires_parsed": ["local_verified","synthetic_verified"],
+    "absence_only_at_source_missing": "local_verified_absence"
+  }
+}
