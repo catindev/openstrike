@@ -18,6 +18,9 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
 
 * Follow **GitHub Flow**: every task or feature is developed on a fresh branch and submitted as a pull request.  One PR should accomplish a single conceptual step.
 * Read the documentation in `docs/` before coding.  Understand the architecture, roadmap and legal constraints.
+* Before changing Godot code, GDScript, scenes, resources, dev smoke checks,
+  HUD, viewmodels, effects, asset-provider code or Godot project structure,
+  read `docs/AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
 * Before changing movement, weapons, hit feedback, prediction, BSP collision, HUD, viewmodels or any other feel-sensitive system, read `docs/CS_1_6_FEEL.md` and keep its movement/feedback acceptance criteria in scope.
 * Before accepting a subjective feel claim, read `docs/DEV_LABS_METHODOLOGY.md` and map the claim to telemetry, a smoke test, a debug overlay or a planned dev lab.
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.

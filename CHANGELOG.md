@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `docs/AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` as the required
+  project-specific Godot/GDScript workflow guide for AI agents.
 * Added `docs/3KLIKSPHILIP_RESEARCH_NOTES.md` as a community-engineering
   research note for Counter-Strike experiment design, dev labs, latency,
   hitboxes, mapping, performance, HUD and viewmodel cost.
@@ -65,6 +67,9 @@ All notable changes to this project will be documented in this file.  The format
   contract while keeping the short air-strafe oracle analytical.
 * Documented that `edgefriction` is loaded from cvars but deferred until an
   edge-trace movement PR introduces the needed collision context.
+* Updated agent reading instructions so Godot, GDScript, scene, resource,
+  presentation, asset-provider and Godot smoke/CI work starts from the
+  OpenStrike Godot skill.
 * Updated agent and documentation rules so new external research must be
   classified in the source catalog and subjective feel claims must map to a lab,
   telemetry artifact, smoke test or debug overlay.
