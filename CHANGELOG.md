@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added GitHub Actions CI for Godot headless project smoke, Asset VFS smoke,
+  cvar/config smoke, whitespace checks and forbidden asset scans.
+* Added local smoke and forbidden asset scan scripts for the same checks used
+  by CI.
+* Added a project decision to commit Godot `.gd.uid` sidecar files for stable
+  resource UIDs.
+* Added cvar unit documentation for movement and round-rule defaults.
 * Added `CvarRegistry`, `OpenStrikeConfigLoader` and `BindRegistry` for default cvars, user-style overrides, serialization and key-command binding data.
 * Added a headless cvar/config smoke test for default cvar loading, overrides, serialization and bind/unbind parsing.
 * Added `docs/CVARS_AND_CONFIG.md` to document the cvar, config and bind layer.
@@ -18,6 +25,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Fixed config and bind parsing so `//` inside quoted strings is preserved
+  while real comments are still stripped.
+* Corrected `mp_buytime` to `1.5` minutes instead of a seconds-style value.
+* Updated Godot scene metadata to use Godot 4 Control offsets.
+* Normalized `project.godot` with current Godot 4 metadata and committed
+  generated UID sidecars.
 * Reworked the roadmap around the GoldSrc reimplementation sequence: bootstrap, local config/VFS, cvars, movement, asset providers, viewmodel orchestration, BSP, game loop and gameplay systems.
 * Updated the development plan so local asset resolution and cvar authority come before movement and weapon presentation.
 * Clarified asset pipeline responsibilities: raw file resolution and diagnostics precede format parsing.

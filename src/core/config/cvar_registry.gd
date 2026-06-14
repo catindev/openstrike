@@ -176,10 +176,24 @@ func _format_value(value) -> String:
 
 
 func _strip_comment(line: String) -> String:
-	var comment_index := line.find("//")
-	if comment_index == -1:
-		return line
-	return line.substr(0, comment_index)
+	var in_quote := false
+	var escaped := false
+
+	for index in range(line.length()):
+		var character := line.substr(index, 1)
+		if escaped:
+			escaped = false
+			continue
+		if character == "\\":
+			escaped = true
+			continue
+		if character == "\"":
+			in_quote = not in_quote
+			continue
+		if not in_quote and character == "/" and index + 1 < line.length() and line.substr(index + 1, 1) == "/":
+			return line.substr(0, index)
+
+	return line
 
 
 func _unquote(value: String) -> String:

@@ -17,11 +17,13 @@ func _run() -> int:
 		return 1
 	if not _assert(cvars.get_int("mp_startmoney") == 800, "mp_startmoney should load from default cfg", cvars.to_dictionary()):
 		return 1
+	if not _assert(cvars.get_float("mp_buytime") == 1.5, "mp_buytime should use CS-style minutes", cvars.to_dictionary()):
+		return 1
 
-	cvars.apply_cfg_text("sv_gravity 700\nname \"OpenStrike Player\"\n", "smoke_user_cfg")
+	cvars.apply_cfg_text("sv_gravity 700\nname \"http://openstrike.local/player\" // quoted comment marker\n", "smoke_user_cfg")
 	if not _assert(cvars.get_int("sv_gravity") == 700, "user cfg should override existing cvar value", cvars.to_dictionary()):
 		return 1
-	if not _assert(cvars.get_string("name") == "OpenStrike Player", "user cfg should support quoted strings", cvars.to_dictionary()):
+	if not _assert(cvars.get_string("name") == "http://openstrike.local/player", "quoted cvar strings should preserve // inside quotes", cvars.to_dictionary()):
 		return 1
 
 	var serialized = cvars.serialize_cfg()
@@ -33,7 +35,11 @@ func _run() -> int:
 		return 1
 	if not _assert(binds.get_command("W") == "+forward", "bind lookup should be case-insensitive", binds.to_dictionary()):
 		return 1
-	if not _assert(binds.apply_bind_line("unbind w", "smoke", 2), "unbind line should parse", binds.to_dictionary()):
+	if not _assert(binds.apply_bind_line("bind \"mouse1\" \"say http://openstrike.local\" // comment", "smoke", 2), "bind parser should preserve // inside quoted commands", binds.to_dictionary()):
+		return 1
+	if not _assert(binds.get_command("mouse1") == "say http://openstrike.local", "quoted bind command should preserve URL", binds.to_dictionary()):
+		return 1
+	if not _assert(binds.apply_bind_line("unbind w", "smoke", 3), "unbind line should parse", binds.to_dictionary()):
 		return 1
 	if not _assert(not binds.has_binding("w"), "unbind should remove binding", binds.to_dictionary()):
 		return 1

@@ -26,8 +26,3 @@ local_goldsrc.*.json
 *.wad
 *.wav
 *.bmp
-
-!tests/
-!tests/fixtures/
-!tests/fixtures/open/
-!tests/fixtures/open/**

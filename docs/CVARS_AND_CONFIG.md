@@ -21,7 +21,27 @@ mp_startmoney 800
 ```
 
 `//` starts a comment. Values are parsed as booleans, integers, floats or
-strings. Quoted strings are supported.
+strings. Quoted strings are supported, and `//` inside a quoted string is
+preserved as part of the value.
+
+## Units
+
+Keep cvar units aligned with Counter-Strike 1.6 unless a later decision records
+a deliberate conversion. Current defaults use:
+
+| Cvar | Unit | Default |
+|---|---:|---:|
+| `sv_gravity` | units/s^2 | `800` |
+| `sv_friction` | coefficient | `4` |
+| `sv_stopspeed` | units/s | `100` |
+| `sv_stepsize` | units | `18` |
+| `sv_airaccelerate` | coefficient | `10` |
+| `sv_maxspeed` | units/s | `320` |
+| `mp_freezetime` | seconds | `6` |
+| `mp_roundtime` | minutes | `5` |
+| `mp_buytime` | minutes | `1.5` |
+| `mp_c4timer` | seconds | `45` |
+| `mp_startmoney` | dollars | `800` |
 
 ## Runtime API
 
