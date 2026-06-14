@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added hard manifest-contract validation for asset type allowlists, provider
+  allowlists, type-to-extension checks and safe GoldSrc-relative paths.
+* Added manifest metadata retention in asset manifests and inspection reports.
+* Added manifest contract smoke coverage for bad provider, bad type,
+  type/extension mismatch, parent traversal, absolute paths, backslash paths
+  and metadata retention.
 * Added `data/assets/cs16_pilot_weapon_assets.json` with verified relative
   GoldSrc asset paths for the pilot AK-47, USP, knife and HE grenade
   presentation set.
@@ -72,6 +78,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Tightened semantic asset manifests before PR-06 so presentation code cannot
+  consume mismatched types, unsupported providers or unsafe paths as stable
+  catalog data.
 * Extended the shared smoke-check script to run the pilot asset catalog smoke
   after manifest inspection and before cvar/movement checks.
 * Extended the shared smoke-check script to run asset manifest inspection after
@@ -123,6 +132,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-05C before weapon/viewmodel orchestration after review identified
+  that the provider/catalog foundation was directionally correct but the
+  manifest contract still needed defense-in-depth validation.
 * Inserted PR-05B before weapon/viewmodel orchestration because the pilot
   weapon presentation catalog should be reviewable data and smoke-validated
   before presentation code depends on those semantic asset IDs.

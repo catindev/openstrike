@@ -6,6 +6,7 @@ const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagn
 const OpenStrikeAssetReferenceRef = preload("res://src/core/assets/asset_reference.gd")
 
 var source_path: String = ""
+var metadata: Dictionary = {}
 var diagnostics: Array[Dictionary] = []
 
 var _references: Dictionary = {}
@@ -47,6 +48,16 @@ func load_from_file(path: String) -> void:
 func configure_from_dictionary(data: Dictionary, source: String = "") -> void:
 	_reset()
 	source_path = source
+
+	var raw_metadata = data.get("metadata", {})
+	if raw_metadata is Dictionary:
+		metadata = raw_metadata.duplicate(true)
+	else:
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.warning(
+			"asset_manifest_metadata_invalid",
+			"Asset manifest metadata must be a dictionary.",
+			{"source_path": source_path}
+		))
 
 	var raw_assets = data.get("assets", {})
 	if not raw_assets is Dictionary:
@@ -99,6 +110,7 @@ func to_dictionary() -> Dictionary:
 		assets[str(asset_id)] = _references[asset_id].to_dictionary()
 	return {
 		"source_path": source_path,
+		"metadata": metadata,
 		"valid": is_valid(),
 		"assets": assets,
 		"diagnostics": diagnostics,
@@ -107,5 +119,6 @@ func to_dictionary() -> Dictionary:
 
 func _reset() -> void:
 	source_path = ""
+	metadata.clear()
 	diagnostics.clear()
 	_references.clear()

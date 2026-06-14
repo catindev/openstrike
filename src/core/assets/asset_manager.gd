@@ -184,6 +184,8 @@ func inspect_manifest():
 		))
 		return report
 
+	report.source_path = asset_manifest.source_path
+	report.metadata = asset_manifest.metadata.duplicate(true)
 	for asset_id in asset_manifest.get_asset_ids():
 		report.add_result(goldsrc_provider.inspect_asset(asset_id))
 
