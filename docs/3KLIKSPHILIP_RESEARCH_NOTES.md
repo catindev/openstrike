@@ -4,10 +4,9 @@
 Назначение: определить, какие материалы и подходы 3kliksphilip полезны для OpenStrike, и перевести их в инженерные задачи, dev-labs и acceptance criteria.
 
 OpenStrike integration note: this document is the full research note. The
-operational source catalog lives in `docs/SOURCE_CATALOG.md`, and dev-lab rules
-live in `docs/DEV_LABS_METHODOLOGY.md`. The original task paths under
-`docs/KNOWLEDGE_BASE/` are adapted because this repository already has
-`docs/KNOWLEDGE_BASE.md` as a file.
+operational source catalog lives in `docs/SOURCE_CATALOG.md`, dev-lab rules
+live in `docs/DEV_LABS_METHODOLOGY.md`, and the current knowledge-base index
+lives in `docs/KNOWLEDGE_BASE.md`.
 
 ---
 
@@ -50,7 +49,7 @@ live in `docs/DEV_LABS_METHODOLOGY.md`. The original task paths under
 
 ### 2.1. High value для OpenStrike
 
-Эти материалы нужно занести в `docs/KNOWLEDGE_BASE/source_catalog.md` как community-engineering references:
+Эти материалы нужно занести в `docs/SOURCE_CATALOG.md` как community-engineering references:
 
 * CS:GO 64 vs 128 tick.
 * CS2 input latency testing.
@@ -680,7 +679,7 @@ ANIM-004:
 
 ---
 
-## 13. What to add to source_catalog.md
+## 13. What to add to SOURCE_CATALOG.md
 
 Добавить группу источников:
 
@@ -731,8 +730,8 @@ Important materials:
 Files:
 
 ```text
-docs/KNOWLEDGE_BASE/source_catalog.md
-docs/KNOWLEDGE_BASE/cs_engine_research_methodology.md
+docs/SOURCE_CATALOG.md
+docs/3KLIKSPHILIP_RESEARCH_NOTES.md
 ```
 
 Acceptance:
@@ -749,7 +748,7 @@ Acceptance:
 Files:
 
 ```text
-docs/KNOWLEDGE_BASE/dev_labs_methodology.md
+docs/DEV_LABS_METHODOLOGY.md
 ```
 
 Acceptance:

@@ -31,6 +31,8 @@ func _run() -> int:
 
 	if not _run_ground_acceleration(settings):
 		return 1
+	if not _run_ground_maxvelocity_input(settings):
+		return 1
 	if not _run_fastrun_transient(settings):
 		return 1
 	if not _run_friction(settings):
@@ -38,6 +40,8 @@ func _run() -> int:
 	if not _run_air_cap(settings):
 		return 1
 	if not _run_air_strafe_gain(settings):
+		return 1
+	if not _run_air_strafe_maxvelocity(settings):
 		return 1
 	if not _run_jump_frame_order(settings):
 		return 1
@@ -63,6 +67,25 @@ func _run_ground_acceleration(settings) -> bool:
 	return (
 		_assert(state.horizontal_speed() >= settings.max_speed - 0.01, "ground acceleration should reach sv_maxspeed", state.snapshot())
 		and _assert(telemetry.max_horizontal_speed() <= settings.max_speed + 0.01, "ground speed should not exceed sv_maxspeed", telemetry.last_frame())
+	)
+
+
+func _run_ground_maxvelocity_input(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.velocity = Vector3(settings.max_velocity * 2.0, 0.0, 0.0)
+	var input = MovementInputRef.new()
+	var delta: float = settings.fixed_delta()
+
+	simulator.step(state, input, delta)
+
+	var clamped_start_speed: float = settings.max_velocity
+	var friction_drop: float = max(clamped_start_speed, settings.stop_speed) * settings.friction * delta
+	var expected_velocity_x: float = max(clamped_start_speed - friction_drop, 0.0)
+	var expected_position_x: float = expected_velocity_x * delta
+	return (
+		_assert(abs(state.velocity.x - expected_velocity_x) <= 0.01, "ground maxvelocity should clamp before friction", {"expected_velocity_x": expected_velocity_x, "state": state.snapshot()})
+		and _assert(abs(state.position.x - expected_position_x) <= 0.01, "ground maxvelocity should clamp before position integration", {"expected_position_x": expected_position_x, "state": state.snapshot()})
 	)
 
 
@@ -169,6 +192,79 @@ func _run_air_strafe_gain(settings) -> bool:
 		and _assert(state.horizontal_speed() >= expected_speed - 0.01, "air strafe should match independently calculated gain lower bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
 		and _assert(state.horizontal_speed() <= expected_speed + 0.01, "air strafe should match independently calculated gain upper bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
 	)
+
+
+func _run_air_strafe_maxvelocity(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.position.y = 1000000.0
+	state.velocity = Vector3(0.0, 0.0, settings.max_speed)
+	state.on_ground = false
+	var telemetry = MovementTelemetryRef.new()
+	var delta: float = settings.fixed_delta()
+	var frame_count := 10000
+
+	for frame in range(frame_count):
+		var horizontal := state.horizontal_velocity()
+		var perpendicular := Vector3(horizontal.z, 0.0, -horizontal.x).normalized()
+		var strafe_input = MovementInputRef.new(perpendicular.z, perpendicular.x, false, false)
+		simulator.step(state, strafe_input, delta, telemetry)
+
+	var expected_velocity := _expected_perpendicular_air_strafe_velocity(settings, Vector3(0.0, 0.0, settings.max_speed), frame_count, delta)
+	var expected_speed := Vector3(expected_velocity.x, 0.0, expected_velocity.z).length()
+	var unlimited_speed := sqrt(pow(settings.max_speed, 2.0) + pow(settings.air_max_wishspeed, 2.0) * float(frame_count))
+	return (
+		_assert(not state.on_ground, "long-run air strafe smoke should remain airborne", state.snapshot())
+		and _assert(abs(state.velocity.x) <= settings.max_velocity + 0.01, "sv_maxvelocity should clamp velocity.x component-wise", state.snapshot())
+		and _assert(abs(state.velocity.y) <= settings.max_velocity + 0.01, "sv_maxvelocity should clamp velocity.y component-wise", state.snapshot())
+		and _assert(abs(state.velocity.z) <= settings.max_velocity + 0.01, "sv_maxvelocity should clamp velocity.z component-wise", state.snapshot())
+		and _assert(state.horizontal_speed() <= unlimited_speed - 10.0, "long-run air strafe should not preserve the old unlimited speed model", {"unlimited_speed": unlimited_speed, "state": state.snapshot()})
+		and _assert(state.horizontal_speed() >= expected_speed - 0.05, "long-run air strafe should match component-wise maxvelocity lower bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
+		and _assert(state.horizontal_speed() <= expected_speed + 0.05, "long-run air strafe should match component-wise maxvelocity upper bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
+	)
+
+
+func _expected_perpendicular_air_strafe_velocity(settings, start_velocity: Vector3, frame_count: int, delta: float) -> Vector3:
+	var velocity := start_velocity
+	for frame in range(frame_count):
+		var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+		var wish_direction := Vector3.ZERO
+		if horizontal != Vector3.ZERO:
+			wish_direction = Vector3(horizontal.z, 0.0, -horizontal.x).normalized()
+
+		if wish_direction != Vector3.ZERO:
+			var full_wish_speed: float = settings.max_speed
+			var capped_wish_speed: float = min(full_wish_speed, settings.air_max_wishspeed)
+			var current_speed: float = horizontal.dot(wish_direction)
+			var add_speed: float = capped_wish_speed - current_speed
+			if add_speed > 0.0:
+				var accel_speed: float = min(settings.air_accelerate * full_wish_speed * delta, add_speed)
+				velocity.x += accel_speed * wish_direction.x
+				velocity.z += accel_speed * wish_direction.z
+
+		velocity = _expected_component_wise_maxvelocity(velocity, settings.max_velocity)
+	return velocity
+
+
+func _expected_component_wise_maxvelocity(velocity: Vector3, max_velocity: float) -> Vector3:
+	var limit: float = max(max_velocity, 0.0)
+	if limit <= 0.0:
+		return velocity
+	return Vector3(
+		_expected_checked_velocity_component(velocity.x, limit),
+		_expected_checked_velocity_component(velocity.y, limit),
+		_expected_checked_velocity_component(velocity.z, limit)
+	)
+
+
+func _expected_checked_velocity_component(value: float, limit: float) -> float:
+	if value != value:
+		return 0.0
+	if value > limit:
+		return limit
+	if value < -limit:
+		return -limit
+	return value
 
 
 func _run_jump_frame_order(settings) -> bool:

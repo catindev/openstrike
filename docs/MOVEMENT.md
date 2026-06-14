@@ -14,6 +14,8 @@ covers:
 * ground friction using `sv_friction` and `sv_stopspeed`;
 * air acceleration with GoldSrc-style capped `add_speed` and uncapped
   acceleration amount;
+* component-wise `sv_maxvelocity` velocity checks at frame start and after
+  velocity-changing phases;
 * GoldSrc-style directional button states and W+A fastrun transient telemetry;
 * jump impulse and half-step gravity integration;
 * duck hull height selection;
@@ -36,7 +38,7 @@ collision-integrated step handling.
 
 ## Runtime classes
 
-* `CSMovementSettings` reads movement cvars from `CvarRegistry`.
+* `CSMovementSettings` reads movement cvars from `OpenStrikeCvarRegistry`.
 * `CSMovementInput` stores normalized forward/side movement plus jump and duck.
 * `CSMovementState` stores position, velocity, ground state, hull height and
   ground height.
@@ -60,8 +62,8 @@ as constants, not copied source code.
 | `sv_air_max_wishspeed` | `30` | OpenStrike-specific parity knob for GoldSrc's air wishspeed cap. |
 | `sv_jumpvelocity` | `270` | OpenStrike-specific parity knob for the jump impulse. |
 | `sv_maxspeed` | `320` | Base movement speed before weapon modifiers. |
-| `sv_maxvelocity` | `2000` | Maximum velocity guard for future GoldSrc-style velocity checks. |
-| `edgefriction` | `2` | Edgefriction multiplier for future edge trace implementation. |
+| `sv_maxvelocity` | `2000` | Component-wise velocity guard, applied per axis instead of as a horizontal speed cap. |
+| `edgefriction` | `2` | Loaded cvar for future edge trace implementation. Not simulated yet. |
 | `sv_player_stand_height` | `72` | Standing player hull height. |
 | `sv_player_duck_height` | `36` | Ducking player hull height. |
 
@@ -77,6 +79,13 @@ final_accel = min(accel_speed, add_speed)
 
 `sv_air_max_wishspeed` does not replace `full_wishspeed` when calculating the
 acceleration amount.
+
+`sv_maxvelocity` follows the GoldSrc-style check contract rather than the
+modern interpretation of clamping horizontal speed magnitude. The simulator
+sanitizes NaN velocity components to `0` and clamps each component to
+`[-sv_maxvelocity, sv_maxvelocity]` at frame start and after
+velocity-changing phases. This keeps movement smoke golden expectations
+aligned with the cvar now that `sv_maxvelocity=2000` is part of the defaults.
 
 Fastrun telemetry uses directional button states instead of a single normalized
 input vector. A newly pressed directional button can be represented as `0.5`
@@ -114,12 +123,21 @@ Reference-only links:
 * cvar loading into movement settings;
 * ground acceleration reaches `sv_maxspeed`;
 * telemetry never exceeds `sv_maxspeed` during straight ground acceleration;
+* over-limit ground input velocity is clamped before friction and position
+  integration;
 * W+A fastrun first-frame and held-diagonal transient speed ranges at 100 Hz;
 * ground friction stops a released player;
 * air acceleration respects `sv_air_max_wishspeed`;
-* optimal air-strafe gains match an independently calculated 100 fps reference
-  range;
+* short optimal air-strafe gains match the independently calculated 100 fps
+  closed-form reference range before `sv_maxvelocity` is reached;
+* long-run optimal air-strafe clamps velocity components through
+  `sv_maxvelocity` and no longer matches the old unlimited-speed formula;
 * jump-frame ground acceleration runs before takeoff;
 * jumping leaves the ground and gravity lands the player;
 * ducking switches hull height;
 * the step-height helper accepts/rejects `sv_stepsize` bounds.
+
+TODO for a future movement PR: replace the current jump-frame
+`horizontal_speed() > 0` smoke assertion with an exact horizontal-speed
+expectation for that frame. PR-04E intentionally keeps that behavior unchanged
+while fixing the `sv_maxvelocity` contract already exposed through cvars.

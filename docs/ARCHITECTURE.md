@@ -57,14 +57,14 @@ The intended flow is:
 
 ```
 input -> game state -> weapon state -> semantic event
-      -> presentation orchestration -> AssetManager/provider
+      -> presentation orchestration -> asset manager/provider
       -> viewmodel, audio, effect, HUD and diagnostics
 ```
 
 Near-term orchestrators should be introduced only after the local GoldSrc VFS
 and cvar/config foundations exist:
 
-* AssetManager and providers resolve local GoldSrc files.
+* `OpenStrikeAssetManager` and providers resolve local GoldSrc files.
 * Game systems own authoritative weapon, movement and round state.
 * Presentation systems own viewmodels, animation aliases, event timelines,
   audio, muzzle flashes, shell ejection, tracers, impacts, HUD and menus.

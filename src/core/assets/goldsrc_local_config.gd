@@ -1,10 +1,10 @@
 extends RefCounted
 
-class_name GoldSrcLocalConfig
+class_name OpenStrikeGoldSrcLocalConfig
 
 const DEFAULT_CONFIG_PATH := "user://local_goldsrc.json"
 
-const AssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
+const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
 
 var source_path := ""
 var half_life_dir := ""
@@ -18,7 +18,7 @@ func load_from_file(path: String = DEFAULT_CONFIG_PATH) -> void:
 	source_path = path
 
 	if not FileAccess.file_exists(path):
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"local_config_missing",
 			"GoldSrc local configuration file is missing.",
 			{"path": path}
@@ -27,7 +27,7 @@ func load_from_file(path: String = DEFAULT_CONFIG_PATH) -> void:
 
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"local_config_unreadable",
 			"GoldSrc local configuration file cannot be opened.",
 			{"path": path, "error": FileAccess.get_open_error()}
@@ -36,7 +36,7 @@ func load_from_file(path: String = DEFAULT_CONFIG_PATH) -> void:
 
 	var parsed = JSON.parse_string(file.get_as_text())
 	if not parsed is Dictionary:
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"local_config_invalid_json",
 			"GoldSrc local configuration must be a JSON object.",
 			{"path": path}
@@ -63,7 +63,7 @@ func configure_from_dictionary(data: Dictionary, source: String = "") -> void:
 
 
 func is_valid() -> bool:
-	return not AssetDiagnosticsRef.has_errors(diagnostics)
+	return not OpenStrikeAssetDiagnosticsRef.has_errors(diagnostics)
 
 
 func get_search_roots() -> Array[String]:
@@ -95,14 +95,25 @@ func _reset() -> void:
 
 
 func _validate() -> void:
-	_validate_dir("half_life_dir", half_life_dir)
+	var has_half_life_dir := half_life_dir != ""
+	var has_explicit_roots := cstrike_dir != "" and valve_dir != ""
+
+	if not has_half_life_dir and not has_explicit_roots:
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
+			"local_config_roots_missing",
+			"GoldSrc local configuration requires half_life_dir or both cstrike_dir and valve_dir.",
+			{"source_path": source_path}
+		))
+
+	if has_half_life_dir:
+		_validate_dir("half_life_dir", half_life_dir)
 	_validate_dir("cstrike_dir", cstrike_dir)
 	_validate_dir("valve_dir", valve_dir)
 
 
 func _validate_dir(field_name: String, path: String) -> void:
 	if path == "":
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"local_config_path_missing",
 			"Required GoldSrc directory path is missing.",
 			{"field": field_name, "source_path": source_path}
@@ -110,14 +121,14 @@ func _validate_dir(field_name: String, path: String) -> void:
 		return
 
 	if not _is_absolute_path(path):
-		diagnostics.append(AssetDiagnosticsRef.warning(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.warning(
 			"local_config_path_relative",
 			"GoldSrc directory paths should be absolute.",
 			{"field": field_name, "path": path}
 		))
 
 	if not DirAccess.dir_exists_absolute(path):
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"local_config_dir_missing",
 			"Configured GoldSrc directory does not exist.",
 			{"field": field_name, "path": path}

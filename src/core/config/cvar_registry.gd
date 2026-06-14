@@ -1,6 +1,6 @@
 extends RefCounted
 
-class_name CvarRegistry
+class_name OpenStrikeCvarRegistry
 
 var values: Dictionary = {}
 var defaults: Dictionary = {}

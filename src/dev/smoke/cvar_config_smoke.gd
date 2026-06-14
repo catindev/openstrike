@@ -1,6 +1,6 @@
 extends SceneTree
 
-const BindRegistryRef = preload("res://src/core/config/bind_registry.gd")
+const OpenStrikeBindRegistryRef = preload("res://src/core/config/bind_registry.gd")
 const ConfigLoaderRef = preload("res://src/core/config/config_loader.gd")
 
 
@@ -30,7 +30,7 @@ func _run() -> int:
 	if not _assert(serialized.contains("sv_gravity 700"), "serialized cfg should include updated cvar", {"serialized": serialized}):
 		return 1
 
-	var binds = BindRegistryRef.new()
+	var binds = OpenStrikeBindRegistryRef.new()
 	if not _assert(binds.apply_bind_line("bind \"w\" \"+forward\"", "smoke", 1), "bind line should parse", binds.to_dictionary()):
 		return 1
 	if not _assert(binds.get_command("W") == "+forward", "bind lookup should be case-insensitive", binds.to_dictionary()):

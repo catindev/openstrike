@@ -1,8 +1,8 @@
 extends RefCounted
 
-class_name GoldSrcVFS
+class_name OpenStrikeGoldSrcVFS
 
-const AssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
+const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
 
 var search_roots: Array[String] = []
 var diagnostics: Array[Dictionary] = []
@@ -17,7 +17,7 @@ func configure(roots: Array[String]) -> void:
 		if normalized == "":
 			continue
 		if not DirAccess.dir_exists_absolute(normalized):
-			diagnostics.append(AssetDiagnosticsRef.warning(
+			diagnostics.append(OpenStrikeAssetDiagnosticsRef.warning(
 				"vfs_root_missing",
 				"Configured VFS root does not exist.",
 				{"root": normalized}
@@ -67,7 +67,7 @@ func resolve(relative_path: String) -> Dictionary:
 	}
 
 	if normalized == "":
-		result["diagnostics"].append(AssetDiagnosticsRef.error(
+		result["diagnostics"].append(OpenStrikeAssetDiagnosticsRef.error(
 			"vfs_invalid_relative_path",
 			"GoldSrc VFS paths must be non-empty relative paths without parent traversal.",
 			{"requested_path": relative_path}
@@ -75,7 +75,7 @@ func resolve(relative_path: String) -> Dictionary:
 		return result
 
 	if search_roots.is_empty():
-		result["diagnostics"].append(AssetDiagnosticsRef.error(
+		result["diagnostics"].append(OpenStrikeAssetDiagnosticsRef.error(
 			"vfs_no_roots",
 			"GoldSrc VFS has no configured search roots.",
 			{"requested_path": relative_path}
@@ -91,7 +91,7 @@ func resolve(relative_path: String) -> Dictionary:
 			result["root"] = root
 			return result
 
-	result["diagnostics"].append(AssetDiagnosticsRef.warning(
+	result["diagnostics"].append(OpenStrikeAssetDiagnosticsRef.warning(
 		"vfs_asset_missing",
 		"GoldSrc VFS could not resolve the requested file.",
 		{"requested_path": relative_path, "normalized_path": normalized, "tried": result["tried"]}
@@ -109,7 +109,7 @@ func read_file_bytes(relative_path: String) -> PackedByteArray:
 		return PackedByteArray()
 	var file := FileAccess.open(str(resolved["resolved_path"]), FileAccess.READ)
 	if file == null:
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"vfs_read_failed",
 			"Resolved GoldSrc file could not be opened.",
 			{"resolved_path": resolved["resolved_path"], "error": FileAccess.get_open_error()}
@@ -161,7 +161,7 @@ func _find_case_insensitive_child(directory_path: String, wanted: String, final_
 	dir.list_dir_end()
 
 	if matches.size() > 1:
-		diagnostics.append(AssetDiagnosticsRef.warning(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.warning(
 			"vfs_ambiguous_case_match",
 			"Multiple files or directories match a GoldSrc path case-insensitively.",
 			{"directory": directory_path, "wanted": wanted, "matches": matches}

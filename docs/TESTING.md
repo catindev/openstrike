@@ -131,6 +131,36 @@ checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   explaining any plan-order change.
 
+## Current (PR-04E) checklist
+
+For asset/config contract cleanup and the `sv_maxvelocity` movement-contract
+exception, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This must include
+  the asset VFS, cvar/config and movement smoke tests.
+* **Asset VFS contract:** Confirm that `asset_vfs_smoke.gd` covers
+  `half_life_dir`-derived roots, explicit `cstrike_dir + valve_dir` roots
+  without `half_life_dir`, and invalid config diagnostics for empty, partial,
+  missing and non-object configs.
+* **Movement cvar contract:** Confirm that long-run air-strafe smoke uses an
+  independent expected calculation with component-wise `sv_maxvelocity`
+  semantics, not `min(horizontal_speed, sv_maxvelocity)`.
+* **Short air-strafe oracle:** Confirm that the 100-frame air-strafe smoke keeps
+  the closed-form `sqrt(max_speed^2 + air_cap^2 * N)` oracle because
+  `sv_maxvelocity` is not reached in that case.
+* **Ground overlimit input:** Confirm that an over-limit grounded input velocity
+  is clamped before friction and before position integration.
+* **Deferred cvar honesty:** Confirm that `edgefriction` is documented as
+  loaded but deferred until edge-trace movement work exists.
+* **Class-name hygiene:** Confirm that generic public core classes use the
+  `OpenStrike*` prefix while `CSMovement*` names are intentionally unchanged.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` explains why PR-04E was
+  inserted before asset providers.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

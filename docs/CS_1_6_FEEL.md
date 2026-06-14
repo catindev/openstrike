@@ -609,7 +609,7 @@ sound/weapons/ak47-1.wav
 sprites/muzzleflash1.spr
 ```
 
-Asset resolution belongs to AssetManager / Provider / Presentation orchestration.
+Asset resolution belongs to asset manager / provider / presentation orchestration.
 
 ---
 

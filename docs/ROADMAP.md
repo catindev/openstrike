@@ -12,7 +12,7 @@ GPL-licensed source code. External projects are reference material only.
 | Milestone | Goal | Acceptance signal |
 |---|---|---|
 | M0 | Bootstrap, project contract, diagnostics and cvar foundation. | The Godot project opens, the main scene runs, documentation agrees on legal and architectural boundaries, and cvar/config data can be loaded without gameplay dependencies. |
-| M1 | Local GoldSrc asset configuration, AssetManager and VFS. | A valid local installation can be configured, raw files resolve through GoldSrc-like search paths, and missing content produces diagnostics instead of placeholders. |
+| M1 | Local GoldSrc asset configuration, asset manager and VFS. | A valid local installation can be configured, raw files resolve through GoldSrc-like search paths, and missing content produces diagnostics instead of placeholders. |
 | M2 | Movement parity on top of cvars. | Player movement uses cvar-backed GoldSrc constants and telemetry matches expected CS 1.6 ranges. |
 | M3 | GoldSrc format providers for MDL, SPR and WAV. | Weapon models, sprites and sounds load through providers without direct file paths in gameplay code. |
 | M4 | Viewmodel and weapon presentation orchestration. | Viewmodels render through a dedicated presentation rig, animation aliases resolve, and semantic events drive sound/effects. |

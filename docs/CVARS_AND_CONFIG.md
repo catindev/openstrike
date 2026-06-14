@@ -56,20 +56,29 @@ OpenStrike-specific parity knobs used by the movement core. They expose
 GoldSrc-like constants through the cvar layer; they are not original GoldSrc
 console variables.
 
+`sv_maxvelocity` is implemented as a GoldSrc-style component-wise velocity
+guard: each velocity component is clamped to `[-sv_maxvelocity,
+sv_maxvelocity]` at frame start and after movement phases that change velocity.
+It is not a horizontal vector-length cap.
+
+`edgefriction` is loaded into `CSMovementSettings` but remains deferred until a
+future edge-trace movement PR adds the collision/hull information needed to
+evaluate edges honestly.
+
 ## Runtime API
 
 Initial implementation classes:
 
-* `src/core/config/cvar_registry.gd` stores cvar definitions, defaults, runtime
+* `OpenStrikeCvarRegistry` stores cvar definitions, defaults, runtime
   values and diagnostics.
 * `src/core/config/config_loader.gd` exposes `OpenStrikeConfigLoader` and loads
   `data/cvars/default.cfg`.
-* `src/core/config/bind_registry.gd` stores key-to-command bindings and parses
+* `OpenStrikeBindRegistry` stores key-to-command bindings and parses
   basic `bind`/`unbind` lines.
 
 Use `OpenStrikeConfigLoader.load_default_cvars()` to create a registry for defaults.
-Use `CvarRegistry.apply_cfg_text()` for user overrides so default metadata is
-preserved.
+Use `OpenStrikeCvarRegistry.apply_cfg_text()` for user overrides so default
+metadata is preserved.
 
 ## Scope
 
@@ -78,6 +87,6 @@ gameplay behavior yet. It provides the data model that those systems will use.
 
 ## Serialization
 
-`CvarRegistry.serialize_cfg()` and `BindRegistry.serialize_cfg()` emit stable
-cfg text. Future user config saving should write to `user://`, not to the
-repository.
+`OpenStrikeCvarRegistry.serialize_cfg()` and
+`OpenStrikeBindRegistry.serialize_cfg()` emit stable cfg text. Future user
+config saving should write to `user://`, not to the repository.

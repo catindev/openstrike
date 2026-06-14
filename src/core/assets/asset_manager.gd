@@ -1,37 +1,37 @@
 extends RefCounted
 
-class_name AssetManager
+class_name OpenStrikeAssetManager
 
-const AssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
-const GoldSrcLocalConfigRef = preload("res://src/core/assets/goldsrc_local_config.gd")
-const GoldSrcVFSRef = preload("res://src/core/assets/goldsrc_vfs.gd")
+const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
+const OpenStrikeGoldSrcLocalConfigRef = preload("res://src/core/assets/goldsrc_local_config.gd")
+const OpenStrikeGoldSrcVFSRef = preload("res://src/core/assets/goldsrc_vfs.gd")
 
 var local_config
 var vfs
 var diagnostics: Array[Dictionary] = []
 
 
-static func create_from_config_path(path: String = GoldSrcLocalConfigRef.DEFAULT_CONFIG_PATH):
+static func create_from_config_path(path: String = OpenStrikeGoldSrcLocalConfigRef.DEFAULT_CONFIG_PATH):
 	var manager = load("res://src/core/assets/asset_manager.gd").new()
 	manager.configure_from_config_path(path)
 	return manager
 
 
-func configure_from_config_path(path: String = GoldSrcLocalConfigRef.DEFAULT_CONFIG_PATH) -> void:
-	var config = GoldSrcLocalConfigRef.new()
+func configure_from_config_path(path: String = OpenStrikeGoldSrcLocalConfigRef.DEFAULT_CONFIG_PATH) -> void:
+	var config = OpenStrikeGoldSrcLocalConfigRef.new()
 	config.load_from_file(path)
 	configure_from_local_config(config)
 
 
 func configure_from_local_config(config) -> void:
 	local_config = config
-	vfs = GoldSrcVFSRef.new()
+	vfs = OpenStrikeGoldSrcVFSRef.new()
 	diagnostics.clear()
 
 	if local_config == null:
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"asset_manager_config_missing",
-			"AssetManager cannot start without a GoldSrc local config."
+			"OpenStrikeAssetManager cannot start without a GoldSrc local config."
 		))
 		return
 
@@ -43,14 +43,14 @@ func configure_from_local_config(config) -> void:
 	diagnostics.append_array(vfs.get_diagnostics())
 
 	if not vfs.is_available():
-		diagnostics.append(AssetDiagnosticsRef.error(
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
 			"asset_manager_vfs_unavailable",
-			"AssetManager has no available GoldSrc VFS roots."
+			"OpenStrikeAssetManager has no available GoldSrc VFS roots."
 		))
 
 
 func is_available() -> bool:
-	return vfs != null and vfs.is_available() and not AssetDiagnosticsRef.has_errors(diagnostics)
+	return vfs != null and vfs.is_available() and not OpenStrikeAssetDiagnosticsRef.has_errors(diagnostics)
 
 
 func resolve_asset(relative_path: String) -> Dictionary:
@@ -62,9 +62,9 @@ func resolve_asset(relative_path: String) -> Dictionary:
 			"resolved_path": "",
 			"root": "",
 			"tried": [],
-			"diagnostics": [AssetDiagnosticsRef.error(
+			"diagnostics": [OpenStrikeAssetDiagnosticsRef.error(
 				"asset_manager_vfs_missing",
-				"AssetManager VFS is not configured.",
+				"OpenStrikeAssetManager VFS is not configured.",
 				{"requested_path": relative_path}
 			)],
 		}

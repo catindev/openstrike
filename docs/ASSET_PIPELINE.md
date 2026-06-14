@@ -10,11 +10,19 @@ OpenStrike will read assets from the user's local installation of *Counter-Strik
 
 The local path configuration will be stored in a user-specific `local_goldsrc.json` file. This file is not part of the repository and must never be committed.
 
-The future config should point to the user's local installation directories, for example:
+The config points to the user's local installation directories. It can derive
+roots from `half_life_dir`:
 
 ```json
 {
-  "half_life_dir": "/path/to/Half-Life",
+  "half_life_dir": "/path/to/Half-Life"
+}
+```
+
+or use explicit roots without `half_life_dir`:
+
+```json
+{
   "cstrike_dir": "/path/to/Half-Life/cstrike",
   "valve_dir": "/path/to/Half-Life/valve"
 }
@@ -23,9 +31,10 @@ The future config should point to the user's local installation directories, for
 The initial schema is documented in `LOCAL_GOLDSRC_CONFIG.md`. The file is
 ignored by `.gitignore`; users create it locally.
 
-## AssetManager
+## OpenStrikeAssetManager
 
-An `AssetManager` module will provide a unified interface for loading assets.  It will:
+`OpenStrikeAssetManager` provides the first unified interface for local asset
+resolution.  It will:
 
 * Parse `local_goldsrc.json` and validate the paths.
 * Resolve files through a GoldSrc-like VFS before any parser runs.
@@ -33,7 +42,7 @@ An `AssetManager` module will provide a unified interface for loading assets.  I
 * Delegate to specific providers (BSP, MDL, WAD, SPR, WAV) based on file extension.
 * Cache loaded resources where appropriate.
 
-The first AssetManager milestone only locates and reads raw files. Format
+The first asset-manager milestone only locates and reads raw files. Format
 parsing comes later, after path resolution, overlay order and diagnostics are
 stable.
 
@@ -51,10 +60,10 @@ PAK and WAD container parsing can be added after filesystem lookup is stable.
 
 Initial implementation classes:
 
-* `src/core/assets/goldsrc_local_config.gd` validates local config paths.
-* `src/core/assets/goldsrc_vfs.gd` resolves relative GoldSrc paths through the configured roots.
-* `src/core/assets/asset_manager.gd` exposes raw resolve/read operations.
-* `src/core/assets/asset_diagnostics.gd` provides structured diagnostic entries.
+* `OpenStrikeGoldSrcLocalConfig` validates local config paths.
+* `OpenStrikeGoldSrcVFS` resolves relative GoldSrc paths through the configured roots.
+* `OpenStrikeAssetManager` exposes raw resolve/read operations.
+* `OpenStrikeAssetDiagnostics` provides structured diagnostic entries.
 
 ## GoldSrc providers
 
@@ -86,7 +95,7 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 
 ## Future tasks
 
-* Implement local config loading and GoldSrc VFS tests.
+* Add PAK/WAD container lookup after raw filesystem lookup is stable.
 * Implement parsers for MDL, BSP, WAD, SPR and WAV files.
 * Design HUD layout readers for text‑based HUD definitions.
 * Create a tool to validate `local_goldsrc.json` and detect missing assets.
