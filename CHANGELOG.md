@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `CvarRegistry`, `OpenStrikeConfigLoader` and `BindRegistry` for default cvars, user-style overrides, serialization and key-command binding data.
+* Added a headless cvar/config smoke test for default cvar loading, overrides, serialization and bind/unbind parsing.
+* Added `docs/CVARS_AND_CONFIG.md` to document the cvar, config and bind layer.
 * Added `AssetManager`, `GoldSrcLocalConfig`, `GoldSrcVFS` and structured asset diagnostics for raw local asset resolution.
 * Added a headless Asset VFS smoke test that uses synthetic files under `user://`.
 * Added `docs/LOCAL_GOLDSRC_CONFIG.md` to document the local config schema, search order and VFS path rules.

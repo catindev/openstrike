@@ -49,6 +49,26 @@ checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   for the PR.
 
+## Current (PR-03) checklist
+
+For cvar, config and bind changes, perform the following checks:
+
+* **Godot project smoke test:** Run `Godot --headless --path . --quit`.
+* **Asset VFS smoke test:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_vfs_smoke.gd`
+  to ensure asset-layer work still compiles.
+* **Cvar config smoke test:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/cvar_config_smoke.gd`.
+  This verifies default cvar loading, user-style overrides, serialization and
+  bind/unbind parsing.
+* **No real GoldSrc fixtures:** Confirm that the repository still contains no
+  `.bsp`, `.mdl`, `.spr`, `.wad`, `.wav`, `.bmp` or committed
+  `local_goldsrc.json` files.
+* **Documentation coverage:** Confirm that `CVARS_AND_CONFIG.md` describes the
+  implemented cvar and bind scope.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  for the PR.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

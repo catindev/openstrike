@@ -1,0 +1,50 @@
+# Cvars and Config
+
+OpenStrike uses cvars as the authoritative source for engine and game tuning
+values. Movement, weapons, rounds and menus should consume cvars instead of
+hardcoding GoldSrc numbers in gameplay code.
+
+## Default config
+
+Default cvars live in:
+
+```text
+data/cvars/default.cfg
+```
+
+The file uses simple GoldSrc-style lines:
+
+```text
+sv_gravity 800
+sv_friction 4
+mp_startmoney 800
+```
+
+`//` starts a comment. Values are parsed as booleans, integers, floats or
+strings. Quoted strings are supported.
+
+## Runtime API
+
+Initial implementation classes:
+
+* `src/core/config/cvar_registry.gd` stores cvar definitions, defaults, runtime
+  values and diagnostics.
+* `src/core/config/config_loader.gd` exposes `OpenStrikeConfigLoader` and loads
+  `data/cvars/default.cfg`.
+* `src/core/config/bind_registry.gd` stores key-to-command bindings and parses
+  basic `bind`/`unbind` lines.
+
+Use `OpenStrikeConfigLoader.load_default_cvars()` to create a registry for defaults.
+Use `CvarRegistry.apply_cfg_text()` for user overrides so default metadata is
+preserved.
+
+## Scope
+
+This layer does not implement a developer console, menus, networked commands or
+gameplay behavior yet. It provides the data model that those systems will use.
+
+## Serialization
+
+`CvarRegistry.serialize_cfg()` and `BindRegistry.serialize_cfg()` emit stable
+cfg text. Future user config saving should write to `user://`, not to the
+repository.
