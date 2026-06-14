@@ -1,6 +1,8 @@
 # Asset Pipeline
 
-This document describes the planned asset pipeline for OpenStrike.  As of version 0.1.0, no asset loading is implemented; this serves as an outline for future work.
+This document describes the planned asset pipeline for OpenStrike. The current
+implementation covers local config validation, raw VFS lookup and raw byte
+reads. GoldSrc format parsing is intentionally left for later milestones.
 
 ## User configuration: `local_goldsrc.json`
 
@@ -18,7 +20,8 @@ The future config should point to the user's local installation directories, for
 }
 ```
 
-The exact schema will be finalized in the AssetManager PR. For PR-00 this file is only documented and ignored by `.gitignore`; no asset loading is implemented.
+The initial schema is documented in `LOCAL_GOLDSRC_CONFIG.md`. The file is
+ignored by `.gitignore`; users create it locally.
 
 ## AssetManager
 
@@ -30,7 +33,7 @@ An `AssetManager` module will provide a unified interface for loading assets.  I
 * Delegate to specific providers (BSP, MDL, WAD, SPR, WAV) based on file extension.
 * Cache loaded resources where appropriate.
 
-The first AssetManager milestone should only locate and read raw files. Format
+The first AssetManager milestone only locates and reads raw files. Format
 parsing comes later, after path resolution, overlay order and diagnostics are
 stable.
 
@@ -45,6 +48,13 @@ installation. It should support:
 * Structured diagnostics for missing roots, missing files and ambiguous assets.
 
 PAK and WAD container parsing can be added after filesystem lookup is stable.
+
+Initial implementation classes:
+
+* `src/core/assets/goldsrc_local_config.gd` validates local config paths.
+* `src/core/assets/goldsrc_vfs.gd` resolves relative GoldSrc paths through the configured roots.
+* `src/core/assets/asset_manager.gd` exposes raw resolve/read operations.
+* `src/core/assets/asset_diagnostics.gd` provides structured diagnostic entries.
 
 ## GoldSrc providers
 

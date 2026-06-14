@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `AssetManager`, `GoldSrcLocalConfig`, `GoldSrcVFS` and structured asset diagnostics for raw local asset resolution.
+* Added a headless Asset VFS smoke test that uses synthetic files under `user://`.
+* Added `docs/LOCAL_GOLDSRC_CONFIG.md` to document the local config schema, search order and VFS path rules.
 * Added `docs/DECISIONS.md` to record legal, architecture, reuse, fallback and changelog rules.
 * Added a PR-01 bootstrap integrity and project-contract plan before asset, movement and weapon work.
 * Added testing checklist coverage for bootstrap integrity, documentation consistency and changelog updates.
@@ -15,6 +18,7 @@ All notable changes to this project will be documented in this file.  The format
 * Reworked the roadmap around the GoldSrc reimplementation sequence: bootstrap, local config/VFS, cvars, movement, asset providers, viewmodel orchestration, BSP, game loop and gameplay systems.
 * Updated the development plan so local asset resolution and cvar authority come before movement and weapon presentation.
 * Clarified asset pipeline responsibilities: raw file resolution and diagnostics precede format parsing.
+* Documented the initial local GoldSrc config and VFS implementation classes.
 * Clarified architecture boundaries for semantic gameplay events, presentation orchestration and provider-driven assets.
 * Restored `project.godot` to a valid Godot 4 configuration with an explicit main scene.
 
