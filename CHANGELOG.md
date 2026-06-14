@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added asset manifest inspection APIs that resolve semantic manifest entries
+  through the GoldSrc VFS without reading asset bytes, returning resolved,
+  missing and invalid counts for diagnostics.
+* Added an asset manifest inspection smoke test with synthetic `user://`
+  fixtures to verify preflight catalog reports before viewmodel orchestration.
 * Added GoldSrc asset provider contracts for semantic asset manifests, asset
   references, provider results and raw local MDL/SPR/WAV byte loading through
   `OpenStrikeAssetManager`.
@@ -62,6 +67,8 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Extended the shared smoke-check script to run asset manifest inspection after
+  provider contract smoke and before cvar/movement checks.
 * Extended the shared smoke-check script to run the asset provider contract
   smoke before cvar and movement checks.
 * Updated local GoldSrc config validation so `half_life_dir` can derive
@@ -109,6 +116,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-05A before weapon/viewmodel orchestration so real CS 1.6 asset
+  catalogs can be inspected against a local installation and reported as data
+  before presentation code depends on them.
 * Started PR-05 with semantic provider contracts and synthetic smoke coverage
   before adding a real CS 1.6 asset catalog, so provider work does not hardcode
   guessed model, sprite, sound or animation mappings.
