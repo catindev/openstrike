@@ -16,10 +16,15 @@ This directory is the operational memory of the project. Every AI/coding agent m
 10. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
 11. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-12. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+12. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+    about experiment design, labs, latency, hitboxes, mapping and performance.
+13. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+14. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+    telemetry, debug overlays and acceptance criteria.
+15. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-13. `KNOWLEDGE_BASE.md` — current project knowledge base.
-14. `TESTING.md` — testing strategy and smoke checks.
+16. `KNOWLEDGE_BASE.md` — current project knowledge base.
+17. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -35,6 +40,9 @@ pitfall and fix to `GDSCRIPT_AGENT_NOTES.md` in the same PR.
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked
 feature docs when new facts are accepted.
+
+Before accepting a subjective feel claim, read `DEV_LABS_METHODOLOGY.md` and
+connect the claim to telemetry, a smoke test, a debug overlay or a planned lab.
 
 ## Current status
 

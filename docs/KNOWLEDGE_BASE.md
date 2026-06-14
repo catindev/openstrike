@@ -62,5 +62,11 @@ Reimplementing *Counter‑Strike 1.6* involves many subsystems.  Below is a non
 * **Xash3D FWGS** – open‑source GoldSrc engine used as a behavioural reference; code must not be copied due to GPL.
 * **HLSDK** – Valve’s official SDK, used only for behaviour and format reference.
 * **Readytostrike** – internal prototype; treat as reference/lab, not as a direct source.
+* **3kliksphilip** – community-engineering reference for experiment design,
+  Counter-Strike symptom catalogs and dev-lab topics; do not use CS:GO/CS2
+  values as CS 1.6 constants.
+
+Source weighting and use/do-not-use rules live in `SOURCE_CATALOG.md`.
+Dev-lab evidence rules live in `DEV_LABS_METHODOLOGY.md`.
 
 Whenever citing numbers or behaviours from these sources, mark them as **reference only**.  Further testing should confirm their correctness within the Godot implementation.

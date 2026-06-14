@@ -220,6 +220,42 @@ ground-speed transient contract is still untested.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-04D Research catalog and dev-lab methodology
+
+**Goal:** Bring the 3kliksphilip community-engineering research notes into the
+repository and convert the useful part into project process before asset and
+presentation work resumes.
+
+**Why before PR-05:** The notes do not replace GoldSrc references or add exact
+CS 1.6 constants. Their useful contribution is methodology: controlled labs,
+one changed variable, debug visualization, telemetry export and before/after
+evidence. That process should be in place before future asset, viewmodel,
+weapon, hitbox and HUD work starts producing subjective feel claims.
+
+**Includes:**
+
+* `docs/3KLIKSPHILIP_RESEARCH_NOTES.md` as the full working research note.
+* `docs/SOURCE_CATALOG.md` with source weighting and use/do-not-use rules.
+* `docs/DEV_LABS_METHODOLOGY.md` with the lab contract and evidence gates.
+* Agent/documentation instructions requiring source catalog updates for new
+  research and lab evidence for subjective feel claims.
+
+**Excludes:**
+
+* Implementing `HitboxLab`, `InputLatencyLab`, `HudCostLab` or map fixture
+  packs immediately.
+* Treating CS:GO/CS2 measurements as CS 1.6 constants.
+* Any source-code, asset or value copying from videos or third-party projects.
+
+**Acceptance criteria:**
+
+* The 3kliksphilip material is classified as methodology/symptom reference, not
+  a primary CS 1.6 parity source.
+* The next implementation PRs have a documented rule for mapping feel claims to
+  telemetry, smoke tests, debug overlays or planned labs.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-05 Asset providers for MDL, SPR and WAV
 
 **Goal:** Load core weapon presentation assets through provider APIs.
