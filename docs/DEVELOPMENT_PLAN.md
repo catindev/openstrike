@@ -188,6 +188,38 @@ the current movement defaults with that baseline before asset-provider work.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-04C Fastrun and diagonal movement telemetry
+
+**Goal:** Close the nearest movement acceptance gap from `CS_1_6_FEEL.md`
+before asset-provider work: M-002 W+A fastrun transient behavior.
+
+**Why before PR-05:** The accepted feel baseline makes fastrun/diagonal
+acceleration part of the movement definition, not a presentation detail. Asset
+providers and viewmodel work should not build on a movement solver whose
+ground-speed transient contract is still untested.
+
+**Includes:**
+
+* GoldSrc-style movement button-state helper for released, just-pressed and
+  held directional buttons.
+* Smoke coverage for a 250 ups weapon-speed fastrun case:
+  first W+A half-state frame near `251.24` ups and held diagonal transient
+  peak in the CS 1.6 reference range.
+* Movement documentation and changelog entries explaining the plan change.
+
+**Excludes:**
+
+* Full mouse-yaw fastrun lab.
+* Bhop FOG, mega-bunny damping, edgefriction traces and hull collision.
+* Asset provider work.
+
+**Acceptance criteria:**
+
+* `movement_smoke.gd` fails if diagonal input is normalized into a modern
+  no-transient movement model.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-05 Asset providers for MDL, SPR and WAV
 
 **Goal:** Load core weapon presentation assets through provider APIs.

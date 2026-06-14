@@ -31,6 +31,8 @@ func _run() -> int:
 
 	if not _run_ground_acceleration(settings):
 		return 1
+	if not _run_fastrun_transient(settings):
+		return 1
 	if not _run_friction(settings):
 		return 1
 	if not _run_air_cap(settings):
@@ -61,6 +63,62 @@ func _run_ground_acceleration(settings) -> bool:
 	return (
 		_assert(state.horizontal_speed() >= settings.max_speed - 0.01, "ground acceleration should reach sv_maxspeed", state.snapshot())
 		and _assert(telemetry.max_horizontal_speed() <= settings.max_speed + 0.01, "ground speed should not exceed sv_maxspeed", telemetry.last_frame())
+	)
+
+
+func _run_fastrun_transient(settings) -> bool:
+	var fastrun_settings = MovementSettingsRef.new()
+	fastrun_settings.sim_tick_hz = settings.sim_tick_hz
+	fastrun_settings.ground_accelerate = settings.ground_accelerate
+	fastrun_settings.friction = settings.friction
+	fastrun_settings.stop_speed = settings.stop_speed
+	fastrun_settings.max_speed = 250.0
+
+	var simulator = MovementSimulatorRef.new(fastrun_settings)
+	var state = MovementStateRef.new()
+	state.velocity = Vector3(0.0, 0.0, fastrun_settings.max_speed)
+	var telemetry = MovementTelemetryRef.new()
+	var delta: float = fastrun_settings.fixed_delta()
+
+	var first_left_press = _movement_from_button_states(
+		MovementInputRef.BUTTON_HELD,
+		MovementInputRef.BUTTON_RELEASED,
+		MovementInputRef.BUTTON_RELEASED,
+		MovementInputRef.BUTTON_JUST_PRESSED
+	)
+	simulator.step(state, first_left_press, delta, telemetry)
+	var first_speed := state.horizontal_speed()
+
+	var held_diagonal = _movement_from_button_states(
+		MovementInputRef.BUTTON_HELD,
+		MovementInputRef.BUTTON_RELEASED,
+		MovementInputRef.BUTTON_RELEASED,
+		MovementInputRef.BUTTON_HELD
+	)
+	for frame in range(80):
+		simulator.step(state, held_diagonal, delta, telemetry)
+
+	var peak_speed := telemetry.max_horizontal_speed()
+	return (
+		_assert(abs(first_speed - 251.24) <= 0.02, "W+A half-state fastrun frame should match CS16 reference speed", {"first_speed": first_speed, "telemetry": telemetry.frames[0]})
+		and _assert(peak_speed >= 261.0, "held diagonal fastrun should produce a transient speed gain", {"peak_speed": peak_speed, "last": telemetry.last_frame()})
+		and _assert(peak_speed <= 264.0, "held diagonal fastrun should stay in CS16 reference range", {"peak_speed": peak_speed, "last": telemetry.last_frame()})
+	)
+
+
+func _movement_from_button_states(
+	forward_state: float,
+	back_state: float,
+	right_state: float,
+	left_state: float,
+	wants_jump: bool = false,
+	wants_duck: bool = false
+):
+	return MovementInputRef.new(
+		MovementInputRef.button_axis(forward_state, back_state),
+		MovementInputRef.button_axis(right_state, left_state),
+		wants_jump,
+		wants_duck
 	)
 
 
