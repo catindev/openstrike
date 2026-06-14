@@ -257,6 +257,31 @@ For manifest contract hardening changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05C was
   inserted before PR-06.
 
+## Current (PR-05D) checklist
+
+For local asset catalog inspection tool changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  local catalog inspection tool in `--synthetic-smoke` mode, so CI does not
+  require a local Counter-Strike installation.
+* **Local tool smoke:** Run
+  `Godot --headless --path . --script res://src/dev/tools/asset_catalog_inspect_local.gd -- --synthetic-smoke --summary-only`
+  when iterating on the tool.
+* **Real install preflight:** Developers with a licensed local installation may
+  run
+  `Godot --headless --path . --script res://src/dev/tools/asset_catalog_inspect_local.gd -- --config=user://local_goldsrc.json --catalog=res://data/assets/cs16_pilot_weapon_assets.json`.
+  This is opt-in and must not become a required CI gate.
+* **Report redaction:** Confirm tool output does not expose local absolute
+  paths, `resolved_path`, VFS roots or VFS `tried` paths.
+* **Provider boundary:** Confirm the tool uses `OpenStrikeAssetManager` and
+  manifest inspection rather than direct filesystem path checks.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05D was
+  inserted before PR-06.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

@@ -120,6 +120,33 @@ candidates that did not resolve in that installation, such as
 The catalog is still data, not decoded presentation. Future PRs must add
 format parsers, animation alias tables and viewmodel orchestration separately.
 
+## Local catalog inspection tool
+
+Developers can preflight the pilot catalog against their own licensed local
+installation with:
+
+```sh
+Godot --headless --path . --script res://src/dev/tools/asset_catalog_inspect_local.gd -- --config=user://local_goldsrc.json --catalog=res://data/assets/cs16_pilot_weapon_assets.json
+```
+
+`--config` defaults to `user://local_goldsrc.json`; `--catalog` defaults to
+`res://data/assets/cs16_pilot_weapon_assets.json`. The tool uses
+`OpenStrikeAssetManager`, `OpenStrikeGoldSrcLocalConfig`,
+`OpenStrikeGoldSrcVFS` and `OpenStrikeAssetInspectionReport`; it does not
+decode MDL, SPR or WAV data. `--summary-only` suppresses per-entry output for
+CI-style logs.
+
+The report is JSON intended for developer diagnostics. It includes manifest
+metadata, total/resolved/missing/invalid counts, per-type counts and per-entry
+status. It intentionally omits local absolute paths, VFS roots,
+`resolved_path` and VFS `tried` paths so reports can be shared in reviews
+without exposing a developer's machine layout.
+
+CI runs the same command in `--synthetic-smoke --summary-only` mode, which
+creates temporary synthetic files under `user://` for every catalog path. This
+validates the tool and manifest contract without requiring a local
+Counter-Strike installation.
+
 ## GoldSrc VFS
 
 The VFS is responsible for resolving paths from the user's configured
@@ -145,6 +172,9 @@ Initial implementation classes:
   dev tools and future catalog validation.
 * `data/assets/cs16_pilot_weapon_assets.json` provides the first smoke-validated
   pilot catalog for semantic weapon presentation assets.
+* `src/dev/tools/asset_catalog_inspect_local.gd` provides the opt-in local
+  inspection command for checking catalogs against a real licensed
+  installation while reporting only sanitised diagnostics.
 
 ## GoldSrc providers
 
@@ -176,10 +206,8 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 
 ## Future tasks
 
-* Add a verified CS 1.6 weapon presentation asset catalog after local
-  installation inspection and source classification.
-* Add a developer-facing asset manifest inspection tool or panel that runs the
-  same preflight API against a user's local `local_goldsrc.json`.
+* Add a developer-facing panel for asset manifest inspection after the
+  headless local catalog tool is stable.
 * Extend the pilot catalog after additional local-installation checks and
   source classification, keeping unverified paths out of production data.
 * Add PAK/WAD container lookup after raw filesystem lookup is stable.

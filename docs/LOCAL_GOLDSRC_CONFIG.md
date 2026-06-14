@@ -15,6 +15,15 @@ user://local_goldsrc.json
 Development tools may pass an explicit path to
 `OpenStrikeGoldSrcLocalConfig.new().load_from_file(path)`.
 
+The headless local asset catalog inspection tool also defaults to this path:
+
+```sh
+Godot --headless --path . --script res://src/dev/tools/asset_catalog_inspect_local.gd -- --config=user://local_goldsrc.json
+```
+
+Developers may pass a different config path with `--config=...`, but tool
+output must remain sanitised and must not print local absolute paths.
+
 ## Schema
 
 Supported shape A derives the mod roots from `half_life_dir`:

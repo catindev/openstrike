@@ -442,6 +442,51 @@ consume a hardened manifest contract instead of inheriting that ambiguity.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-05D Local asset catalog inspection tool
+
+**Goal:** Add an opt-in developer tool that inspects the pilot asset catalog
+against a real local GoldSrc installation without committing local paths or
+proprietary assets.
+
+**Why before PR-06:** Weapon/viewmodel orchestration should consume a catalog
+that developers can verify on their own licensed installation through the same
+provider/VFS contract used by runtime code. This avoids returning to manual
+screen-position guessing when a semantic asset is missing, mistyped or
+unavailable locally.
+
+**Includes:**
+
+* Headless local catalog inspection command for
+  `data/assets/cs16_pilot_weapon_assets.json`.
+* `user://local_goldsrc.json` default config support plus explicit
+  `--config=...` and `--catalog=...` overrides.
+* Sanitised JSON reports that include manifest counts, per-entry status and
+  diagnostics without printing absolute local paths, VFS roots or resolved
+  filesystem paths.
+* Synthetic smoke coverage that exercises the tool in CI without requiring a
+  Counter-Strike installation.
+* Documentation and changelog entries explaining why this verification step was
+  inserted before weapon/viewmodel orchestration.
+
+**Excludes:**
+
+* MDL, SPR or WAV decoding.
+* Real asset bytes, local installation paths or committed `local_goldsrc.json`.
+* Viewmodel rig, animation alias tables, event timelines or gameplay weapon
+  state.
+* Replacing the runtime provider/VFS contract with dev-only path checks.
+
+**Acceptance criteria:**
+
+* The inspection tool can run headlessly against a local config or CI synthetic
+  fixtures.
+* Tool output redacts local absolute paths and does not expose `resolved_path`,
+  `root` or VFS `tried` paths.
+* The shared smoke script runs the synthetic tool mode without a local CS 1.6
+  installation.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-06 Weapon and viewmodel orchestration
 
 **Goal:** Add first-person weapon presentation using semantic events.
