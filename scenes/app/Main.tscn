@@ -3,6 +3,7 @@
 [node name="Main" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = "res://src/dev/bootstrap/bootstrap_screen.gd"
 
 [node name="Label" type="Label" parent="."]
 # Stretch label across the screen
@@ -19,7 +20,7 @@ margin_bottom = 0.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-text = "OpenStrike\n0.1.0-dev\nBootstrap project initialized\nNo Counter-Strike assets are bundled with OpenStrike\nGodot version: unknown\nDiagnostics: OK"
+text = "OpenStrike\n0.1.0-dev\nBootstrap project initialized\nNo Counter-Strike assets are bundled with OpenStrike"
 
 [node name="DiagnosticsLabel" type="Label" parent="."]
 anchor_left = 0.0
@@ -28,4 +29,4 @@ anchor_right = 0.0
 anchor_bottom = 0.0
 margin_left = 10.0
 margin_top = 10.0
-text = "Diagnostics: OK"
+text = ""
