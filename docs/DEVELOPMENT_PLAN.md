@@ -365,6 +365,45 @@ missing, without loading or decoding large files.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-05B Pilot weapon asset catalog
+
+**Goal:** Add a small, reviewable CS 1.6 presentation asset catalog for the
+pilot weapon set before any viewmodel orchestration consumes it.
+
+**Why before PR-06:** Weapon/viewmodel orchestration needs stable semantic IDs
+and relative GoldSrc paths. Keeping the pilot catalog as data first lets
+reviewers inspect the mapping, lets CI validate it through synthetic fixtures,
+and avoids baking guessed paths into presentation code.
+
+**Includes:**
+
+* `data/assets/cs16_pilot_weapon_assets.json` for AK-47, USP, knife and HE
+  grenade viewmodels, fire/reload/knife/grenade sounds and muzzleflash sprites.
+* Relative GoldSrc paths only; no proprietary assets and no local absolute
+  paths.
+* Smoke coverage that loads the catalog, creates synthetic files for every
+  catalog path under `user://`, and validates the catalog through manifest
+  inspection.
+* Source catalog, testing and changelog updates recording the verification
+  method.
+
+**Excludes:**
+
+* MDL, SPR or WAV decoders.
+* Animation alias tables and event timelines.
+* Viewmodel rig, weapon lifecycle, gameplay authority or HUD/effects
+  orchestration.
+* Unverified asset paths. Missing candidates such as `usp_unsil-2.wav` and
+  `grenade_throw.wav` remain out of the catalog until verified.
+
+**Acceptance criteria:**
+
+* The pilot catalog smoke resolves all catalog entries against synthetic files.
+* The catalog contains no local paths and no proprietary asset bytes.
+* The catalog maps only semantic IDs to relative GoldSrc paths and metadata.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-06 Weapon and viewmodel orchestration
 
 **Goal:** Add first-person weapon presentation using semantic events.

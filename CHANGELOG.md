@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `data/assets/cs16_pilot_weapon_assets.json` with verified relative
+  GoldSrc asset paths for the pilot AK-47, USP, knife and HE grenade
+  presentation set.
+* Added asset catalog smoke coverage that validates the pilot catalog through
+  manifest inspection against synthetic `user://` fixtures.
 * Added asset manifest inspection APIs that resolve semantic manifest entries
   through the GoldSrc VFS without reading asset bytes, returning resolved,
   missing and invalid counts for diagnostics.
@@ -67,6 +72,8 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Extended the shared smoke-check script to run the pilot asset catalog smoke
+  after manifest inspection and before cvar/movement checks.
 * Extended the shared smoke-check script to run asset manifest inspection after
   provider contract smoke and before cvar/movement checks.
 * Extended the shared smoke-check script to run the asset provider contract
@@ -116,6 +123,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-05B before weapon/viewmodel orchestration because the pilot
+  weapon presentation catalog should be reviewable data and smoke-validated
+  before presentation code depends on those semantic asset IDs.
 * Inserted PR-05A before weapon/viewmodel orchestration so real CS 1.6 asset
   catalogs can be inspected against a local installation and reported as data
   before presentation code depends on them.

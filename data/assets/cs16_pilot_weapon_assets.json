@@ -1,0 +1,293 @@
+{
+  "metadata": {
+    "catalog_id": "cs16_pilot_weapon_assets",
+    "scope": "Pilot weapon presentation assets for AK-47, USP, knife and HE grenade.",
+    "verification": "Relative file names verified against a local licensed Steam Counter-Strike 1.6/Half-Life installation on 2026-06-14. Reference only; no asset bytes are included."
+  },
+  "assets": {
+    "weapon.ak47.viewmodel": {
+      "type": "view_model",
+      "path": "models/v_ak47.mdl",
+      "metadata": {
+        "format": "mdl",
+        "weapon_id": "ak47",
+        "role": "viewmodel"
+      }
+    },
+    "weapon.usp.viewmodel": {
+      "type": "view_model",
+      "path": "models/v_usp.mdl",
+      "metadata": {
+        "format": "mdl",
+        "weapon_id": "usp",
+        "role": "viewmodel"
+      }
+    },
+    "weapon.knife.viewmodel": {
+      "type": "view_model",
+      "path": "models/v_knife.mdl",
+      "metadata": {
+        "format": "mdl",
+        "weapon_id": "knife",
+        "role": "viewmodel"
+      }
+    },
+    "weapon.hegrenade.viewmodel": {
+      "type": "view_model",
+      "path": "models/v_hegrenade.mdl",
+      "metadata": {
+        "format": "mdl",
+        "weapon_id": "hegrenade",
+        "role": "viewmodel"
+      }
+    },
+    "effect.muzzleflash.1": {
+      "type": "sprite",
+      "path": "sprites/muzzleflash1.spr",
+      "metadata": {
+        "format": "spr",
+        "effect_id": "muzzleflash"
+      }
+    },
+    "effect.muzzleflash.2": {
+      "type": "sprite",
+      "path": "sprites/muzzleflash2.spr",
+      "metadata": {
+        "format": "spr",
+        "effect_id": "muzzleflash"
+      }
+    },
+    "effect.muzzleflash.3": {
+      "type": "sprite",
+      "path": "sprites/muzzleflash3.spr",
+      "metadata": {
+        "format": "spr",
+        "effect_id": "muzzleflash"
+      }
+    },
+    "effect.muzzleflash.4": {
+      "type": "sprite",
+      "path": "sprites/muzzleflash4.spr",
+      "metadata": {
+        "format": "spr",
+        "effect_id": "muzzleflash"
+      }
+    },
+    "weapon.ak47.sound.fire1": {
+      "type": "sound",
+      "path": "sound/weapons/ak47-1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "ak47",
+        "event": "fire"
+      }
+    },
+    "weapon.ak47.sound.fire2": {
+      "type": "sound",
+      "path": "sound/weapons/ak47-2.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "ak47",
+        "event": "fire"
+      }
+    },
+    "weapon.ak47.sound.clipout": {
+      "type": "sound",
+      "path": "sound/weapons/ak47_clipout.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "ak47",
+        "event": "reload_clipout"
+      }
+    },
+    "weapon.ak47.sound.clipin": {
+      "type": "sound",
+      "path": "sound/weapons/ak47_clipin.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "ak47",
+        "event": "reload_clipin"
+      }
+    },
+    "weapon.ak47.sound.boltpull": {
+      "type": "sound",
+      "path": "sound/weapons/ak47_boltpull.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "ak47",
+        "event": "reload_boltpull"
+      }
+    },
+    "weapon.usp.sound.fire_silenced1": {
+      "type": "sound",
+      "path": "sound/weapons/usp1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "fire_silenced"
+      }
+    },
+    "weapon.usp.sound.fire_silenced2": {
+      "type": "sound",
+      "path": "sound/weapons/usp2.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "fire_silenced"
+      }
+    },
+    "weapon.usp.sound.fire_unsilenced1": {
+      "type": "sound",
+      "path": "sound/weapons/usp_unsil-1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "fire_unsilenced"
+      }
+    },
+    "weapon.usp.sound.clipout": {
+      "type": "sound",
+      "path": "sound/weapons/usp_clipout.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "reload_clipout"
+      }
+    },
+    "weapon.usp.sound.clipin": {
+      "type": "sound",
+      "path": "sound/weapons/usp_clipin.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "reload_clipin"
+      }
+    },
+    "weapon.usp.sound.slideback": {
+      "type": "sound",
+      "path": "sound/weapons/usp_slideback.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "reload_slideback"
+      }
+    },
+    "weapon.usp.sound.sliderelease": {
+      "type": "sound",
+      "path": "sound/weapons/usp_sliderelease.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "usp",
+        "event": "reload_sliderelease"
+      }
+    },
+    "weapon.knife.sound.deploy": {
+      "type": "sound",
+      "path": "sound/weapons/knife_deploy1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "deploy"
+      }
+    },
+    "weapon.knife.sound.hit1": {
+      "type": "sound",
+      "path": "sound/weapons/knife_hit1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "hit"
+      }
+    },
+    "weapon.knife.sound.hit2": {
+      "type": "sound",
+      "path": "sound/weapons/knife_hit2.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "hit"
+      }
+    },
+    "weapon.knife.sound.hit3": {
+      "type": "sound",
+      "path": "sound/weapons/knife_hit3.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "hit"
+      }
+    },
+    "weapon.knife.sound.hit4": {
+      "type": "sound",
+      "path": "sound/weapons/knife_hit4.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "hit"
+      }
+    },
+    "weapon.knife.sound.hitwall": {
+      "type": "sound",
+      "path": "sound/weapons/knife_hitwall1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "hit_wall"
+      }
+    },
+    "weapon.knife.sound.slash1": {
+      "type": "sound",
+      "path": "sound/weapons/knife_slash1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "slash"
+      }
+    },
+    "weapon.knife.sound.slash2": {
+      "type": "sound",
+      "path": "sound/weapons/knife_slash2.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "slash"
+      }
+    },
+    "weapon.knife.sound.stab": {
+      "type": "sound",
+      "path": "sound/weapons/knife_stab.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "knife",
+        "event": "stab"
+      }
+    },
+    "weapon.hegrenade.sound.explode1": {
+      "type": "sound",
+      "path": "sound/weapons/hegrenade-1.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "hegrenade",
+        "event": "explode"
+      }
+    },
+    "weapon.hegrenade.sound.explode2": {
+      "type": "sound",
+      "path": "sound/weapons/hegrenade-2.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "hegrenade",
+        "event": "explode"
+      }
+    },
+    "weapon.hegrenade.sound.pinpull": {
+      "type": "sound",
+      "path": "sound/weapons/pinpull.wav",
+      "metadata": {
+        "format": "wav",
+        "weapon_id": "hegrenade",
+        "event": "pinpull"
+      }
+    }
+  }
+}
