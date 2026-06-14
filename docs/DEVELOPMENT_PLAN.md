@@ -162,6 +162,32 @@ movement work starts.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-04B CS 1.6 feel baseline and movement defaults
+
+**Goal:** Bring the accepted CS 1.6 feel baseline into the repository and align
+the current movement defaults with that baseline before asset-provider work.
+
+**Includes:**
+
+* `docs/CS_1_6_FEEL.md` as the research baseline for feel-sensitive systems.
+* Agent/documentation instructions requiring the baseline before movement,
+  weapons, prediction, BSP collision, HUD, viewmodel or feedback changes.
+* CS 1.6 movement defaults for 100 Hz simulation, `sv_accelerate=5`,
+  `sv_stopspeed=75`, `edgefriction=2` and `sv_maxvelocity=2000`.
+* Movement docs listing baseline gaps that remain for later PRs.
+
+**Excludes:**
+
+* Fastrun, bhop FOG, duck/double-duck, edgefriction trace and hull collision
+  implementations.
+* Asset provider work.
+
+**Acceptance criteria:**
+
+* Movement smoke checks read the accepted 100 Hz CS 1.6 defaults from cvars.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-05 Asset providers for MDL, SPR and WAV
 
 **Goal:** Load core weapon presentation assets through provider APIs.

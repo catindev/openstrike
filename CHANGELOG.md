@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `docs/CS_1_6_FEEL.md` as the research baseline for movement, weapon,
+  prediction, presentation, map and feedback feel.
+* Added agent/documentation instructions to read the CS 1.6 feel baseline before
+  feel-sensitive work.
 * Added a cvar-backed CS-style movement simulation core for ground
   acceleration, friction, air acceleration, jump, duck and step-height checks.
 * Added movement telemetry snapshots for smoke tests and future golden
@@ -32,6 +36,10 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Aligned movement defaults with the CS 1.6 feel baseline: 100 Hz simulation,
+  `sv_accelerate=5`, `sv_stopspeed=75`, `edgefriction=2` and
+  `sv_maxvelocity=2000`.
+* Updated movement smoke checks to use the cvar-backed fixed timestep.
 * Fixed movement air acceleration to use separate full and capped wishspeed
   values for GoldSrc-style air-strafe gain.
 * Updated jump-frame movement order so ground acceleration runs before takeoff.

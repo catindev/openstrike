@@ -18,6 +18,7 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
 
 * Follow **GitHub Flow**: every task or feature is developed on a fresh branch and submitted as a pull request.  One PR should accomplish a single conceptual step.
 * Read the documentation in `docs/` before coding.  Understand the architecture, roadmap and legal constraints.
+* Before changing movement, weapons, hit feedback, prediction, BSP collision, HUD, viewmodels or any other feel-sensitive system, read `docs/CS_1_6_FEEL.md` and keep its movement/feedback acceptance criteria in scope.
 * Maintain separation of concerns: `src/core` contains generic engine utilities; `src/game` holds game‑rule logic; `src/presentation` covers UI and visual representation.  Do not mix these layers.
 * Do not implement gameplay features in the bootstrap PR.  Focus on establishing the skeleton and documentation.
 * Avoid introducing heavy dependencies without clear justification.

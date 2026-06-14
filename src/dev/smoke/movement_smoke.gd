@@ -20,6 +20,12 @@ func _run() -> int:
 
 	if not _assert(settings.max_speed == 320.0, "movement settings should read sv_maxspeed", settings.to_dictionary()):
 		return 1
+	if not _assert(settings.sim_tick_hz == 100.0, "movement settings should read 100 Hz simulation tick", settings.to_dictionary()):
+		return 1
+	if not _assert(settings.ground_accelerate == 5.0, "movement settings should use CS16 sv_accelerate", settings.to_dictionary()):
+		return 1
+	if not _assert(settings.stop_speed == 75.0, "movement settings should use CS16 sv_stopspeed", settings.to_dictionary()):
+		return 1
 	if not _assert(settings.air_max_wishspeed == 30.0, "movement settings should read air wishspeed cap", settings.to_dictionary()):
 		return 1
 
@@ -47,9 +53,10 @@ func _run_ground_acceleration(settings) -> bool:
 	var state = MovementStateRef.new()
 	var input = MovementInputRef.new(1.0, 0.0, false, false)
 	var telemetry = MovementTelemetryRef.new()
+	var delta: float = settings.fixed_delta()
 
 	for frame in range(200):
-		simulator.step(state, input, 0.01, telemetry)
+		simulator.step(state, input, delta, telemetry)
 
 	return (
 		_assert(state.horizontal_speed() >= settings.max_speed - 0.01, "ground acceleration should reach sv_maxspeed", state.snapshot())
@@ -62,9 +69,10 @@ func _run_friction(settings) -> bool:
 	var state = MovementStateRef.new()
 	state.velocity = Vector3(settings.max_speed, 0.0, 0.0)
 	var input = MovementInputRef.new()
+	var delta: float = settings.fixed_delta()
 
 	for frame in range(120):
-		simulator.step(state, input, 0.01)
+		simulator.step(state, input, delta)
 
 	return _assert(state.horizontal_speed() <= 0.01, "ground friction should stop a released player", state.snapshot())
 
@@ -88,12 +96,13 @@ func _run_air_strafe_gain(settings) -> bool:
 	state.velocity = Vector3(0.0, 0.0, settings.max_speed)
 	state.on_ground = false
 	var telemetry = MovementTelemetryRef.new()
+	var delta: float = settings.fixed_delta()
 
 	for frame in range(100):
 		var horizontal := state.horizontal_velocity()
 		var perpendicular := Vector3(horizontal.z, 0.0, -horizontal.x).normalized()
 		var strafe_input = MovementInputRef.new(perpendicular.z, perpendicular.x, false, false)
-		simulator.step(state, strafe_input, 0.01, telemetry)
+		simulator.step(state, strafe_input, delta, telemetry)
 
 	var expected_speed := sqrt(pow(settings.max_speed, 2.0) + pow(settings.air_max_wishspeed, 2.0) * 100.0)
 	return (
@@ -109,7 +118,7 @@ func _run_jump_frame_order(settings) -> bool:
 	var state = MovementStateRef.new()
 	var jump_forward = MovementInputRef.new(1.0, 0.0, true, false)
 
-	simulator.step(state, jump_forward, 0.01)
+	simulator.step(state, jump_forward, settings.fixed_delta())
 
 	return (
 		_assert(not state.on_ground, "jump frame should leave ground after ground acceleration", state.snapshot())
@@ -122,15 +131,16 @@ func _run_jump_and_gravity(settings) -> bool:
 	var state = MovementStateRef.new()
 	var jump_input = MovementInputRef.new(0.0, 0.0, true, false)
 	var empty_input = MovementInputRef.new()
+	var delta: float = settings.fixed_delta()
 
-	simulator.step(state, jump_input, 0.01)
+	simulator.step(state, jump_input, delta)
 	if not _assert(not state.on_ground, "jump should leave ground", state.snapshot()):
 		return false
 	if not _assert(state.velocity.y > 0.0, "jump should apply upward velocity", state.snapshot()):
 		return false
 
 	for frame in range(200):
-		simulator.step(state, empty_input, 0.01)
+		simulator.step(state, empty_input, delta)
 
 	return (
 		_assert(state.on_ground, "gravity should return player to ground", state.snapshot())
@@ -141,14 +151,15 @@ func _run_jump_and_gravity(settings) -> bool:
 func _run_duck_and_step(settings) -> bool:
 	var simulator = MovementSimulatorRef.new(settings)
 	var state = MovementStateRef.new()
+	var delta: float = settings.fixed_delta()
 
-	simulator.step(state, MovementInputRef.new(0.0, 0.0, false, true), 0.01)
+	simulator.step(state, MovementInputRef.new(0.0, 0.0, false, true), delta)
 	if not _assert(state.ducked, "duck input should set ducked state", state.snapshot()):
 		return false
 	if not _assert(state.body_height == settings.duck_height, "duck should use duck hull height", state.snapshot()):
 		return false
 
-	simulator.step(state, MovementInputRef.new(), 0.01)
+	simulator.step(state, MovementInputRef.new(), delta)
 	if not _assert(not state.ducked, "released duck should restore standing state", state.snapshot()):
 		return false
 	if not _assert(state.body_height == settings.stand_height, "standing should use standing hull height", state.snapshot()):
