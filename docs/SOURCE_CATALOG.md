@@ -18,6 +18,21 @@ it.
 * ReHLDS/ReGameDLL/Xash3D-family references, only after license constraints are
   checked and without copying GPL/proprietary code.
 
+### Project platform references
+
+Use for Godot API behavior, editor/runtime constraints and GDScript conventions.
+These references guide implementation style and tool usage, but they do not
+override OpenStrike architecture, legal boundaries or CS 1.6 parity documents.
+
+* Godot official GDScript style guide.
+* Godot official static typing in GDScript documentation.
+* Godot official warning system documentation.
+* Godot official best-practices documentation.
+* Godot official autoload, resources, signals, 3D collision shapes, physics
+  interpolation and command-line documentation.
+* GUT or GdUnit4 documentation only after the project chooses a single test
+  framework.
+
 ### Community engineering references
 
 Use for methodology, symptom catalogs, experiment design and sanity checks.

@@ -8,23 +8,26 @@ This directory is the operational memory of the project. Every AI/coding agent m
 2. `LEGAL_ORIGINALITY.md` — legal and originality boundaries.
 3. `DECISIONS.md` — binding implementation decisions and project boundaries.
 4. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
-5. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
-6. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
-7. `ASSET_PIPELINE.md` — planned local asset loading model.
-8. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-9. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
-10. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-11. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+5. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
+   Godot code, GDScript, scenes, resources, presentation, asset-provider code
+   or Godot smoke/CI checks.
+6. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
+7. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
+8. `ASSET_PIPELINE.md` — planned local asset loading model.
+9. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+10. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+11. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
+12. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-12. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+13. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-13. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-14. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+14. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+15. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-15. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+16. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-16. `KNOWLEDGE_BASE.md` — current project knowledge base.
-17. `TESTING.md` — testing strategy and smoke checks.
+17. `KNOWLEDGE_BASE.md` — current project knowledge base.
+18. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -36,6 +39,9 @@ Every implementation PR must update `../CHANGELOG.md` in English.
 
 When a GDScript or Godot-specific issue slows implementation down, append the
 pitfall and fix to `GDSCRIPT_AGENT_NOTES.md` in the same PR.
+
+Before changing Godot code, scenes, resources, presentation, asset-provider code
+or Godot smoke/CI checks, read `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
 
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked
