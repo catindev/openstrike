@@ -1,0 +1,27 @@
+# Godot editor caches
+.godot/
+.import/
+
+# macOS system files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Project telemetry and cache directories
+telemetry/
+.local_goldsrc_cache/
+imported_goldsrc_assets/
+
+# User‑specific configuration
+local_goldsrc.json
+local_goldsrc.*.json
+
+# Exclude automatically imported Valve assets
+*.bsp
+*.mdl
+*.spr
+*.wad
+*.wav
+*.bmp
