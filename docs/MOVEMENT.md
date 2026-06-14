@@ -27,6 +27,12 @@ stable.
 `CSMovementSimulator.try_step_up()` is a collision-free helper for validating
 `sv_stepsize` behavior. It is not a map/collision-integrated stair solver yet.
 
+`docs/CS_1_6_FEEL.md` is the broader research baseline for feel-sensitive
+movement work. Current gaps called out by that baseline include fastrun
+transients, bhop FOG and mega-bunny damping, timed duck/double-duck,
+edgefriction traces, GoldSrc hull traces and collision-integrated step
+handling.
+
 ## Runtime classes
 
 * `CSMovementSettings` reads movement cvars from `CvarRegistry`.
@@ -43,15 +49,18 @@ as constants, not copied source code.
 
 | Cvar | Default | Meaning |
 |---|---:|---|
+| `movement_sim_hz` | `100` | OpenStrike-specific fixed simulation tick for CS 1.6 parity mode. |
 | `sv_gravity` | `800` | Downward acceleration in units/s^2. |
-| `sv_accelerate` | `10` | Ground acceleration coefficient. |
+| `sv_accelerate` | `5` | CS 1.6 ground acceleration coefficient. |
 | `sv_friction` | `4` | Ground friction coefficient. |
-| `sv_stopspeed` | `100` | Minimum speed used by low-speed friction. |
+| `sv_stopspeed` | `75` | CS 1.6 stop speed used by low-speed friction. |
 | `sv_stepsize` | `18` | Maximum accepted step height. |
 | `sv_airaccelerate` | `10` | Air acceleration coefficient. |
 | `sv_air_max_wishspeed` | `30` | OpenStrike-specific parity knob for GoldSrc's air wishspeed cap. |
 | `sv_jumpvelocity` | `270` | OpenStrike-specific parity knob for the jump impulse. |
 | `sv_maxspeed` | `320` | Base movement speed before weapon modifiers. |
+| `sv_maxvelocity` | `2000` | Maximum velocity guard for future GoldSrc-style velocity checks. |
+| `edgefriction` | `2` | Edgefriction multiplier for future edge trace implementation. |
 | `sv_player_stand_height` | `72` | Standing player hull height. |
 | `sv_player_duck_height` | `36` | Ducking player hull height. |
 
@@ -71,9 +80,10 @@ acceleration amount.
 ## Timestep
 
 Movement telemetry and smoke tests use explicit fixed timesteps. Current
-parity smoke checks use `0.01` seconds to model 100 fps reference cases. Future
-server-authoritative runtime work must preserve an explicit simulation tick
-instead of silently coupling movement outcomes to render framerate.
+parity smoke checks use `movement_sim_hz = 100`, or `0.01` seconds, to model
+100 fps reference cases. Future server-authoritative runtime work must preserve
+an explicit simulation tick instead of silently coupling movement outcomes to
+render framerate.
 
 Reference-only materials used for behavior verification include Valve
 Developer Community GoldSrc command documentation and the Half-Life Physics

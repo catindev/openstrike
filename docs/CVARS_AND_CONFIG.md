@@ -31,15 +31,18 @@ a deliberate conversion. Current defaults use:
 
 | Cvar | Unit | Default |
 |---|---:|---:|
+| `movement_sim_hz` | Hz | `100` |
 | `sv_gravity` | units/s^2 | `800` |
-| `sv_accelerate` | coefficient | `10` |
+| `sv_accelerate` | coefficient | `5` |
 | `sv_friction` | coefficient | `4` |
-| `sv_stopspeed` | units/s | `100` |
+| `sv_stopspeed` | units/s | `75` |
 | `sv_stepsize` | units | `18` |
 | `sv_airaccelerate` | coefficient | `10` |
 | `sv_air_max_wishspeed` | units/s | `30` |
 | `sv_jumpvelocity` | units/s | `270` |
 | `sv_maxspeed` | units/s | `320` |
+| `sv_maxvelocity` | units/s | `2000` |
+| `edgefriction` | coefficient | `2` |
 | `sv_player_stand_height` | units | `72` |
 | `sv_player_duck_height` | units | `36` |
 | `mp_freezetime` | seconds | `6` |
@@ -48,9 +51,10 @@ a deliberate conversion. Current defaults use:
 | `mp_c4timer` | seconds | `45` |
 | `mp_startmoney` | dollars | `800` |
 
-`sv_air_max_wishspeed` and `sv_jumpvelocity` are OpenStrike-specific parity
-knobs used by the movement core. They expose GoldSrc-like constants through
-the cvar layer; they are not original GoldSrc console variables.
+`movement_sim_hz`, `sv_air_max_wishspeed` and `sv_jumpvelocity` are
+OpenStrike-specific parity knobs used by the movement core. They expose
+GoldSrc-like constants through the cvar layer; they are not original GoldSrc
+console variables.
 
 ## Runtime API
 

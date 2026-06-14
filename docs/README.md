@@ -14,8 +14,10 @@ This directory is the operational memory of the project. Every AI/coding agent m
 8. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
 9. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
 10. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-11. `KNOWLEDGE_BASE.md` — current project knowledge base.
-12. `TESTING.md` — testing strategy and smoke checks.
+11. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+    presentation and map feel.
+12. `KNOWLEDGE_BASE.md` — current project knowledge base.
+13. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -24,6 +26,10 @@ When code changes behavior, documentation must change in the same PR.
 When a parity fact is uncertain, write `TODO: verify` instead of guessing.
 
 Every implementation PR must update `../CHANGELOG.md` in English.
+
+Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
+HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked
+feature docs when new facts are accepted.
 
 ## Current status
 

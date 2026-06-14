@@ -102,12 +102,13 @@ For movement parity changes, perform the following checks:
   calculated independently from the reference equation, not copied from the
   current implementation output.
 * **Explicit timestep:** Movement smoke tests must state the `delta` they use.
-  Current parity smoke checks use `0.01` seconds for 100 fps reference cases.
+  Current parity smoke checks use `movement_sim_hz = 100`, or `0.01` seconds,
+  for 100 fps reference cases.
 * **No presentation coupling:** Confirm that `src/game/movement` does not load
   assets, viewmodels, HUD, sounds or Godot scene nodes.
 * **Documentation coverage:** Confirm that `MOVEMENT.md`,
-  `CVARS_AND_CONFIG.md` and `KNOWLEDGE_BASE.md` describe any changed movement
-  constants or TODO-verification gaps.
+  `CS_1_6_FEEL.md`, `CVARS_AND_CONFIG.md` and `KNOWLEDGE_BASE.md` describe any
+  changed movement constants or TODO-verification gaps.
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   for the PR.
 
