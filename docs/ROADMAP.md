@@ -15,7 +15,7 @@ GPL-licensed source code. External projects are reference material only.
 | M1 | Local GoldSrc asset configuration, asset manager and VFS. | A valid local installation can be configured, raw files resolve through GoldSrc-like search paths, and missing content produces diagnostics instead of placeholders. |
 | M2 | Movement parity on top of cvars. | Player movement uses cvar-backed GoldSrc constants and telemetry matches expected CS 1.6 ranges. |
 | M3 | GoldSrc format providers for MDL, SPR and WAV. | Weapon models, sprites and sounds load through providers without direct file paths in gameplay code. |
-| M4 | Viewmodel and weapon presentation orchestration. | A CS 1.6 asset orchestration atlas and local inspection tooling back the viewmodel rig; animation aliases resolve from inspected model facts and semantic events drive sound/effects. |
+| M4 | Viewmodel and weapon presentation orchestration. | A world/viewmodel profile contract, CS 1.6 asset orchestration atlas and local scanner back the viewmodel rig; scale/FOV are smoke-tested, animation aliases resolve from inspected model facts and semantic events drive sound/effects. |
 | M5 | BSP map pipeline and entity metadata. | A local BSP map can be discovered, imported or loaded, entity metadata is available, and player spawn points come from map data. |
 | M6 | Server-authoritative local game loop. | Offline play runs through an authoritative game layer with round state, teams and deterministic weapon state. |
 | M7 | Bomb defusal MVP, economy and buy flow. | A de_ round can be played locally with money, buy zones, C4 states and win conditions. |
@@ -32,7 +32,9 @@ socket, animation and diagnostics pipeline exists. The immediate path is:
 3. Resolve files through a proper VFS.
 4. Make cvars/config authoritative for gameplay numbers.
 5. Use the source catalog and dev-lab methodology for any subjective feel claim.
-6. Build and maintain the CS 1.6 asset orchestration atlas before treating
+6. Lock and smoke-test the world/viewmodel profile before rendering local
+   `.mdl` files in a dev scene.
+7. Build and maintain the CS 1.6 asset orchestration atlas before treating
    weapon models, animation timings, sounds or effects as implementation facts.
-7. Add calibrated presentation only after provider, diagnostics and evidence
+8. Add calibrated presentation only after provider, diagnostics and evidence
    boundaries are in place.

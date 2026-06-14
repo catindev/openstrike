@@ -1,402 +1,627 @@
-# CS 1.6 Asset Orchestration Atlas
+# CS 1.6 Asset Orchestration Atlas для OpenStrike
 
-Status: working contract.
+Публичные источники дают хорошую карту форматов, папок, сущностей и lifecycle-паттернов, но **не дают финальную таблицу sequence names / durations / frame events / точных socket transforms для конкретной установленной CS 1.6**. Это нужно добывать локальным extractor’ом из файлов игрока.
 
-Purpose: keep OpenStrike moving toward a near-complete Counter-Strike 1.6
-reimplementation instead of a small weapon demo. This document maps the asset
-domains the engine must understand, how gameplay should address them
-semantically and which facts are verified versus still needing local inspection.
+Основание: BSP/MDL/SPR/WAD описаны как отдельные GoldSrc-форматы в публичной документации Valve Developer Community; `.res`-подход используется для списка зависимостей карты — WAV/TGA/MDL/SPR/WAD с сохранением структуры директорий; GoldSrc QC animation events включают события звуков и 5000-series muzzle flashes; HUD в SDK грузит `hud.txt` и связанные sprites; overview/radar строится из map overview image + txt-настроек; weapon data можно сверять по Weapon Info Dump / AlliedModders, но это не заменяет локальную проверку файлов. ([Valve Developer Community][1]) ([Valve Developer Community][2]) ([the303.org][3]) ([GitHub][4]) ([ModDB][5]) ([wiki.alliedmods.net][6])
 
-This atlas is not an asset dump. It must never contain proprietary asset bytes,
-local absolute paths, extracted textures, converted scenes or copied SDK code.
+Внутренний контракт уже сформулирован правильно: gameplay не должен знать GoldSrc-файлы; он знает `weapon_id`, `state`, semantic events, а `GoldSrcAssetProvider` и `AssetOrchestrator` связывают это с `.mdl/.spr/.wav/.bsp/.wad`. Ниже — карта, которую OpenStrike хранит как `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md`.
 
-## Source Confidence
 
-Use these confidence labels in catalog docs, config metadata and diagnostics:
+## 1. Главный принцип покрытия
 
-| Label | Meaning |
-|---|---|
-| `verified_local_path` | Relative path resolved against a licensed local CS 1.6/Half-Life installation through OpenStrike VFS. |
-| `inspected_mdl` | Sequence names, durations, attachments or events were read from the local MDL through the GoldSrc GDExtension inspection path. |
-| `public_reference` | Value or behavior is backed by a documented public GoldSrc/CS reference. |
-| `readytostrike_lab` | Useful prototype data from Readytostrike; must not be treated as final parity without verification. |
-| `todo_verify` | Plausible mapping or timing that must not become gameplay contract yet. |
+Для OpenStrike “ассет покрыт” означает не “файл найден”, а что для него есть полный runtime-контракт:
 
-## Non-Negotiable Rule
+| Уровень        | Что значит                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `discoverable` | движок умеет найти файл через GoldSrc VFS: `cstrike` → `valve` → custom pack                  |
+| `parseable`    | движок умеет прочитать формат или metadata                                                    |
+| `semantic`     | файл привязан к смыслу: `weapon.ak47.view_model`, `hud.ammo_digits`, `map.de_dust2.bombsites` |
+| `orchestrated` | понятен lifecycle: когда загрузить, когда проиграть, где поставить, когда выгрузить           |
+| `diagnosed`    | при отсутствии/ошибке есть warning, а не placeholder и не silent fail                         |
+| `verified`     | значение подтверждено локальным scanner’ом на установленной CS 1.6                            |
 
-Gameplay never addresses provider-specific files directly.
+**Публичные источники закрывают первые 3–4 уровня. Последний уровень должен делать extractor.**
 
-Correct flow:
+---
 
-```text
-Gameplay state
-  -> semantic weapon/action/effect/audio event
-  -> orchestration contract
-  -> AssetManager
-  -> active provider
-  -> local GoldSrc path or future original asset pack
-```
+## 2. Общая карта папок и типов
 
-Incorrect flow:
+| Область          | GoldSrc / CS 1.6 источники                                                                  | Что делает OpenStrike                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| VFS / game root  | `cstrike/`, `valve/`, `cstrike_addon/`, `liblist.gam`, PAK/WAD/custom roots                 | строит overlay lookup, case-insensitive index, diagnostics “откуда взят ассет”                  |
+| Maps             | `maps/*.bsp`, `maps/*.res`, `maps/*.txt`, иногда `maps/*.nav`                               | импорт BSP, парсинг entities, texture dependencies, collision, map dependency graph             |
+| Map textures     | `*.wad`, embedded BSP miptex, `decals.wad`, custom WADs из `.res`                           | WAD registry, material metadata, hit material mapping                                           |
+| Skyboxes         | `gfx/env/<sky>up/dn/lf/rt/ft/bk.*`                                                          | skyname из worldspawn → skybox resolver                                                         |
+| Models           | `models/*.mdl`, `models/player/<name>/<name>.mdl`                                           | MDL metadata-first loader: bones, sequences, hitboxes, attachments, bodygroups, skins           |
+| Weapon models    | `models/v_*.mdl`, `models/p_*.mdl`, `models/w_*.mdl`                                        | viewmodel / third-person / dropped weapon roles                                                 |
+| Player models    | `models/player/arctic`, `guerilla`, `leet`, `terror`, `gign`, `gsg9`, `sas`, `urban`, `vip` | team/model selector, third-person animation, hitbox source                                      |
+| Sprites          | `sprites/*.spr`, `sprites/hud.txt`, `sprites/weapon_*.txt`, `sprites/observer.txt`          | HUD, crosshair, killfeed icons, muzzle flash, smoke, explosions, impacts                        |
+| Audio            | `sound/**/*.wav`, `sound/materials.txt`, `sound/sentences.txt`                              | semantic audio events, 2D/3D routing, reload fragments, entity sounds, footstep material sounds |
+| UI / text        | `resource/*.txt`, `*.res`, `titles.txt`, `commandmenu.txt`, `motd.txt`, `gfx/shell/*`       | menu strings, classic UI, MOTD, command menu, localization                                      |
+| Sprays / decals  | `tempdecal.wad`, `custom.hpk`, `logos/*`, `decals.wad`                                      | player sprays, bullet decals, blood decals, wall marks                                          |
+| Config           | `config.cfg`, `userconfig.cfg`, `autoexec.cfg`, `server.cfg`, `listenserver.cfg`, map cfg   | cvars, binds, server presets; читать осторожно, не как ассеты Valve                             |
+| Bot/nav optional | CZ/zBot `.nav`, podbot waypoints, custom bot files                                          | optional import/reference; OpenStrike AI не должен зависеть от YaPB/PODBot форматa              |
 
-```text
-WeaponController -> models/v_ak47.mdl
-WeaponController -> sound/weapons/ak47-1.wav
-WeaponController -> sprites/muzzleflash1.spr
-```
+---
 
-## Required Asset Domains
+## 3. Карта по формату
 
-OpenStrike must eventually maintain catalogs and diagnostics for all of these
-domains:
+| Формат             | Что содержит                                                                           | OpenStrike loader должен вытащить                                               | Покрытие                                         |
+| ------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `.bsp`             | world geometry, BSP tree, clipnodes/hulls, faces, texinfo, lightmaps, entity lump, vis | geometry, collision, entity metadata, texture names, WAD deps, lightmaps, PVS   | публично понятно; нужно production loader        |
+| `.wad` / WAD3      | texture lumps, decals, spray textures                                                  | texture names, mip levels, palette/transparency metadata                        | публично понятно; нужен WAD registry             |
+| `.mdl`             | meshes, skeleton/bones, sequences, hitboxes, attachments, textures, bodygroups, events | sequence names, fps, duration, events, hitboxes, attachments, bodygroups, skins | формат понятен; значения только через extractor  |
+| `.spr`             | 2D animated sprites, palette, frames, sprite type                                      | frame count, fps, size, orientation mode, palette/alpha mode                    | формат понятен; нужна runtime sprite scene       |
+| `.wav`             | weapon/radio/entity/player sounds                                                      | sample metadata, channel group, semantic event binding                          | файл прост; mapping сложный                      |
+| `.txt` HUD         | sprite atlas layout, weapon icon rects, ammo/crosshair data                            | named rects, scale variants, weapon HUD definitions                             | публичный паттерн; exact rects через local files |
+| `.res` map         | список дополнительных файлов для карты                                                 | dependency graph map → required assets                                          | нужно поддержать для custom maps                 |
+| `.fgd` entity defs | editor definitions of map entities                                                     | entity schema reference, not runtime truth                                      | использовать как справочник, не source of truth  |
 
-| Domain | GoldSrc examples | OpenStrike responsibility |
-|---|---|---|
-| Weapon viewmodels | `models/v_ak47.mdl` | First-person weapon, hands, animation sequences, attachments. |
-| Weapon player models | `models/p_ak47.mdl` | Third-person held weapon attached to remote player skeletons. |
-| Weapon world models | `models/w_ak47.mdl` | Dropped weapons, pickups, grenade projectiles, C4 world object. |
-| Player models | `models/player/gign/gign.mdl` | Team/player visuals, hitbox and animation reference later. |
-| Objective and misc models | C4, hostages, map props | Entity adapters and gameplay objects later. |
-| Weapon sounds | `sound/weapons/*.wav` | First-person and world audio event mapping. |
-| Player/world sounds | footsteps, radio, hostages, ambience | Movement feedback, radio, objectives, map ambience. |
-| Sprites | muzzle flash, impact, smoke, HUD | Effects, HUD, scope, radar and map entities. |
-| BSP maps | `maps/*.bsp` | Geometry, collision, entity metadata, spawn points. |
-| WAD textures | `*.wad` | BSP texture resolution and surface material metadata. |
-| Overviews | `overviews/*.txt/.bmp/.tga` | Map browser previews and radar/reference data later. |
-| HUD text layouts | `sprites/hud.txt`, weapon txt files | Sprite HUD regions and weapon selection UI. |
-| Decals/effects | blood, bullet holes, ricochet, explosions | Impact feedback and surface-specific presentation. |
+---
 
-PR-06 only starts with weapon viewmodel/audio/effect orchestration, but the
-contracts must leave room for every domain above.
+## 4. Карта оружия
 
-## Weapon Model Roles
-
-Every CS-style weapon should be represented by three model roles when available:
-
-| Role | Prefix | Use |
-|---|---|---|
-| `view_model` | `v_` | Local first-person weapon and hands. |
-| `player_model` | `p_` | Weapon held by third-person players/bots. |
-| `world_model` | `w_` | Dropped/pickup/projectile/object representation. |
-
-The first-person viewmodel usually contains both the weapon and hands. Do not
-look for a universal `arms.mdl` as the base CS 1.6 contract.
-
-## Core Weapon Coverage Target
-
-The full CS 1.6 weapon catalog must cover at least these logical IDs:
-
-| Category | Weapon IDs |
-|---|---|
-| Pistols | `glock18`, `usp`, `p228`, `deagle`, `elite`, `fiveseven` |
-| Shotguns | `m3`, `xm1014` |
-| SMGs | `mp5`, `tmp`, `p90`, `mac10`, `ump45` |
-| Rifles | `ak47`, `m4a1`, `aug`, `sg552`, `galil`, `famas` |
-| Snipers | `scout`, `awp`, `g3sg1`, `sg550` |
-| Machine gun | `m249` |
-| Melee | `knife` |
-| Grenades | `hegrenade`, `flashbang`, `smokegrenade` |
-| Objective | `c4` |
-
-For each weapon, the catalog must eventually provide:
+Для каждого оружия OpenStrike должен иметь **не один asset**, а пакет:
 
 ```text
-weapon id
-slot/category/team availability
-gameplay numbers
-view/player/world model references
-animation aliases and inspected sequence facts
-audio events
-effect events
-reload/ammo commit rules
-switch/deploy/holster rules
-diagnostics and source-confidence metadata
+weapon_id
+  gameplay definition
+  view_model: models/v_*.mdl
+  player_model: models/p_*.mdl
+  world_model: models/w_*.mdl
+  hud layout: sprites/weapon_*.txt
+  hud/death/select/ammo/crosshair sprite rects
+  fire sounds
+  reload fragment sounds
+  draw/empty/special sounds
+  animation aliases
+  extracted sequences
+  extracted or configured events
+  muzzle socket
+  shell socket
+  shell visual
+  muzzle flash effect
+  tracer policy
+  impact policy
+  pickup/drop policy
+  diagnostics coverage
 ```
 
-## Pilot Weapon State
+## 4.1 Weapon roster
 
-The current committed pilot catalog only covers AK-47, USP, knife and HE grenade
-asset paths in `data/assets/cs16_pilot_weapon_assets.json`.
+| Группа            | `weapon_id`                                                                                                     | Asset contract                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Pistols           | `glock18`, `usp`, `p228`, `deagle`, `fiveseven`, `elite`                                                        | v/p/w models, fire/reload/dryfire, shell pistol, HUD icon, ammo icon, death icon    |
+| Shotguns          | `m3`, `xm1014`                                                                                                  | v/p/w, pump/reload-per-shell events, shotgun shell visual, special reload lifecycle |
+| SMG               | `mac10`, `tmp`, `mp5navy`, `ump45`, `p90`                                                                       | v/p/w, auto fire, rifle/smg shell, reload fragments                                 |
+| Rifles            | `galil`, `famas`, `ak47`, `m4a1`, `aug`, `sg552`                                                                | v/p/w, auto/burst/silencer/scope-specific states where applicable                   |
+| Sniper            | `scout`, `awp`, `g3sg1`, `sg550`                                                                                | v/p/w, zoom scope overlay, bolt/pull events, scoped crosshair suppression           |
+| Machine gun       | `m249`                                                                                                          | v/p/w, high-rate audio/effects, heavy maxspeed                                      |
+| Equipment / melee | `knife`, `hegrenade`, `flashbang`, `smokegrenade`, `c4`, `shield`, `defuser`, `kevlar`, `helmet`, `nightvision` | not all have v/p/w; some are HUD/equipment state + sounds + effects                 |
 
-That catalog is enough for VFS and manifest validation. It is not enough for
-near-complete CS 1.6 weapon orchestration because it does not yet record:
+**Важно:** нельзя строить пути только формулой `v_<weapon_id>.mdl`. Например `weapon_mp5navy` может использовать короткое имя модели `mp5`. Поэтому atlas должен хранить `asset_stem`, а scanner должен проверять реальные файлы.
 
-* actual MDL sequence names;
-* sequence durations;
-* attachment/socket inventory;
-* imported studio events;
-* per-weapon reload fragment timings backed by MDL/event inspection;
-* third-person/world model readiness;
-* complete audio fallback policy;
-* surface impact, tracer, decal and HUD sprite rules.
+Пример записи:
 
-## Animation Contract
+```json
+{
+  "weapon_id": "mp5navy",
+  "entity": "weapon_mp5navy",
+  "asset_stem": "mp5",
+  "models": {
+    "view": "models/v_mp5.mdl",
+    "player": "models/p_mp5.mdl",
+    "world": "models/w_mp5.mdl"
+  },
+  "hud": {
+    "layout": "sprites/weapon_mp5navy.txt"
+  },
+  "coverage": {
+    "models": "verified",
+    "sounds": "generated_unverified",
+    "animations": "requires_mdl_scan",
+    "events": "requires_mdl_scan"
+  }
+}
+```
 
-Weapon orchestration uses semantic actions, not raw sequence names:
+---
 
-| Semantic action | Typical sequence aliases |
-|---|---|
-| `idle` | `idle`, `idle1`, `idle2` |
-| `draw` | `draw`, `deploy` |
-| `holster` | `holster` |
-| `fire` | `shoot`, `shoot1`, `shoot2`, `shoot3`, `fire`, `fire1`, `fire2`, `fire3` |
-| `reload` | `reload` |
-| `empty` | `empty`, `dryfire` |
-| `melee_primary_hit` | `slash`, `slash1`, `slash2`, `midslash1`, `midslash2`, `attack` |
-| `melee_primary_miss` | `slash`, `slash1`, `slash2`, `midslash1`, `midslash2`, `attack` |
-| `melee_secondary_hit` | `stab`, `stab_miss` |
-| `melee_secondary_miss` | `stab_miss`, `stab` |
-| `grenade_pullpin` | `pullpin`, `draw` |
-| `grenade_throw` | `throw`, `shoot` |
+## 5. Viewmodel / weapon lifecycle
 
-These aliases are a resolution strategy, not proof that a specific local MDL
-contains a sequence. PR-06 must include or prepare an inspection path that lists
-sequence names and durations from the actual imported model.
+Нужен единый lifecycle для всех weapon assets:
 
-Missing animation behavior:
+| State                      | Что делает gameplay                                   | Что делает presentation                                            |
+| -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| `deploying`                | выбирает weapon, блокирует fire до deploy end         | load `v_*.mdl`, play `draw/deploy`, play draw sound if mapped      |
+| `idle`                     | оружие готово                                         | play idle loop/sequence, apply bob/sway                            |
+| `firing`                   | ammo--, hitscan/projectile, recoil/spread immediately | play fire animation, fire sound, muzzle flash, shell eject, tracer |
+| `cooldown`                 | fire rate gate                                        | allow animation finish / recovery                                  |
+| `reloading`                | lock fire, schedule ammo commit                       | reload animation + clipout/clipin/bolt/slide sounds                |
+| `empty`                    | reject fire if no ammo                                | dryfire sound / empty animation                                    |
+| `switching_out`            | validate interrupt rules                              | holster animation or fixed delay                                   |
+| `dropping`                 | server creates dropped weapon state                   | instantiate `w_*.mdl`, pickup collider                             |
+| `grenade_holding`          | pin pulled, wait release                              | hold animation, pin sound                                          |
+| `grenade_throwing`         | spawn projectile at release time                      | throw animation, remove inventory item                             |
+| `melee_windup/hit/recover` | delayed melee trace/window                            | slash/stab animation, hit/miss/wall sound                          |
+
+Rule: **damage and ammo are server/gameplay events, not animation events.** Animation events only synchronize presentation.
+
+---
+
+## 6. MDL coverage
+
+MDL надо читать в два этапа:
+
+1. **metadata scan** без рендера;
+2. runtime import/render.
+
+Что обязательно извлекать:
+
+| MDL metadata                       | Зачем                                                            |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `model_name`, checksum/source path | diagnostics/cache                                                |
+| bones/skeleton                     | animation playback                                               |
+| sequences                          | alias mapping: `idle`, `draw`, `fire`, `reload`, `throw`, `stab` |
+| sequence fps/frame count/duration  | state machine timing                                             |
+| sequence events                    | sounds, muzzleflash, shell, melee windows                        |
+| attachments                        | muzzle/socket/shell origin                                       |
+| hitboxes                           | player damage model                                              |
+| bodygroups/skins                   | player/hostage variants, shield/silencer states                  |
+| embedded textures                  | material construction                                            |
+| bounding boxes                     | collision/pickup/display bounds                                  |
+
+Публичный QC reference подтверждает, что animation events могут запускать звуки, sentence lines, muzzle flashes и другие события; 5000-series events используются для muzzleflash и требуют `$attachment` на модели. ([the303.org][3])
+
+Для OpenStrike это означает: **не хардкодить muzzle/socket offsets до extractor’а**. Временный config offset разрешён, но должен иметь `confidence: "manual_unverified"`.
+
+---
+
+## 7. HUD / sprites coverage
+
+HUD в CS 1.6 — это не “нарисовать UI руками”, а sprite/layout system.
+
+Обязательные источники:
+
+| Источник                       | Назначение                                                       |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `sprites/hud.txt`              | общий sprite atlas registry                                      |
+| `sprites/weapon_*.txt`         | weapon HUD icons, ammo icons, crosshair, autoaim/crosshair rects |
+| `sprites/observer.txt`         | spectator HUD                                                    |
+| `sprites/*.spr`                | actual sprite atlases/effects                                    |
+| `resource/*.res`               | VGUI/menu layouts, если включаем classic shell                   |
+| `titles.txt`, localization txt | текстовые сообщения                                              |
+
+SDK-структура HUD прямо хранит массив sprites, rectangles и names, загружаемых из `hud.txt` и связанных sprites. ([GitHub][4])
+
+OpenStrike должен покрыть:
+
+| HUD элемент       | Источник                       | Runtime                 |
+| ----------------- | ------------------------------ | ----------------------- |
+| health            | hud sprites + game state       | bottom-left classic HUD |
+| armor/helmet      | hud sprites + player equipment | armor indicator         |
+| ammo clip/reserve | weapon layout + ammo state     | bottom-right            |
+| weapon select     | weapon sprites                 | slot carousel           |
+| crosshair         | weapon layout + spread state   | dynamic gap/visibility  |
+| money             | HUD font/sprite or text style  | `$` amount              |
+| round timer       | HUD font/sprite/text           | timer                   |
+| buy icon          | game state + buyzone           | icon/message            |
+| C4/defuse kit     | item state + sprites           | status icon             |
+| death notice      | weapon kill icons              | killfeed                |
+| radar             | overview files                 | minimap/radar           |
+| spectator         | observer layout                | spectator mode          |
+| scoreboard        | UI layout + game state         | TAB                     |
+
+Coverage status: **layout parser можно делать сразу; визуальное совпадение требует локальной загрузки `hud.txt`, `weapon_*.txt` и sprites из установленной CS.**
+
+---
+
+## 8. Effects coverage
+
+| Effect             | Asset source                                               | Trigger                            | Notes                                                      |
+| ------------------ | ---------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| muzzle flash       | `sprites/muzzleflash*.spr`, `sprites/muz*.spr`, MDL events | accepted fire                      | first-person layer, random roll, short lifetime            |
+| shell ejection     | `models/*shell*.mdl` or sprite fallback                    | fire timeline / MDL event / config | spawn from shell socket; fake physics acceptable initially |
+| tracer             | sprite/beam/material config                                | weapon tracer policy               | not every shot                                             |
+| bullet impact puff | `sprites/wall_puff*.spr`, material mapping                 | hitscan hit                        | material-aware later                                       |
+| wall decal         | `decals.wad` / decal textures                              | hit result                         | persistent but capped                                      |
+| blood              | blood sprites/decals                                       | hit flesh                          | team/player damage event                                   |
+| explosion          | grenade sprites/sounds                                     | HE detonation                      | radius damage + sprite/sound                               |
+| smoke              | smoke sprites                                              | smoke grenade lifecycle            | long-lived volume, not just sprite                         |
+| flash              | mostly shader/screen effect + sounds                       | flashbang detonation               | asset-light, gameplay-heavy                                |
+| water splash       | sprites/sounds                                             | hit water / movement               | material event                                             |
+| dynamic light      | no asset or config                                         | muzzle/explosion                   | optional, short-lived                                      |
+
+Strict rule: **нет procedural placeholder effect.** Если sprite отсутствует — warning и feature off.
+
+---
+
+## 9. Audio coverage
+
+Audio mapping должен быть semantic, не filepath-driven.
+
+| Audio domain     | Папки                                           | Trigger                         |
+| ---------------- | ----------------------------------------------- | ------------------------------- |
+| weapon fire      | `sound/weapons/*.wav`                           | `weapon.<id>.fire`              |
+| reload fragments | `sound/weapons/*clipin/clipout/bolt/slide*.wav` | animation timeline              |
+| dry fire         | weapon/common sounds                            | empty state                     |
+| grenade          | pinpull, throw, bounce, explode                 | grenade lifecycle               |
+| radio            | `sound/radio/*.wav`                             | radio command / bot comm        |
+| player           | footsteps, pain, death, land, jump              | movement/damage state           |
+| hostage          | hostage voice/actions                           | hostage AI                      |
+| doors/buttons    | `sound/doors`, `sound/buttons`                  | BSP entity events               |
+| debris/materials | `sound/debris`, `sound/materials.txt`           | breakable/impact/footstep       |
+| ambient          | `sound/ambience`, entity keys                   | `ambient_generic`, map ambience |
+| UI/menu          | shell/resource sounds                           | menu actions                    |
+
+`materials.txt` is documented as the GoldSrc file that maps materials to footstep sounds, so material-aware audio should not be guessed only from texture prefixes. ([Valve Developer Community][7])
+
+Coverage status:
+
+| Item                                | Status                                |
+| ----------------------------------- | ------------------------------------- |
+| WAV loader                          | можно делать сразу                    |
+| semantic event names                | можно делать вручную                  |
+| exact per-weapon reload timing      | только extractor + manual calibration |
+| first-person vs world audio routing | engine architecture                   |
+| radio command catalog               | local scan + text/radio config        |
+
+---
+
+## 10. Map coverage
+
+BSP map coverage is the biggest block.
+
+| Map layer        | Source                              | Required OpenStrike behavior                 |
+| ---------------- | ----------------------------------- | -------------------------------------------- |
+| map list         | `maps/*.bsp`                        | map browser with status                      |
+| map dependencies | `.res`, BSP entity paths, WAD names | dependency graph + missing files diagnostics |
+| geometry         | BSP faces/edges/texinfo             | world mesh                                   |
+| textures         | BSP miptex + WAD3                   | material creation                            |
+| collision        | BSP clipnodes/hulls                 | player movement collision                    |
+| entities         | BSP entity lump                     | spawn/buy/bomb/hostage/doors/triggers        |
+| light            | lightmaps/lightstyles               | classic visual parity                        |
+| visibility       | VIS/PVS                             | performance and correctness                  |
+| sky              | worldspawn `skyname`, `gfx/env/*`   | skybox                                       |
+| overview         | `overviews/<map>.txt`, `.bmp`       | radar/minimap                                |
+| map cfg          | `maps/<map>.cfg` / server cfg       | optional cvar overrides                      |
+
+`.res` files are important for custom maps because they enumerate assets such as WAV, TGA, MDL, SPR and WAD and preserve directory structure; Valve issue reports also show that CS fastdownload depends on valid paths inside `.res`. ([Valve Developer Community][2]) ([GitHub][8])
+
+## 10.1 Entity coverage
+
+| Entity class                                       |    Priority | OpenStrike adapter                          |
+| -------------------------------------------------- | ----------: | ------------------------------------------- |
+| `worldspawn`                                       |          P0 | map name, skyname, WAD refs                 |
+| `info_player_start` / deathmatch starts            |          P0 | fallback/player spawn                       |
+| `info_player_terrorist`                            |          P0 | T spawn                                     |
+| `info_player_counterterrorist`                     |          P0 | CT spawn                                    |
+| `func_buyzone`                                     |          P0 | buy permission volume                       |
+| `func_bomb_target` / `info_bomb_target`            |          P0 | bombsite                                    |
+| `hostage_entity`                                   |          P1 | hostage spawn and model                     |
+| `func_hostage_rescue` / rescue info                |          P1 | rescue zone                                 |
+| `func_door`, `func_door_rotating`                  |          P1 | moving doors                                |
+| `func_button`, `button_target`                     |          P1 | buttons/use targets                         |
+| `trigger_multiple`, `trigger_once`, `trigger_hurt` |          P1 | trigger system                              |
+| `armoury_entity`                                   |          P1 | map weapon spawn                            |
+| `ambient_generic`                                  |          P1 | map ambience                                |
+| `env_sprite`, `env_glow`, `env_smoke`              |          P2 | map visual sprite effects                   |
+| `light`, `light_spot`, `light_environment`         |          P2 | if lightmaps absent or for dynamic behavior |
+| `func_breakable`, `func_pushable`                  |          P2 | breakables/physics-ish                      |
+| unknown entities                                   | P0 behavior | preserve metadata, do not crash             |
+
+Counter-Strike FGD/public FGD references are useful for entity schema, but runtime truth still comes from BSP entity lump and GameDLL behavior. ReGameDLL’s FGD changelog also documents CS-specific entity notes like `hostage_entity`, `env_sprite`, `func_button`, `func_door_rotating`, `game_text`, and older limitations around `armoury_entity` and newer 1.6 weapons. ([GitHub][9])
+
+---
+
+## 11. Player model coverage
+
+| Team              | Models                                    | Required extraction                    |
+| ----------------- | ----------------------------------------- | -------------------------------------- |
+| Terrorist         | `arctic`, `guerilla`, `leet`, `terror`    | model path, sequences, hitboxes, skins |
+| Counter-Terrorist | `gign`, `gsg9`, `sas`, `urban`            | model path, sequences, hitboxes, skins |
+| VIP               | `vip`                                     | VIP model/logic                        |
+| Hostage           | `hostage` variants / hostage entity model | hostage animations, body/skin variants |
+
+Runtime states to map:
 
 ```text
-state transition may continue if gameplay is valid
-diagnostics records missing animation/action/aliases
-no procedural placeholder animation is created
+idle
+walk
+run
+crouch
+jump
+swim/water optional
+shoot
+reload
+die/death variants
+hostage idle/follow/rescue/death
 ```
 
-## Event Timeline Contract
+Coverage risk: player hitboxes and animation sequences are essential for gameplay parity; they must be extracted from the actual MDL, not guessed.
 
-Presentation events can come from three sources, in this order:
+---
 
-1. Imported MDL/studio animation events, when exposed by the GoldSrc adapter.
-2. Per-weapon timeline config with confidence metadata.
-3. Minimal semantic default timing with diagnostics.
+## 12. Buy/menu/UI coverage
 
-Normalized presentation events:
+Buy zone behavior is gameplay + map + UI. Public Counter-Strike docs describe buy zones as areas around team spawns where players can buy weapons/equipment, with team restrictions, time restrictions, money dependency, and old weapon dropping when buying into an occupied slot. ([counterstrike.fandom.com][10])
+
+OpenStrike needs:
+
+| UI block     | Assets/config                                             |
+| ------------ | --------------------------------------------------------- |
+| main menu    | `gfx/shell/*`, `resource/*.res`, localization text        |
+| create game  | map list + cvars + game mode config                       |
+| team select  | team/model UI + player model previews                     |
+| buy menu     | weapon catalog, prices, team restrictions, ammo/equipment |
+| options      | binds, mouse, audio, video, multiplayer name/spray        |
+| MOTD         | `motd.txt` / server-provided text                         |
+| command menu | `commandmenu.txt`                                         |
+| scoreboard   | UI layout + game state                                    |
+| console      | cvars/binds/config files                                  |
+
+Coverage status: classic VGUI replication can wait, but **semantic buy flow cannot wait**. `func_buyzone` + `mp_buytime` + money + team restrictions must exist before a real CS loop.
+
+---
+
+## 13. Radar / overview coverage
+
+Overview coverage requires:
 
 ```text
-weapon.anim_started
-weapon.anim_finished
-weapon.muzzle_flash
-weapon.shell_eject
-weapon.sound
-weapon.reload.clipout
-weapon.reload.clipin
-weapon.reload.boltpull
-weapon.reload.complete
-weapon.grenade.pinpull
-weapon.grenade.release
-weapon.grenade.explode
-weapon.melee.hit_window_start
-weapon.melee.hit_window_end
-weapon.impact
-weapon.tracer
+overviews/<map>.txt
+overviews/<map>.bmp
+map coordinate transform
+zoom
+origin
+rotation
+player blip rendering
+C4 / hostage / teammate states
+spectator overview mode
 ```
 
-Gameplay authority remains separate: accepted firearm shots decrement ammo,
-trace and apply recoil immediately. Reload ammo commit, grenade release and
-melee hit windows may be delayed by explicit timeline rules.
+ModDB overview tutorial describes retail-like overviews for CS 1.6 / Condition Zero and uses `dev_overview` workflow to generate the map image and coordinate values. ([ModDB][5])
 
-## Audio Contract
+Coverage status: `overview.txt + bmp parser` can be implemented before full radar gameplay. Accurate radar blips need server snapshots.
 
-Gameplay and weapon code request semantic audio events:
+---
+
+## 14. VFS coverage
+
+OpenStrike VFS must behave like a GoldSrc content resolver:
 
 ```text
-weapon.<id>.draw
-weapon.<id>.fire
-weapon.<id>.fire_alt
-weapon.<id>.fire_silenced
-weapon.<id>.reload.clipout
-weapon.<id>.reload.clipin
-weapon.<id>.reload.boltpull
-weapon.<id>.reload.slide
-weapon.<id>.empty
-weapon.<id>.silencer_on
-weapon.<id>.silencer_off
-weapon.<id>.zoom
-
-weapon.knife.deploy
-weapon.knife.slash
-weapon.knife.hit
-weapon.knife.hit_wall
-weapon.knife.stab
-
-weapon.grenade.pinpull
-weapon.grenade.throw
-weapon.grenade.bounce
-weapon.hegrenade.explode
-weapon.flashbang.explode
-weapon.smokegrenade.explode
-
-weapon.c4.plant
-weapon.c4.beep
-weapon.c4.disarm
-weapon.c4.disarmed
-weapon.c4.explode
+requested semantic asset
+  -> asset pack override
+  -> cstrike root
+  -> cstrike_addon/custom roots, if supported
+  -> valve fallback
+  -> PAK/WAD/container lookup where applicable
+  -> diagnostics with tried paths
 ```
 
-Audio orchestration must support separate contexts:
+Xash3D FWGS explicitly advertises advanced VFS features such as `.pk3/.pk3dir`, GoldSrc FS compatibility, and fast case-insensitivity emulation; for OpenStrike the important part is not copying Xash code, but reproducing lookup semantics and diagnostics. ([GitHub][11])
 
-| Context | Player node |
-|---|---|
-| First-person local weapon | Non-spatial or camera-local `AudioStreamPlayer`. |
-| World/remote weapon | Spatial `AudioStreamPlayer3D` at muzzle/player/world position. |
+Coverage requirements:
 
-If an event maps to multiple files, the provider may choose a verified available
-variant or randomize among verified available variants. Fallback files borrowed
-from a different weapon must be marked as fallback data, not CS 1.6 truth.
+| Feature                          |           Priority |
+| -------------------------------- | -----------------: |
+| case-insensitive lookup          |                 P0 |
+| `cstrike` over `valve` overlay   |                 P0 |
+| normalized slash/path cache      |                 P0 |
+| mounted custom asset pack        |                 P1 |
+| PAK support                      |                 P1 |
+| WAD registry                     |        P0 for maps |
+| `.res` dependency graph          | P0 for custom maps |
+| source provenance in diagnostics |                 P0 |
 
-## Effects Contract
+---
 
-Effects are semantic and provider-driven:
+## 15. Coverage matrix
 
-| Effect | GoldSrc candidates | Runtime rule |
-|---|---|---|
-| Muzzle flash | `sprites/muzzleflash*.spr`, `sprites/muz*.spr` | Spawn once at muzzle socket or diagnostic fallback offset. |
-| Shell casing | `models/pshell.mdl`, `models/rshell.mdl`, `models/shotgunshell.mdl` | Spawn from shell socket/timeline; no box fallback. |
-| Impact puff | wall puff sprites | Surface-aware later; default only with diagnostics. |
-| Ricochet/spark | spark/ricochet sprites | Material-aware and chance-based later. |
-| Tracer | provider effect mapping | Not every shot; configurable cadence. |
-| Explosion/smoke | grenade sprites and sounds | Projectile/world effects, not viewmodel children. |
+| Domain                  | Public knowledge coverage | Local extraction needed | OpenStrike target                |
+| ----------------------- | ------------------------: | ----------------------: | -------------------------------- |
+| Folder structure        |                      high |                  medium | VFS scanner                      |
+| BSP format              |                      high |                 per-map | BSP typed loader                 |
+| BSP entities            |               medium-high |                 per-map | entity adapter registry          |
+| WAD textures            |                      high |         per-map/per-wad | WAD registry                     |
+| Skyboxes                |                    medium |                 per-map | sky resolver                     |
+| MDL format              |                      high |               per-model | metadata-first MDL scanner       |
+| Weapon v/p/w convention |                      high |   per-weapon exceptions | weapon atlas                     |
+| Sequence names          |                low-medium |                required | generated sequence table         |
+| Sequence durations      |                       low |                required | generated timing table           |
+| Animation events        |                    medium |                required | generated event table            |
+| Attachments/sockets     |                    medium |                required | socket resolver                  |
+| Player hitboxes         |                    medium |                required | damage model                     |
+| HUD txt/sprite layout   |                      high |                required | HUD atlas parser                 |
+| Weapon sprites          |                    medium |                required | weapon HUD atlas                 |
+| Muzzle/shell sprites    |                    medium |                required | effect atlas                     |
+| Sounds                  |                    medium |                required | audio event atlas                |
+| Reload sound timing     |                       low |                required | weapon timeline config           |
+| Map overviews           |               medium-high |                 per-map | overview parser                  |
+| UI resources            |                    medium |                required | classic UI parser/approx         |
+| Sprays/decals           |                    medium |                optional | decal/spray system               |
+| Game rules numbers      |          public/community |   separate verification | gameplay config, not asset atlas |
+| Network protocol        |                 not asset |               not in v1 | out of scope                     |
 
-Allowed missing behavior: disable the specific effect and report diagnostics.
-Forbidden missing behavior: cube meshes, generated rectangles or old prototype
-assets pretending to be CS assets.
+---
 
-## Lifecycle Rules
+## 16. Нужный инструмент: `goldsrc_asset_atlas`
 
-### Firearm fire
+Markdown руками не решит задачу. Нужен extractor, который запускается на локальной CS 1.6 и генерирует diffable JSON/MD.
+
+### Команда
+
+```bash
+openstrike-goldsrc-atlas \
+  --half-life-dir "/path/to/Half-Life" \
+  --mod cstrike \
+  --out .local/asset_atlas \
+  --no-copy-assets
+```
+
+### Outputs
 
 ```text
-input accepted
-  -> validate state/cooldown/ammo
-  -> decrement ammo
-  -> hitscan/spread/recoil immediately
-  -> play semantic fire animation
-  -> play semantic fire audio
-  -> spawn muzzle flash
-  -> schedule shell ejection
-  -> spawn impact/tracer feedback from hit result
-  -> enter cooldown
-  -> return idle or continue auto fire
+.local/asset_atlas/
+  asset_inventory.generated.json
+  weapon_assets.generated.json
+  weapon_model_metadata.generated.json
+  weapon_animation_sequences.generated.json
+  weapon_animation_events.generated.json
+  sprite_layouts.generated.json
+  audio_inventory.generated.json
+  map_inventory.generated.json
+  map_dependencies.generated.json
+  player_models.generated.json
+  coverage_report.md
 ```
 
-### Reload
+### Пример `coverage_report.md`
 
 ```text
-input accepted
-  -> reject full mag / no reserve / invalid weapon type
-  -> enter reloading
-  -> play reload animation
-  -> schedule reload audio fragments
-  -> commit ammo at explicit commit time
-  -> finish reload at explicit duration or inspected animation duration
-  -> return idle
+CS 1.6 Asset Coverage Report
+
+Install:
+  mod root: cstrike
+  fallback root: valve
+  generated_at: ...
+
+Weapons:
+  ak47:
+    view_model: ready
+    player_model: ready
+    world_model: ready
+    hud_layout: ready
+    fire_sounds: ready
+    reload_sounds: partial
+    sequences: ready
+    mdl_events: ready
+    attachments: ready
+    confidence: extracted
+
+Maps:
+  de_dust2:
+    bsp: ready
+    entity_lump: ready
+    wad_dependencies: ready
+    overview: ready
+    buyzones: ready
+    bombsites: ready
+    lightmaps: ready
+    clipnodes: ready
 ```
 
-### Weapon switch
+---
+
+## 17. Что должно попасть в репозиторий
+
+В репозиторий можно и нужно положить:
 
 ```text
-request slot
-  -> reject if current state cannot interrupt
-  -> current weapon switching_out
-  -> play holster if available, otherwise fixed diagnostic delay
-  -> instantiate target viewmodel
-  -> target deploying
-  -> play draw animation/audio
-  -> idle
+docs/CS16_ASSET_ORCHESTRATION_ATLAS.md
+docs/CS16_ASSET_COVERAGE_POLICY.md
+docs/CS16_ASSET_SCANNER_SPEC.md
+
+data/config/asset_packs/goldsrc_cs16/
+  semantic_manifest.schema.json
+  weapon_assets.schema.json
+  weapon_animation_aliases.json
+  weapon_event_timelines.schema.json
+  audio_events.schema.json
+  effects.schema.json
+  hud_layout.schema.json
+  map_entities.schema.json
+
+tools/goldsrc_asset_atlas/
+  scanner source code
+  README.md
 ```
 
-### Knife
+Нельзя класть:
 
 ```text
-primary attack
-  -> slash action variant
-  -> swing audio immediately
-  -> hit test at configured/inspected hit window
-  -> flesh/wall/miss audio
-  -> recovery
-
-secondary attack
-  -> stab action
-  -> delayed stronger hit test
-  -> recovery
+generated JSON from a real CS install
+any .bsp/.mdl/.spr/.wad/.wav/.bmp/.tga from Valve
+local_goldsrc.json
+absolute local paths
+screenshots containing extracted assets, unless legal review says OK
 ```
 
-### Grenade
+OpenStrike project plan already фиксирует эту границу: проект читает карты, модели, текстуры, звуки и спрайты из локальной лицензионной копии, но не распространяет ассеты Valve; также запрещает копировать чужой код/ассеты и требует data-driven configs .
 
-```text
-select grenade
-  -> only if inventory count > 0
-mouse press
-  -> pull pin / enter holding
-mouse release
-  -> throw animation
-  -> release world projectile at explicit release time
-  -> decrement grenade inventory
-  -> switch to previous available weapon, otherwise knife
-projectile
-  -> bounces with world physics rules
-  -> explodes at fuse time
-```
+---
 
-The previous Readytostrike issue where an empty grenade could still be selected
-is explicitly forbidden.
+## 18. Definition of Done для PR-06 / atlas-first
 
-## Viewmodel and World Profile Dependency
+PR-06 не должен начинаться с “покажем AK красиво”. Он должен начинаться с покрытия.
 
-Weapon presentation depends on the world/viewmodel profile contract:
+### Acceptance criteria
 
-* GoldSrc-to-Godot unit scale must be fixed before model scale tuning.
-* World FOV and viewmodel FOV must be explicit and tested.
-* `v_*.mdl` should initially use model origin/attachments from the imported
-  asset, not per-weapon screen-space scale hacks.
-* Per-weapon offsets are allowed only as measured calibration data with source
-  confidence, not as the primary way to fix an incorrect scale/FOV/profile.
+1. `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` добавлен.
+2. Есть schema для semantic asset atlas.
+3. Есть scanner skeleton, который:
 
-## Required PR-06 Inspection Tooling
+   * монтирует `cstrike` и `valve`;
+   * строит case-insensitive index;
+   * находит `models`, `sprites`, `sound`, `maps`, `gfx/env`, `resource`;
+   * не копирует ассеты;
+   * пишет diagnostics.
+4. Для weapon roster создаётся generated report:
 
-Before claiming that weapon/viewmodel orchestration is correct, PR-06 should
-add or prepare a local inspection command that reports, without exposing local
-absolute paths:
+   * model paths;
+   * HUD layout file;
+   * candidate sounds;
+   * sequence list if MDL parser доступен;
+   * missing coverage warnings.
+5. Для maps создаётся generated report:
 
-```text
-weapon id
-view/player/world model path status
-viewmodel sequence names
-sequence durations
-available attachments / likely muzzle socket
-available animation/studio events if exposed
-sound event path status
-sprite/effect path status
-warnings for fallback/todo data
-```
+   * BSP exists;
+   * `.res` exists / missing;
+   * WAD deps;
+   * entity class counts;
+   * overview exists / missing.
+6. Gameplay/presentation код не содержит прямых путей `models/v_*.mdl` или `sound/weapons/*.wav`.
+7. Missing asset = warning + feature unavailable, not placeholder.
+8. В PR описано, какие поля `verified`, какие `manual_unverified`, какие `unknown`.
 
-The output should be JSON so reviewers can compare facts between machines.
+---
 
-## Immediate Gaps
+## 19. Итог по покрытию
 
-These are known blockers for near-complete CS 1.6 parity:
+На сегодня можно считать **публично покрытыми**:
 
-* Full CS 1.6 weapon catalog is not committed yet.
-* Pilot catalog lacks `p_` and `w_` model entries.
-* Actual MDL sequence names and durations are not inspected by OpenStrike yet.
-* Studio events are not consumed yet.
-* Reload, knife and grenade timings still include Readytostrike lab values that
-  need verification.
-* Weapon-specific sounds beyond the pilot set are not cataloged.
-* Surface impact, decal, tracer, smoke and explosion mappings are not complete.
-* HUD sprite layout and weapon selection sprites are not connected to runtime.
-* Player models and third-person held weapons are not cataloged.
-* Map/entity/model dependencies are deferred to BSP PRs.
+* структура доменов ассетов CS/GoldSrc;
+* форматы BSP/MDL/SPR/WAD на уровне loader design;
+* `.res` как карта зависимостей custom maps;
+* `hud.txt`/sprite-layout подход;
+* v/p/w weapon model convention;
+* overview/radar file concept;
+* FGD/entity vocabulary;
+* общая audio/effect/event модель.
 
-## Review Checklist
+Нельзя считать покрытыми без локального extractor’а:
 
-Before merging weapon/viewmodel/audio/effect work, verify:
+* точные sequence names/durations всех `v_*.mdl`;
+* точные animation events всех моделей;
+* attachment/socket transforms;
+* reload fragment timings;
+* точные sprite rects из локальных `hud.txt`/`weapon_*.txt`;
+* полный audio-event mapping;
+* per-map WAD/entity/overview completeness;
+* hitboxes конкретных player models;
+* все custom/server/community assets.
 
-* No direct GoldSrc file paths in gameplay code.
-* No proprietary asset bytes, converted caches or local paths committed.
-* No placeholder model/sound/effect fallback.
-* Missing assets produce diagnostics and disabled features.
-* Animation aliases are backed by local inspection or clearly marked fallback.
-* Event timelines carry source confidence.
-* Weapon lifecycle states are explicit.
-* Grenade inventory selection rules prevent selecting spent grenades.
-* Changelog and this atlas are updated when new asset facts are accepted.
+**Вывод:** разработчику нужно ставить не задачу “знать все ассеты”, а задачу “сделать систему, которая доказывает, что она знает ассеты конкретной установки”. Ручной markdown — контракт. Истина — generated atlas из локальной CS 1.6.
+
+[1]: https://developer.valvesoftware.com/wiki/BSP_%28GoldSrc%29?utm_source=chatgpt.com "BSP (GoldSrc)"
+[2]: https://developer.valvesoftware.com/wiki/Porting_maps_from_one_mod_to_another_%28GoldSrc%29 "Porting maps from one mod to another - Valve Developer Community"
+[3]: https://the303.org/tutorials/gold_qc.htm "GOLDSRC MDL QC COMMANDS"
+[4]: https://github.com/ValveSoftware/halflife/blob/master/cl_dll/hud.h "halflife/cl_dll/hud.h at master · ValveSoftware/halflife · GitHub"
+[5]: https://www.moddb.com/tutorials/map-overview-creation-for-gold-source-engine-games "Map Overview Creation for Gold Source engine games tutorial - ModDB"
+[6]: https://wiki.alliedmods.net/Cs_weapons_information "Cs weapons information - AlliedModders Wiki"
+[7]: https://developer.valvesoftware.com/wiki/Materials.txt?utm_source=chatgpt.com "Materials.txt"
+[8]: https://github.com/ValveSoftware/halflife/issues/234?utm_source=chatgpt.com "[CS 1.6] When downloading maps with fastdownload, files ..."
+[9]: https://raw.githubusercontent.com/rehlds/ReGameDLL_CS/master/regamedll/extra/Toolkit/GameDefinitionFile/regamedll-cs.fgd "raw.githubusercontent.com"
+[10]: https://counterstrike.fandom.com/wiki/Buy_zone "Buy zone | Counter-Strike Wiki | Fandom"
+[11]: https://github.com/fwgs/xash3d-fwgs?utm_source=chatgpt.com "Xash3D FWGS engine"

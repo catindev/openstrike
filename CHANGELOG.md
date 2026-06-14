@@ -7,8 +7,14 @@ All notable changes to this project will be documented in this file.  The format
 ### Added
 
 * Added `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working map
-  for CS 1.6 weapon model roles, animation aliases, audio events, effects,
-  lifecycle flows, source-confidence labels and PR-06 inspection gaps.
+  for CS 1.6 asset coverage levels, weapon/model/audio/effect/HUD/map domains,
+  scanner outputs and PR-06 generated-atlas acceptance criteria.
+* Added `docs/VIEWMODEL_WORLD_PROFILE.md` as the required PR-06A profile
+  contract for GoldSrc unit scale, coordinate mapping, eye height, world FOV,
+  viewmodel FOV, no-per-weapon-transform rules and profile smoke obligations.
+* Added agent/documentation instructions requiring future world/viewmodel scale,
+  coordinate mapping, eye height, camera FOV and first-person placement work to
+  read and update the viewmodel/world profile.
 * Added agent/documentation instructions requiring future weapon/viewmodel,
   animation, audio, muzzle flash, shell ejection, impact, grenade and HUD
   weapon-sprite work to read and update the asset orchestration atlas.
@@ -147,9 +153,10 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
-* Tightened PR-06 so weapon/viewmodel orchestration starts from a CS 1.6 asset
-  lifecycle atlas and local MDL/audio/effect inspection tooling instead of
-  eyeballed model scale, FOV, offset or timing guesses.
+* Tightened PR-06 into a profile/scanner-first sequence: PR-06A locks and
+  smoke-tests the world/viewmodel profile before real `.mdl` rendering, and
+  PR-06B consumes local GoldSrc assets through generated atlas diagnostics
+  instead of eyeballed model scale, FOV, offset or timing guesses.
 * Inserted PR-05D before weapon/viewmodel orchestration so the pilot catalog can
   be checked against a developer's licensed local installation through the same
   provider/VFS contract before PR-06 consumes it.

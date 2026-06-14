@@ -68,6 +68,8 @@ Reimplementing *Counter‑Strike 1.6* involves many subsystems.  Below is a non
 
 Source weighting and use/do-not-use rules live in `SOURCE_CATALOG.md`.
 Dev-lab evidence rules live in `DEV_LABS_METHODOLOGY.md`.
+World/viewmodel scale, coordinate mapping, eye height and FOV profile rules
+live in `VIEWMODEL_WORLD_PROFILE.md`.
 Weapon, model, animation, audio, effect and lifecycle orchestration rules live
 in `CS16_ASSET_ORCHESTRATION_ATLAS.md`.
 

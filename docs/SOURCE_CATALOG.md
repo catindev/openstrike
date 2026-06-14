@@ -110,3 +110,37 @@ Current accepted use:
 
 * `data/assets/cs16_pilot_weapon_assets.json` contains only relative paths
   verified from a local licensed Steam installation on 2026-06-14.
+
+## GoldSrc Viewmodel, Asset and HUD References
+
+Type: mixed primary/community reference for PR-06 profile and atlas design.
+
+Use for:
+
+* world/viewmodel profile contracts, source values and smoke expectations when
+  cross-checked against primary references;
+* GoldSrc folder/domain coverage, format responsibilities and scanner scope;
+* HUD/sprite layout, map overview, `.res`, materials and entity vocabulary
+  planning;
+* identifying what must be verified by a local generated atlas rather than
+  written by hand.
+
+Do not use for:
+
+* committing generated data from a real local installation;
+* replacing local MDL/SPR/WAV/BSP inspection with public assumptions;
+* copying Valve, HLSDK, ReHLDS, Xash3D or other third-party source code;
+* treating community wiki/gameplay pages as final CS 1.6 parity constants.
+
+Important references introduced by `VIEWMODEL_WORLD_PROFILE.md` and
+`CS16_ASSET_ORCHESTRATION_ATLAS.md`:
+
+* `alanfischer/goldsrc-godot` README for the loader scale default,
+  GoldSrc-to-Godot coordinate mapping and BSP conversion flags.
+* Godot `Camera3D` documentation for `fov` and `keep_aspect` semantics.
+* Valve HLSDK references for eye/view offsets and `default_fov` constants,
+  as reference only.
+* Valve Developer Community GoldSrc pages for BSP, `.res`, materials and
+  mapping documentation.
+* Public GoldSrc QC, HUD, overview and weapon-info references as scanner design
+  input, not as generated runtime truth.

@@ -493,19 +493,38 @@ unavailable locally.
 
 **Why atlas-first:** The project goal is a near-complete CS 1.6
 reimplementation, not a four-weapon visual spike. PR-06 must start from a
-weapon/model/audio/effect lifecycle contract and local inspection tooling so
-OpenStrike does not repeat the Readytostrike pattern of guessing viewmodel
-scale, FOV, offsets and timings by eye.
+world/viewmodel profile contract, a weapon/model/audio/effect lifecycle
+contract and local inspection tooling so OpenStrike does not repeat the
+Readytostrike pattern of guessing viewmodel scale, FOV, offsets and timings by
+eye.
+
+**PR-06A profile preflight:** Before rendering any `.mdl` in a dev scene,
+OpenStrike must add the source-value profile fields, smoke-test scale,
+GoldSrc-to-Godot coordinate mapping, eye heights, FOV derivation and the
+anti-`58.7155`/anti-per-weapon-transform guards described in
+`docs/VIEWMODEL_WORLD_PROFILE.md`.
+
+**PR-06B real-asset runtime:** After the profile preflight, load the pilot
+`v_*.mdl` files through the GoldSrc GDExtension adapter, run the shared
+orientation calibration and render them through the locked profile with zero
+per-weapon scale/position/FOV tuning.
 
 **Includes:**
 
+* `docs/VIEWMODEL_WORLD_PROFILE.md` as the required profile contract for unit
+  scale, coordinate mapping, eye height, world FOV, viewmodel FOV and
+  no-per-weapon-transform rules.
 * `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required asset and lifecycle
   contract for weapon/viewmodel/audio/effect work.
 * GoldSrc GDExtension adapter boundary for `alanfischer/goldsrc-godot` rather
   than project-owned MDL/SPR decoders.
+* `goldsrc_asset_atlas` scanner skeleton or equivalent local inspection command
+  that mounts `cstrike` and `valve`, builds a case-insensitive inventory and
+  reports model, sprite, sound, HUD, map and dependency coverage without
+  copying assets or printing local absolute paths.
 * Local inspection output for pilot weapons that reports model availability,
-  sequence names, sequence durations, attachments/events when exposed, and
-  sound/sprite availability without printing local absolute paths.
+  sequence names, sequence durations, attachments/events when exposed,
+  HUD/effect candidates and sound/sprite availability.
 * Viewmodel rig or camera layer for first-person models.
 * Weapon animation alias resolver.
 * Weapon event timeline for draw, fire, reload, melee, grenade release, shell
@@ -519,13 +538,18 @@ scale, FOV, offsets and timings by eye.
   the mappings.
 * Per-weapon model scale/position tuning as the primary fix for incorrect
   world/viewmodel FOV or unit-scale contracts.
+* BSP runtime/map collision implementation beyond scanner coverage.
 
 **Acceptance criteria:**
 
+* `VIEWMODEL_WORLD_PROFILE.md` source values exist in config or a profile
+  resource and profile smoke covers scale, coordinate determinant, eye heights,
+  FOV derivation, `KEEP_HEIGHT`, anti-`58.7155` and no per-weapon transform keys.
 * Weapon/viewmodel code consumes semantic IDs and atlas-backed contracts, not
   direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
-* Pilot weapon inspection produces reviewable diagnostics for actual local MDL
-  sequences/durations and audio/effect availability.
+* Scanner/inspection output produces reviewable diagnostics for actual local MDL
+  sequences/durations, model roles, HUD candidates, audio, sprite/effect and
+  map coverage, clearly marking `verified`, `manual_unverified` and `unknown`.
 * A weapon can be deployed, fired and reloaded through semantic events.
 * Knife primary/secondary and grenade select/throw/switch rules are represented
   as lifecycle states, even if the first runtime surface remains limited.

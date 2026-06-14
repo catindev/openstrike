@@ -22,6 +22,10 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   HUD, viewmodels, effects, asset-provider code or Godot project structure,
   read `docs/AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
 * Before changing movement, weapons, hit feedback, prediction, BSP collision, HUD, viewmodels or any other feel-sensitive system, read `docs/CS_1_6_FEEL.md` and keep its movement/feedback acceptance criteria in scope.
+* Before changing world/viewmodel scale, GoldSrc-to-Godot coordinate mapping,
+  player eye height, world camera FOV, viewmodel camera FOV or first-person
+  model placement, read `docs/VIEWMODEL_WORLD_PROFILE.md`. Update that profile
+  and its smoke expectations when a profile fact changes.
 * Before changing weapon assets, viewmodel orchestration, weapon animation
   aliases, weapon audio, muzzle flashes, shell ejection, impact effects,
   grenade presentation or HUD weapon sprites, read
