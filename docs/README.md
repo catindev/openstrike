@@ -6,18 +6,21 @@ This directory is the operational memory of the project. Every AI/coding agent m
 
 1. `../AGENTS.md` — mandatory agent rules.
 2. `LEGAL_ORIGINALITY.md` — legal and originality boundaries.
-3. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
-4. `ROADMAP.md` — release path from `0.1.0` to `1.0.0`.
-5. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
-6. `ASSET_PIPELINE.md` — planned local asset loading model.
-7. `KNOWLEDGE_BASE.md` — current project knowledge base.
-8. `TESTING.md` — testing strategy and smoke checks.
+3. `DECISIONS.md` — binding implementation decisions and project boundaries.
+4. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
+5. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
+6. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
+7. `ASSET_PIPELINE.md` — planned local asset loading model.
+8. `KNOWLEDGE_BASE.md` — current project knowledge base.
+9. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
 When code changes behavior, documentation must change in the same PR.
 
 When a parity fact is uncertain, write `TODO: verify` instead of guessing.
+
+Every implementation PR must update `../CHANGELOG.md` in English.
 
 ## Current status
 

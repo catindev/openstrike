@@ -1,20 +1,34 @@
 # OpenStrike Roadmap
 
-This roadmap outlines the high‑level milestones for the OpenStrike project.  Each version represents a coherent set of goals rather than strict deadlines.  Dates are deliberately omitted; progress depends on contributor availability and complexity.
+OpenStrike is a Godot-based reimplementation of Counter-Strike 1.6 for
+players who provide their own licensed GoldSrc installation. The roadmap is
+organized around verifiable engine milestones, not calendar dates.
 
-## Versions and goals
+The project does not bundle Valve assets and does not copy Valve, HLSDK or
+GPL-licensed source code. External projects are reference material only.
 
-| Version | Goal |
-|--------|------|
-| **0.1.0** | Bootstrap: repository skeleton, Godot project, documentation and agent guidelines. |
-| **0.2.0** | AssetManager and local configuration for GoldSrc paths. |
-| **0.3.0** | Movement parity: implement a player controller matching Counter‑Strike movement parameters (gravity, friction, stopspeed, etc.). |
-| **0.4.0** | BSP loading integration: support for reading and displaying GoldSrc BSP maps via the asset pipeline. |
-| **0.5.0** | Server‑authoritative local game loop: implement authoritative simulation for rounds. |
-| **0.6.0** | Round rules, teams and basic bomb defusal MVP. |
-| **0.7.0** | Weapons system, economy and buy menu. |
-| **0.8.0** | Sprite‑based HUD, in‑game menus and radar. |
-| **0.9.0** | Bots and PvE foundation. |
-| **1.0.0** | Full feature parity with *Counter‑Strike 1.6* for licensed owners. |
+## Milestones
 
-Each milestone builds upon the previous one.  As development progresses, intermediate versions may be added for finer grained deliverables.
+| Milestone | Goal | Acceptance signal |
+|---|---|---|
+| M0 | Bootstrap, project contract, diagnostics and cvar foundation. | The Godot project opens, the main scene runs, documentation agrees on legal and architectural boundaries, and cvar/config data can be loaded without gameplay dependencies. |
+| M1 | Local GoldSrc asset configuration, AssetManager and VFS. | A valid local installation can be configured, raw files resolve through GoldSrc-like search paths, and missing content produces diagnostics instead of placeholders. |
+| M2 | Movement parity on top of cvars. | Player movement uses cvar-backed GoldSrc constants and telemetry matches expected CS 1.6 ranges. |
+| M3 | GoldSrc format providers for MDL, SPR and WAV. | Weapon models, sprites and sounds load through providers without direct file paths in gameplay code. |
+| M4 | Viewmodel and weapon presentation orchestration. | Viewmodels render through a dedicated presentation rig, animation aliases resolve, and semantic events drive sound/effects. |
+| M5 | BSP map pipeline and entity metadata. | A local BSP map can be discovered, imported or loaded, entity metadata is available, and player spawn points come from map data. |
+| M6 | Server-authoritative local game loop. | Offline play runs through an authoritative game layer with round state, teams and deterministic weapon state. |
+| M7 | Bomb defusal MVP, economy and buy flow. | A de_ round can be played locally with money, buy zones, C4 states and win conditions. |
+| M8 | Sprite HUD, menus, radar and diagnostics tools. | HUD and menus use GoldSrc data/layouts where applicable, and development tools expose asset, animation, socket and map status. |
+| M9 | Bots, LAN/listen-server and additional modes. | Local bot matches and LAN listen-server play are possible; cs_/as_ modes are implemented after de_ stabilizes. |
+
+## Near-term rule
+
+Do not tune first-person weapons by guessing screen offsets before the asset,
+socket, animation and diagnostics pipeline exists. The immediate path is:
+
+1. Keep the project bootable.
+2. Load local GoldSrc assets legally.
+3. Resolve files through a proper VFS.
+4. Make cvars/config authoritative for gameplay numbers.
+5. Add calibrated presentation only after provider and diagnostics boundaries are in place.

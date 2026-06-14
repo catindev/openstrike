@@ -46,3 +46,27 @@ The Godot project’s main scene is defined in `project.godot` as `res://scenes/
 * **Server‑authoritative simulation:** Even for single‑player, run the game through a server logic layer to maintain determinism and avoid divergent client states.
 * **Reference, don’t copy:** Code from GoldSrc, Xash3D or HLSDK may be studied to understand behaviours and file formats but should never be copied.  Only open specifications and numerical constants should inform the reimplementation.
 * **Incremental migration:** Prototypes such as Readytostrike serve as references.  Port functionality intentionally and incrementally through focused PRs rather than wholesale copying.
+
+## Asset and presentation orchestration
+
+Gameplay code uses semantic IDs and state transitions. It must not know file
+paths such as `models/v_ak47.mdl`, `sprites/muzzleflash1.spr` or
+`sound/weapons/ak47-1.wav`.
+
+The intended flow is:
+
+```
+input -> game state -> weapon state -> semantic event
+      -> presentation orchestration -> AssetManager/provider
+      -> viewmodel, audio, effect, HUD and diagnostics
+```
+
+Near-term orchestrators should be introduced only after the local GoldSrc VFS
+and cvar/config foundations exist:
+
+* AssetManager and providers resolve local GoldSrc files.
+* Game systems own authoritative weapon, movement and round state.
+* Presentation systems own viewmodels, animation aliases, event timelines,
+  audio, muzzle flashes, shell ejection, tracers, impacts, HUD and menus.
+* Missing assets produce diagnostics and disabled features, not fake fallback
+  content.

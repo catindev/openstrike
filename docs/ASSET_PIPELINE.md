@@ -25,9 +25,26 @@ The exact schema will be finalized in the AssetManager PR. For PR-00 this file i
 An `AssetManager` module will provide a unified interface for loading assets.  It will:
 
 * Parse `local_goldsrc.json` and validate the paths.
-* Offer a single API for requesting assets by type (e.g. textures, models, sounds).
+* Resolve files through a GoldSrc-like VFS before any parser runs.
+* Offer a single API for requesting assets by semantic ID or type (e.g. textures, models, sounds).
 * Delegate to specific providers (BSP, MDL, WAD, SPR, WAV) based on file extension.
 * Cache loaded resources where appropriate.
+
+The first AssetManager milestone should only locate and read raw files. Format
+parsing comes later, after path resolution, overlay order and diagnostics are
+stable.
+
+## GoldSrc VFS
+
+The VFS is responsible for resolving paths from the user's configured
+installation. It should support:
+
+* `cstrike/` and `valve/` search roots.
+* Mod-over-base overlay semantics.
+* Case-insensitive lookup for files from case-sensitive host filesystems.
+* Structured diagnostics for missing roots, missing files and ambiguous assets.
+
+PAK and WAD container parsing can be added after filesystem lookup is stable.
 
 ## GoldSrc providers
 
@@ -59,6 +76,7 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 
 ## Future tasks
 
+* Implement local config loading and GoldSrc VFS tests.
 * Implement parsers for MDL, BSP, WAD, SPR and WAV files.
 * Design HUD layout readers for text‑based HUD definitions.
 * Create a tool to validate `local_goldsrc.json` and detect missing assets.
