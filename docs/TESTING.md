@@ -11,6 +11,18 @@ For the bootstrap milestone, manual verification is sufficient:
 * **Configuration files:** Ensure that no `local_goldsrc.json` or other user‑specific configuration files are committed.
 * **Documentation coverage:** Confirm that documentation has been updated or created to reflect any new changes.
 
+## Current (PR‑01) checklist
+
+For the core utilities and diagnostics milestone, perform the following checks:
+
+* **Godot project smoke test:** Open the project in Godot 4.x and run the main scene. Verify that the bootstrap screen appears with the project name, version, legal notice, Godot version and diagnostics status. There should be no errors or warnings in the output.
+* **Diagnostics overlay:** Ensure that a diagnostics overlay or label appears on screen (or can be enabled via a debug flag) showing at least the Godot version and a basic diagnostics status.
+* **Logging utility:** Import `Logger` from `src/core/logging.gd` in a test script and confirm that `Logger.info()`, `Logger.warn()` and `Logger.error()` output messages appropriately in the Godot console.
+* **Configuration loader:** Confirm that `ConfigLoader.load_config()` can be called without errors (functionality is a placeholder for now).
+* **No bundled Valve assets:** Search the repository for any prohibited file types (.bsp, .mdl, .spr, .wad, .wav, .bmp). Ensure none are present.
+* **Configuration files:** Ensure that no `local_goldsrc.json` or other user‑specific configuration files are committed.
+* **Documentation coverage:** Confirm that documentation has been updated or created to reflect any new changes for PR‑01.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:
