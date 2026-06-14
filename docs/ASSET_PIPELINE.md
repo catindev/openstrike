@@ -90,6 +90,18 @@ Example manifest shape:
 }
 ```
 
+The first project-owned catalog is
+`data/assets/cs16_pilot_weapon_assets.json`. It contains only semantic IDs,
+asset types, GoldSrc-relative paths and metadata for the pilot weapon
+presentation set: AK-47, USP, knife, HE grenade and muzzleflash sprites. These
+relative file names were checked against a local licensed Steam Counter-Strike
+1.6/Half-Life installation on 2026-06-14. The catalog deliberately excludes
+candidates that did not resolve in that installation, such as
+`sound/weapons/usp_unsil-2.wav` and `sound/weapons/grenade_throw.wav`.
+
+The catalog is still data, not decoded presentation. Future PRs must add
+format parsers, animation alias tables and viewmodel orchestration separately.
+
 ## GoldSrc VFS
 
 The VFS is responsible for resolving paths from the user's configured
@@ -113,6 +125,8 @@ Initial implementation classes:
   semantic provider requests for future presentation systems.
 * `OpenStrikeAssetInspectionReport` exposes manifest preflight summary data for
   dev tools and future catalog validation.
+* `data/assets/cs16_pilot_weapon_assets.json` provides the first smoke-validated
+  pilot catalog for semantic weapon presentation assets.
 
 ## GoldSrc providers
 
@@ -148,6 +162,8 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
   installation inspection and source classification.
 * Add a developer-facing asset manifest inspection tool or panel that runs the
   same preflight API against a user's local `local_goldsrc.json`.
+* Extend the pilot catalog after additional local-installation checks and
+  source classification, keeping unverified paths out of production data.
 * Add PAK/WAD container lookup after raw filesystem lookup is stable.
 * Implement parsers for MDL, BSP, WAD, SPR and WAV files.
 * Design HUD layout readers for text‑based HUD definitions.

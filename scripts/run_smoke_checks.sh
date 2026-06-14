@@ -13,5 +13,6 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_vfs_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_provider_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_manifest_inspection_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_catalog_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/cvar_config_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/movement_smoke.gd

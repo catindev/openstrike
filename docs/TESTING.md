@@ -209,6 +209,30 @@ For asset manifest inspection changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05A was
   inserted before PR-06.
 
+## Current (PR-05B) checklist
+
+For pilot weapon asset catalog changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  pilot asset catalog smoke after manifest inspection.
+* **Asset catalog smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_catalog_smoke.gd`
+  when iterating locally on catalog data or semantic IDs.
+* **Synthetic fixtures only:** Confirm that catalog smoke creates temporary
+  synthetic files under `user://` for every catalog path and does not commit
+  `.mdl`, `.spr` or `.wav` fixtures.
+* **Catalog hygiene:** Confirm that `data/assets/cs16_pilot_weapon_assets.json`
+  contains relative GoldSrc paths only, no local absolute paths and no extracted
+  asset content.
+* **Source classification:** Confirm that `SOURCE_CATALOG.md` records local
+  licensed filename inspection as path-availability verification only.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05B was
+  inserted before PR-06.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

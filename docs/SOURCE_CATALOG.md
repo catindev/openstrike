@@ -17,6 +17,9 @@ it.
 * Public Half-Life SDK and ValveSoftware/halflife materials, as reference only.
 * ReHLDS/ReGameDLL/Xash3D-family references, only after license constraints are
   checked and without copying GPL/proprietary code.
+* Local licensed Counter-Strike 1.6/Half-Life installation filename inspection,
+  only for confirming relative asset paths and availability. Do not commit
+  local absolute paths, asset bytes, extracted caches or local config files.
 
 ### Project platform references
 
@@ -84,3 +87,26 @@ Important materials to catalog and revisit by topic:
   skyboxes and optimized map analyses.
 
 The full working notes are in `docs/3KLIKSPHILIP_RESEARCH_NOTES.md`.
+
+## Local CS 1.6 Asset Filename Inspection
+
+Type: primary local verification for asset availability.
+
+Use for:
+
+* confirming that a relative path such as `models/v_ak47.mdl` exists in a
+  licensed local installation;
+* deciding whether a candidate path belongs in a committed semantic catalog;
+* documenting missing candidates as excluded until verified.
+
+Do not use for:
+
+* copying, extracting, committing or redistributing asset bytes;
+* committing local absolute paths or `local_goldsrc.json`;
+* inferring animation timing, sequence names or gameplay values without parser
+  and source-backed verification.
+
+Current accepted use:
+
+* `data/assets/cs16_pilot_weapon_assets.json` contains only relative paths
+  verified from a local licensed Steam installation on 2026-06-14.
