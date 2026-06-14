@@ -19,13 +19,13 @@ func step(state, input, delta: float, telemetry = null) -> void:
 
 	if state.on_ground:
 		state.position.y = max(state.position.y, state.ground_height)
+		state.velocity.y = 0.0
+		_apply_friction(state, frame_delta)
+		_accelerate(state, input, settings.max_speed, settings.ground_accelerate, frame_delta)
+
 		if input.jump:
 			state.velocity.y = settings.jump_velocity
 			state.on_ground = false
-		else:
-			state.velocity.y = 0.0
-			_apply_friction(state, frame_delta)
-			_accelerate(state, input, settings.max_speed, settings.ground_accelerate, frame_delta)
 
 	if not state.on_ground:
 		_air_accelerate(state, input, frame_delta)
@@ -76,8 +76,7 @@ func _apply_friction(state, delta: float) -> void:
 
 func _air_accelerate(state, input, delta: float) -> void:
 	var wish := _wish_direction_and_speed(input, settings.max_speed)
-	var wish_speed: float = min(float(wish["speed"]), settings.air_max_wishspeed)
-	_accelerate_along(state, wish["direction"], wish_speed, settings.air_accelerate, delta)
+	_air_accelerate_along(state, wish["direction"], float(wish["speed"]), settings.air_accelerate, delta)
 
 
 func _apply_half_gravity(state, delta: float) -> void:
@@ -87,6 +86,21 @@ func _apply_half_gravity(state, delta: float) -> void:
 func _accelerate(state, input, max_wishspeed: float, acceleration: float, delta: float) -> void:
 	var wish := _wish_direction_and_speed(input, max_wishspeed)
 	_accelerate_along(state, wish["direction"], float(wish["speed"]), acceleration, delta)
+
+
+func _air_accelerate_along(state, wish_direction: Vector3, full_wish_speed: float, acceleration: float, delta: float) -> void:
+	if full_wish_speed <= 0.0 or wish_direction == Vector3.ZERO:
+		return
+
+	var capped_wish_speed: float = min(full_wish_speed, settings.air_max_wishspeed)
+	var current_speed: float = state.horizontal_velocity().dot(wish_direction)
+	var add_speed: float = capped_wish_speed - current_speed
+	if add_speed <= 0.0:
+		return
+
+	var accel_speed: float = min(acceleration * full_wish_speed * delta, add_speed)
+	state.velocity.x += accel_speed * wish_direction.x
+	state.velocity.z += accel_speed * wish_direction.z
 
 
 func _accelerate_along(state, wish_direction: Vector3, wish_speed: float, acceleration: float, delta: float) -> void:

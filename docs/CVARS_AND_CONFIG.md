@@ -48,6 +48,10 @@ a deliberate conversion. Current defaults use:
 | `mp_c4timer` | seconds | `45` |
 | `mp_startmoney` | dollars | `800` |
 
+`sv_air_max_wishspeed` and `sv_jumpvelocity` are OpenStrike-specific parity
+knobs used by the movement core. They expose GoldSrc-like constants through
+the cvar layer; they are not original GoldSrc console variables.
+
 ## Runtime API
 
 Initial implementation classes:

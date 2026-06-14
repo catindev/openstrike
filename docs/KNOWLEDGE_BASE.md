@@ -27,8 +27,8 @@ The following constants are known from public sources and prototypes.  They defi
 | Stop speed | `100` | Minimum ground speed before friction stops the player. |
 | Step size | `18` | Maximum vertical step height. |
 | Air accelerate | `10` | Air acceleration constant; wishspeed cap is enforced. |
-| Air wishspeed cap | `30` | Maximum wish velocity while airborne. |
-| Jump velocity | `270` | Initial jump impulse; TODO: verify exact tournament build value. |
+| Air wishspeed cap | `30` | Maximum wish velocity while airborne; exposed as OpenStrike-specific `sv_air_max_wishspeed`. |
+| Jump velocity | `270` | Initial jump impulse exposed as OpenStrike-specific `sv_jumpvelocity`; TODO: verify exact tournament build value. |
 | Base maxspeed | `320` | Maximum walking speed (affected by weapon weight). |
 | Standing hull height | `72` | Player hull height when standing. |
 | Ducking hull height | `36` | Player hull height when ducked. |

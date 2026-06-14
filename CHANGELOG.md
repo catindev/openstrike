@@ -32,6 +32,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Fixed movement air acceleration to use separate full and capped wishspeed
+  values for GoldSrc-style air-strafe gain.
+* Updated jump-frame movement order so ground acceleration runs before takeoff.
+* Clarified that `sv_air_max_wishspeed` and `sv_jumpvelocity` are
+  OpenStrike-specific parity knobs.
+* Clarified that current step-up movement coverage is a helper, not a
+  collision-integrated stair solver.
 * Fixed config and bind parsing so `//` inside quoted strings is preserved
   while real comments are still stripped.
 * Corrected `mp_buytime` to `1.5` minutes instead of a seconds-style value.
