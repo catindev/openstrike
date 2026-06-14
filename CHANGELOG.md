@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added an opt-in headless local asset catalog inspection tool for checking the
+  pilot CS 1.6 weapon presentation catalog against `user://local_goldsrc.json`
+  or an explicit config path without exposing local absolute paths in reports.
+* Added synthetic smoke coverage for the local asset catalog inspection tool so
+  CI validates the provider/VFS inspection path without requiring a local
+  Counter-Strike installation.
 * Added hard manifest-contract validation for asset type allowlists, provider
   allowlists, type-to-extension checks and safe GoldSrc-relative paths.
 * Added manifest metadata retention in asset manifests and inspection reports.
@@ -78,6 +84,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Extended the shared smoke-check script to run the local asset catalog
+  inspection tool in synthetic mode after pilot catalog validation and before
+  cvar/movement checks.
 * Tightened semantic asset manifests before PR-06 so presentation code cannot
   consume mismatched types, unsupported providers or unsafe paths as stable
   catalog data.
@@ -132,6 +141,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-05D before weapon/viewmodel orchestration so the pilot catalog can
+  be checked against a developer's licensed local installation through the same
+  provider/VFS contract before PR-06 consumes it.
 * Inserted PR-05C before weapon/viewmodel orchestration after review identified
   that the provider/catalog foundation was directionally correct but the
   manifest contract still needed defense-in-depth validation.
