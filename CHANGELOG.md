@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added a cvar-backed CS-style movement simulation core for ground
+  acceleration, friction, air acceleration, jump, duck and step-height checks.
+* Added movement telemetry snapshots for smoke tests and future golden
+  comparisons.
+* Added a movement smoke test and included it in the shared smoke-check script.
+* Added `docs/MOVEMENT.md` to document movement scope, cvars and reference-only
+  constants.
 * Added GitHub Actions CI for Godot headless project smoke, Asset VFS smoke,
   cvar/config smoke, whitespace checks and forbidden asset scans.
 * Added local smoke and forbidden asset scan scripts for the same checks used

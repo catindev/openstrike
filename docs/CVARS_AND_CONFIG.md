@@ -32,11 +32,16 @@ a deliberate conversion. Current defaults use:
 | Cvar | Unit | Default |
 |---|---:|---:|
 | `sv_gravity` | units/s^2 | `800` |
+| `sv_accelerate` | coefficient | `10` |
 | `sv_friction` | coefficient | `4` |
 | `sv_stopspeed` | units/s | `100` |
 | `sv_stepsize` | units | `18` |
 | `sv_airaccelerate` | coefficient | `10` |
+| `sv_air_max_wishspeed` | units/s | `30` |
+| `sv_jumpvelocity` | units/s | `270` |
 | `sv_maxspeed` | units/s | `320` |
+| `sv_player_stand_height` | units | `72` |
+| `sv_player_duck_height` | units | `36` |
 | `mp_freezetime` | seconds | `6` |
 | `mp_roundtime` | minutes | `5` |
 | `mp_buytime` | minutes | `1.5` |

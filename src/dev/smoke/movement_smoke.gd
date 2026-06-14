@@ -1,0 +1,132 @@
+extends SceneTree
+
+const ConfigLoaderRef = preload("res://src/core/config/config_loader.gd")
+const MovementInputRef = preload("res://src/game/movement/cs_movement_input.gd")
+const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
+const MovementSimulatorRef = preload("res://src/game/movement/cs_movement_simulator.gd")
+const MovementStateRef = preload("res://src/game/movement/cs_movement_state.gd")
+const MovementTelemetryRef = preload("res://src/game/movement/cs_movement_telemetry.gd")
+
+
+func _init() -> void:
+	var exit_code := _run()
+	quit(exit_code)
+
+
+func _run() -> int:
+	var cvars = ConfigLoaderRef.load_default_cvars()
+	var settings = MovementSettingsRef.new()
+	settings.apply_cvars(cvars)
+
+	if not _assert(settings.max_speed == 320.0, "movement settings should read sv_maxspeed", settings.to_dictionary()):
+		return 1
+	if not _assert(settings.air_max_wishspeed == 30.0, "movement settings should read air wishspeed cap", settings.to_dictionary()):
+		return 1
+
+	if not _run_ground_acceleration(settings):
+		return 1
+	if not _run_friction(settings):
+		return 1
+	if not _run_air_cap(settings):
+		return 1
+	if not _run_jump_and_gravity(settings):
+		return 1
+	if not _run_duck_and_step(settings):
+		return 1
+
+	print("Movement smoke passed.")
+	return 0
+
+
+func _run_ground_acceleration(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	var input = MovementInputRef.new(1.0, 0.0, false, false)
+	var telemetry = MovementTelemetryRef.new()
+
+	for frame in range(200):
+		simulator.step(state, input, 0.01, telemetry)
+
+	return (
+		_assert(state.horizontal_speed() >= settings.max_speed - 0.01, "ground acceleration should reach sv_maxspeed", state.snapshot())
+		and _assert(telemetry.max_horizontal_speed() <= settings.max_speed + 0.01, "ground speed should not exceed sv_maxspeed", telemetry.last_frame())
+	)
+
+
+func _run_friction(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.velocity = Vector3(settings.max_speed, 0.0, 0.0)
+	var input = MovementInputRef.new()
+
+	for frame in range(120):
+		simulator.step(state, input, 0.01)
+
+	return _assert(state.horizontal_speed() <= 0.01, "ground friction should stop a released player", state.snapshot())
+
+
+func _run_air_cap(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.position.y = 64.0
+	state.on_ground = false
+	var input = MovementInputRef.new(1.0, 0.0, false, false)
+
+	simulator.step(state, input, 0.1)
+
+	return _assert(state.horizontal_speed() <= settings.air_max_wishspeed + 0.01, "air acceleration should respect wishspeed cap", state.snapshot())
+
+
+func _run_jump_and_gravity(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	var jump_input = MovementInputRef.new(0.0, 0.0, true, false)
+	var empty_input = MovementInputRef.new()
+
+	simulator.step(state, jump_input, 0.01)
+	if not _assert(not state.on_ground, "jump should leave ground", state.snapshot()):
+		return false
+	if not _assert(state.velocity.y > 0.0, "jump should apply upward velocity", state.snapshot()):
+		return false
+
+	for frame in range(200):
+		simulator.step(state, empty_input, 0.01)
+
+	return (
+		_assert(state.on_ground, "gravity should return player to ground", state.snapshot())
+		and _assert(state.position.y == state.ground_height, "ground resolution should clamp to ground height", state.snapshot())
+	)
+
+
+func _run_duck_and_step(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+
+	simulator.step(state, MovementInputRef.new(0.0, 0.0, false, true), 0.01)
+	if not _assert(state.ducked, "duck input should set ducked state", state.snapshot()):
+		return false
+	if not _assert(state.body_height == settings.duck_height, "duck should use duck hull height", state.snapshot()):
+		return false
+
+	simulator.step(state, MovementInputRef.new(), 0.01)
+	if not _assert(not state.ducked, "released duck should restore standing state", state.snapshot()):
+		return false
+	if not _assert(state.body_height == settings.stand_height, "standing should use standing hull height", state.snapshot()):
+		return false
+
+	if not _assert(simulator.try_step_up(state, settings.step_size), "step equal to sv_stepsize should be accepted", state.snapshot()):
+		return false
+	if not _assert(state.position.y == settings.step_size, "accepted step should raise ground height", state.snapshot()):
+		return false
+	if not _assert(not simulator.try_step_up(state, settings.step_size + 0.1), "step above sv_stepsize should be rejected", state.snapshot()):
+		return false
+
+	state.on_ground = false
+	return _assert(not simulator.try_step_up(state, 1.0), "airborne player should not step up", state.snapshot())
+
+
+func _assert(condition: bool, message: String, context = null) -> bool:
+	if condition:
+		return true
+	push_error("%s: %s" % [message, JSON.stringify(context)])
+	return false
