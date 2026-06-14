@@ -331,6 +331,40 @@ says should be bounded.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-05A Asset manifest inspection
+
+**Goal:** Add a preflight diagnostic layer for semantic asset manifests before
+weapon/viewmodel presentation starts consuming a real CS 1.6 catalog.
+
+**Why before PR-06:** Viewmodel orchestration should not depend on guessed or
+silently incomplete asset mappings. A manifest inspector lets future catalog
+PRs prove which semantic IDs resolve against a local installation and which are
+missing, without loading or decoding large files.
+
+**Includes:**
+
+* Provider inspection methods that resolve assets through VFS without reading
+  bytes.
+* Manifest-level inspection report with total, resolved, missing, invalid and
+  per-type counts.
+* Smoke coverage using synthetic `user://` files and an intentionally missing
+  manifest entry.
+* Documentation and changelog entries explaining the plan insertion.
+
+**Excludes:**
+
+* Real CS 1.6 asset catalog entries.
+* MDL, SPR or WAV decoders.
+* Viewmodel rig, animation aliases, weapon lifecycle or presentation events.
+
+**Acceptance criteria:**
+
+* Manifest inspection distinguishes resolved assets, missing physical files and
+  invalid manifest/provider entries.
+* Inspection does not read raw asset bytes or depend on format decoders.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-06 Weapon and viewmodel orchestration
 
 **Goal:** Add first-person weapon presentation using semantic events.

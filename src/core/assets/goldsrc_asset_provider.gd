@@ -16,6 +16,15 @@ func configure(goldsrc_vfs, asset_manifest) -> void:
 
 
 func load_asset(asset_id: StringName, expected_type: StringName = &""):
+	var result = inspect_asset(asset_id, expected_type)
+	if not result.found:
+		return result
+
+	_read_resolved_bytes(result)
+	return result
+
+
+func inspect_asset(asset_id: StringName, expected_type: StringName = &""):
 	var result = OpenStrikeAssetProviderResultRef.new()
 	result.asset_id = asset_id
 	result.provider_id = provider_id
@@ -76,10 +85,6 @@ func load_asset(asset_id: StringName, expected_type: StringName = &""):
 
 	var resolution: Dictionary = vfs.resolve(reference.relative_path)
 	_apply_resolution(result, resolution)
-	if not result.found:
-		return result
-
-	_read_resolved_bytes(result)
 	return result
 
 
@@ -93,6 +98,18 @@ func load_sprite(asset_id: StringName):
 
 func load_sound(asset_id: StringName):
 	return load_asset(asset_id, &"sound")
+
+
+func inspect_view_model(asset_id: StringName):
+	return inspect_asset(asset_id, &"view_model")
+
+
+func inspect_sprite(asset_id: StringName):
+	return inspect_asset(asset_id, &"sprite")
+
+
+func inspect_sound(asset_id: StringName):
+	return inspect_asset(asset_id, &"sound")
 
 
 func _apply_resolution(result, resolution: Dictionary) -> void:

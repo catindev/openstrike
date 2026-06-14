@@ -187,6 +187,28 @@ For GoldSrc asset provider contract changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records the provider
   contract and explains why real CS asset mappings remain separate.
 
+## Current (PR-05A) checklist
+
+For asset manifest inspection changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  manifest inspection smoke test after provider contract smoke.
+* **Manifest inspection smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_manifest_inspection_smoke.gd`
+  when iterating locally on inspection/report code.
+* **No byte loading:** Confirm that inspection methods resolve through VFS but
+  do not populate `raw_bytes` or require MDL/SPR/WAV decoding.
+* **Report semantics:** Confirm that reports distinguish resolved assets,
+  missing physical files and invalid manifest/provider entries.
+* **Synthetic fixtures only:** Confirm that smoke tests create temporary files
+  under `user://` and do not commit `.mdl`, `.spr` or `.wav` fixtures.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05A was
+  inserted before PR-06.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

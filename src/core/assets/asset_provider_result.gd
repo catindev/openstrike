@@ -23,6 +23,10 @@ func is_success() -> bool:
 	return found and loaded and not OpenStrikeAssetDiagnosticsRef.has_errors(diagnostics)
 
 
+func is_resolved() -> bool:
+	return found and not OpenStrikeAssetDiagnosticsRef.has_errors(diagnostics)
+
+
 func to_dictionary() -> Dictionary:
 	return {
 		"asset_id": str(asset_id),
@@ -35,6 +39,7 @@ func to_dictionary() -> Dictionary:
 		"tried": tried_paths,
 		"found": found,
 		"loaded": loaded,
+		"resolved": is_resolved(),
 		"bytes": raw_bytes.size(),
 		"metadata": metadata,
 		"diagnostics": diagnostics,

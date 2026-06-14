@@ -3,6 +3,7 @@ extends RefCounted
 class_name OpenStrikeAssetManager
 
 const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
+const OpenStrikeAssetInspectionReportRef = preload("res://src/core/assets/asset_inspection_report.gd")
 const OpenStrikeAssetManifestRef = preload("res://src/core/assets/asset_manifest.gd")
 const OpenStrikeAssetProviderResultRef = preload("res://src/core/assets/asset_provider_result.gd")
 const OpenStrikeGoldSrcAssetProviderRef = preload("res://src/core/assets/goldsrc_asset_provider.gd")
@@ -140,6 +141,53 @@ func load_sound(asset_id: StringName):
 	if goldsrc_provider == null:
 		return _provider_unavailable_result(asset_id, &"sound")
 	return goldsrc_provider.load_sound(asset_id)
+
+
+func inspect_asset(asset_id: StringName):
+	if goldsrc_provider == null:
+		return _provider_unavailable_result(asset_id, &"")
+	return goldsrc_provider.inspect_asset(asset_id)
+
+
+func inspect_view_model(asset_id: StringName):
+	if goldsrc_provider == null:
+		return _provider_unavailable_result(asset_id, &"view_model")
+	return goldsrc_provider.inspect_view_model(asset_id)
+
+
+func inspect_sprite(asset_id: StringName):
+	if goldsrc_provider == null:
+		return _provider_unavailable_result(asset_id, &"sprite")
+	return goldsrc_provider.inspect_sprite(asset_id)
+
+
+func inspect_sound(asset_id: StringName):
+	if goldsrc_provider == null:
+		return _provider_unavailable_result(asset_id, &"sound")
+	return goldsrc_provider.inspect_sound(asset_id)
+
+
+func inspect_manifest():
+	var report = OpenStrikeAssetInspectionReportRef.new()
+
+	if asset_manifest == null:
+		report.diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
+			"asset_manager_manifest_missing",
+			"OpenStrikeAssetManager cannot inspect assets without an asset manifest."
+		))
+		return report
+
+	if goldsrc_provider == null:
+		report.diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
+			"asset_manager_provider_unavailable",
+			"OpenStrikeAssetManager cannot inspect assets without a configured provider."
+		))
+		return report
+
+	for asset_id in asset_manifest.get_asset_ids():
+		report.add_result(goldsrc_provider.inspect_asset(asset_id))
+
+	return report
 
 
 func get_diagnostics() -> Array[Dictionary]:

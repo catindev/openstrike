@@ -57,12 +57,21 @@ of that raw VFS layer:
   VFS and returns `OpenStrikeAssetProviderResult` objects.
 * `OpenStrikeAssetProviderResult` carries provider diagnostics, VFS resolution
   details and raw bytes for later MDL/SPR/WAV parsers.
+* `OpenStrikeAssetInspectionReport` summarizes manifest preflight checks so
+  future catalogs can be validated before presentation code depends on them.
 
 This provider step intentionally does **not** decode MDL, SPR or WAV formats
 yet. It proves that presentation code can ask for semantic IDs such as a
 viewmodel, sprite or sound without knowing physical paths. Format-specific
 decoding and a real CS 1.6 asset catalog must be added in later, separately
 reviewable PRs after path and animation facts are verified.
+
+Manifest inspection is a cheap preflight path. `inspect_asset()` and
+`inspect_manifest()` resolve semantic entries through the VFS but do not read
+asset bytes. A missing physical file is reported as a missing asset, while
+manifest/provider errors are counted as invalid entries. This distinction keeps
+local installation diagnostics useful without treating every absent optional
+asset as a broken manifest.
 
 Example manifest shape:
 
@@ -102,6 +111,8 @@ Initial implementation classes:
 * `OpenStrikeAssetManifest`, `OpenStrikeAssetReference`,
   `OpenStrikeGoldSrcAssetProvider` and `OpenStrikeAssetProviderResult` expose
   semantic provider requests for future presentation systems.
+* `OpenStrikeAssetInspectionReport` exposes manifest preflight summary data for
+  dev tools and future catalog validation.
 
 ## GoldSrc providers
 
@@ -135,6 +146,8 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 
 * Add a verified CS 1.6 weapon presentation asset catalog after local
   installation inspection and source classification.
+* Add a developer-facing asset manifest inspection tool or panel that runs the
+  same preflight API against a user's local `local_goldsrc.json`.
 * Add PAK/WAD container lookup after raw filesystem lookup is stable.
 * Implement parsers for MDL, BSP, WAD, SPR and WAV files.
 * Design HUD layout readers for text‑based HUD definitions.
