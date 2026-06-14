@@ -15,6 +15,7 @@ func _init(custom_settings = null) -> void:
 
 func step(state, input, delta: float, telemetry = null) -> void:
 	var frame_delta: float = max(delta, 0.0)
+	_check_velocity(state)
 	_apply_duck(state, input.duck)
 
 	if state.on_ground:

@@ -60,7 +60,9 @@ All notable changes to this project will be documented in this file.  The format
 * Prefixed generic public core GDScript classes with `OpenStrike*` while
   intentionally keeping domain-specific `CSMovement*` names unchanged.
 * Implemented `sv_maxvelocity` as a GoldSrc-style component-wise velocity check
-  and aligned long-run air-strafe smoke expectations with that contract.
+  at frame start and after velocity-changing phases, added ground over-limit
+  smoke coverage, and aligned long-run air-strafe smoke expectations with that
+  contract while keeping the short air-strafe oracle analytical.
 * Documented that `edgefriction` is loaded from cvars but deferred until an
   edge-trace movement PR introduces the needed collision context.
 * Updated agent and documentation rules so new external research must be

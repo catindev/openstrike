@@ -145,6 +145,11 @@ exception, perform the following checks:
 * **Movement cvar contract:** Confirm that long-run air-strafe smoke uses an
   independent expected calculation with component-wise `sv_maxvelocity`
   semantics, not `min(horizontal_speed, sv_maxvelocity)`.
+* **Short air-strafe oracle:** Confirm that the 100-frame air-strafe smoke keeps
+  the closed-form `sqrt(max_speed^2 + air_cap^2 * N)` oracle because
+  `sv_maxvelocity` is not reached in that case.
+* **Ground overlimit input:** Confirm that an over-limit grounded input velocity
+  is clamped before friction and before position integration.
 * **Deferred cvar honesty:** Confirm that `edgefriction` is documented as
   loaded but deferred until edge-trace movement work exists.
 * **Class-name hygiene:** Confirm that generic public core classes use the

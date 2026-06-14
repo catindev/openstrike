@@ -14,7 +14,8 @@ covers:
 * ground friction using `sv_friction` and `sv_stopspeed`;
 * air acceleration with GoldSrc-style capped `add_speed` and uncapped
   acceleration amount;
-* component-wise `sv_maxvelocity` velocity checks;
+* component-wise `sv_maxvelocity` velocity checks at frame start and after
+  velocity-changing phases;
 * GoldSrc-style directional button states and W+A fastrun transient telemetry;
 * jump impulse and half-step gravity integration;
 * duck hull height selection;
@@ -82,9 +83,9 @@ acceleration amount.
 `sv_maxvelocity` follows the GoldSrc-style check contract rather than the
 modern interpretation of clamping horizontal speed magnitude. The simulator
 sanitizes NaN velocity components to `0` and clamps each component to
-`[-sv_maxvelocity, sv_maxvelocity]` after velocity-changing phases. This keeps
-movement smoke golden expectations aligned with the cvar now that
-`sv_maxvelocity=2000` is part of the defaults.
+`[-sv_maxvelocity, sv_maxvelocity]` at frame start and after
+velocity-changing phases. This keeps movement smoke golden expectations
+aligned with the cvar now that `sv_maxvelocity=2000` is part of the defaults.
 
 Fastrun telemetry uses directional button states instead of a single normalized
 input vector. A newly pressed directional button can be represented as `0.5`
@@ -122,11 +123,13 @@ Reference-only links:
 * cvar loading into movement settings;
 * ground acceleration reaches `sv_maxspeed`;
 * telemetry never exceeds `sv_maxspeed` during straight ground acceleration;
+* over-limit ground input velocity is clamped before friction and position
+  integration;
 * W+A fastrun first-frame and held-diagonal transient speed ranges at 100 Hz;
 * ground friction stops a released player;
 * air acceleration respects `sv_air_max_wishspeed`;
-* optimal air-strafe gains match an independently calculated 100 fps reference
-  range;
+* short optimal air-strafe gains match the independently calculated 100 fps
+  closed-form reference range before `sv_maxvelocity` is reached;
 * long-run optimal air-strafe clamps velocity components through
   `sv_maxvelocity` and no longer matches the old unlimited-speed formula;
 * jump-frame ground acceleration runs before takeoff;

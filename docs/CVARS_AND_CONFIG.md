@@ -58,8 +58,8 @@ console variables.
 
 `sv_maxvelocity` is implemented as a GoldSrc-style component-wise velocity
 guard: each velocity component is clamped to `[-sv_maxvelocity,
-sv_maxvelocity]` after movement phases that change velocity. It is not a
-horizontal vector-length cap.
+sv_maxvelocity]` at frame start and after movement phases that change velocity.
+It is not a horizontal vector-length cap.
 
 `edgefriction` is loaded into `CSMovementSettings` but remains deferred until a
 future edge-trace movement PR adds the collision/hull information needed to

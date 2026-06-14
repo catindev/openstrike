@@ -31,6 +31,8 @@ func _run() -> int:
 
 	if not _run_ground_acceleration(settings):
 		return 1
+	if not _run_ground_maxvelocity_input(settings):
+		return 1
 	if not _run_fastrun_transient(settings):
 		return 1
 	if not _run_friction(settings):
@@ -65,6 +67,25 @@ func _run_ground_acceleration(settings) -> bool:
 	return (
 		_assert(state.horizontal_speed() >= settings.max_speed - 0.01, "ground acceleration should reach sv_maxspeed", state.snapshot())
 		and _assert(telemetry.max_horizontal_speed() <= settings.max_speed + 0.01, "ground speed should not exceed sv_maxspeed", telemetry.last_frame())
+	)
+
+
+func _run_ground_maxvelocity_input(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.velocity = Vector3(settings.max_velocity * 2.0, 0.0, 0.0)
+	var input = MovementInputRef.new()
+	var delta: float = settings.fixed_delta()
+
+	simulator.step(state, input, delta)
+
+	var clamped_start_speed: float = settings.max_velocity
+	var friction_drop: float = max(clamped_start_speed, settings.stop_speed) * settings.friction * delta
+	var expected_velocity_x: float = max(clamped_start_speed - friction_drop, 0.0)
+	var expected_position_x: float = expected_velocity_x * delta
+	return (
+		_assert(abs(state.velocity.x - expected_velocity_x) <= 0.01, "ground maxvelocity should clamp before friction", {"expected_velocity_x": expected_velocity_x, "state": state.snapshot()})
+		and _assert(abs(state.position.x - expected_position_x) <= 0.01, "ground maxvelocity should clamp before position integration", {"expected_position_x": expected_position_x, "state": state.snapshot()})
 	)
 
 
@@ -164,8 +185,7 @@ func _run_air_strafe_gain(settings) -> bool:
 		var strafe_input = MovementInputRef.new(perpendicular.z, perpendicular.x, false, false)
 		simulator.step(state, strafe_input, delta, telemetry)
 
-	var expected_velocity := _expected_perpendicular_air_strafe_velocity(settings, Vector3(0.0, 0.0, settings.max_speed), 100, delta)
-	var expected_speed := Vector3(expected_velocity.x, 0.0, expected_velocity.z).length()
+	var expected_speed := sqrt(pow(settings.max_speed, 2.0) + pow(settings.air_max_wishspeed, 2.0) * 100.0)
 	return (
 		_assert(not state.on_ground, "air strafe smoke should remain airborne", state.snapshot())
 		and _assert(state.horizontal_speed() >= settings.max_speed + 100.0, "air strafe should gain meaningful horizontal speed over one second", state.snapshot())

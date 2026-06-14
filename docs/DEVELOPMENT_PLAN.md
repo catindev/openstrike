@@ -276,8 +276,9 @@ says should be bounded.
   explicit `cstrike_dir + valve_dir` roots without `half_life_dir`.
 * Asset VFS smoke coverage for derived roots, explicit roots and invalid config
   diagnostics.
-* GoldSrc-style component-wise `sv_maxvelocity` checks in the movement
-  simulator and independent long-run air-strafe smoke expectations.
+* GoldSrc-style component-wise `sv_maxvelocity` checks at frame start and after
+  velocity-changing phases in the movement simulator, plus independent
+  short-run and long-run air-strafe smoke expectations.
 * Documentation updates explaining that `edgefriction` is loaded but still
   deferred until edge traces exist.
 
