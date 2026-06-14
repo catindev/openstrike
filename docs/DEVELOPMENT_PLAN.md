@@ -491,21 +491,47 @@ unavailable locally.
 
 **Goal:** Add first-person weapon presentation using semantic events.
 
+**Why atlas-first:** The project goal is a near-complete CS 1.6
+reimplementation, not a four-weapon visual spike. PR-06 must start from a
+weapon/model/audio/effect lifecycle contract and local inspection tooling so
+OpenStrike does not repeat the Readytostrike pattern of guessing viewmodel
+scale, FOV, offsets and timings by eye.
+
 **Includes:**
 
+* `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required asset and lifecycle
+  contract for weapon/viewmodel/audio/effect work.
+* GoldSrc GDExtension adapter boundary for `alanfischer/goldsrc-godot` rather
+  than project-owned MDL/SPR decoders.
+* Local inspection output for pilot weapons that reports model availability,
+  sequence names, sequence durations, attachments/events when exposed, and
+  sound/sprite availability without printing local absolute paths.
 * Viewmodel rig or camera layer for first-person models.
 * Weapon animation alias resolver.
-* Weapon event timeline for draw, fire, reload, shell eject and muzzle flash.
+* Weapon event timeline for draw, fire, reload, melee, grenade release, shell
+  eject and muzzle flash, with source-confidence metadata.
 * Audio and effect orchestration boundaries.
 
 **Excludes:**
 
 * Damage, armor and full combat model.
+* Full weapon catalog completion beyond the pilot set unless inspection proves
+  the mappings.
+* Per-weapon model scale/position tuning as the primary fix for incorrect
+  world/viewmodel FOV or unit-scale contracts.
 
 **Acceptance criteria:**
 
+* Weapon/viewmodel code consumes semantic IDs and atlas-backed contracts, not
+  direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
+* Pilot weapon inspection produces reviewable diagnostics for actual local MDL
+  sequences/durations and audio/effect availability.
 * A weapon can be deployed, fired and reloaded through semantic events.
+* Knife primary/secondary and grenade select/throw/switch rules are represented
+  as lifecycle states, even if the first runtime surface remains limited.
 * Missing assets produce diagnostics and disabled features, not fake fallback meshes or sounds.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
 
 ## PR-07 BSP map pipeline
 

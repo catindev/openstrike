@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working map
+  for CS 1.6 weapon model roles, animation aliases, audio events, effects,
+  lifecycle flows, source-confidence labels and PR-06 inspection gaps.
+* Added agent/documentation instructions requiring future weapon/viewmodel,
+  animation, audio, muzzle flash, shell ejection, impact, grenade and HUD
+  weapon-sprite work to read and update the asset orchestration atlas.
 * Added an opt-in headless local asset catalog inspection tool for checking the
   pilot CS 1.6 weapon presentation catalog against `user://local_goldsrc.json`
   or an explicit config path without exposing local absolute paths in reports.
@@ -141,6 +147,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Tightened PR-06 so weapon/viewmodel orchestration starts from a CS 1.6 asset
+  lifecycle atlas and local MDL/audio/effect inspection tooling instead of
+  eyeballed model scale, FOV, offset or timing guesses.
 * Inserted PR-05D before weapon/viewmodel orchestration so the pilot catalog can
   be checked against a developer's licensed local installation through the same
   provider/VFS contract before PR-06 consumes it.

@@ -68,5 +68,7 @@ Reimplementing *Counter‑Strike 1.6* involves many subsystems.  Below is a non
 
 Source weighting and use/do-not-use rules live in `SOURCE_CATALOG.md`.
 Dev-lab evidence rules live in `DEV_LABS_METHODOLOGY.md`.
+Weapon, model, animation, audio, effect and lifecycle orchestration rules live
+in `CS16_ASSET_ORCHESTRATION_ATLAS.md`.
 
 Whenever citing numbers or behaviours from these sources, mark them as **reference only**.  Further testing should confirm their correctness within the Godot implementation.

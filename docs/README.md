@@ -19,15 +19,17 @@ This directory is the operational memory of the project. Every AI/coding agent m
 11. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
 12. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-13. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+13. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+    effect and lifecycle asset map for CS 1.6-style orchestration.
+14. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-14. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-15. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+15. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+16. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-16. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+17. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-17. `KNOWLEDGE_BASE.md` — current project knowledge base.
-18. `TESTING.md` — testing strategy and smoke checks.
+18. `KNOWLEDGE_BASE.md` — current project knowledge base.
+19. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -46,6 +48,11 @@ or Godot smoke/CI checks, read `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked
 feature docs when new facts are accepted.
+
+Before changing weapon assets, viewmodel orchestration, weapon animation
+aliases, weapon audio, muzzle flashes, shell ejection, impact effects, grenade
+presentation or HUD weapon sprites, read `CS16_ASSET_ORCHESTRATION_ATLAS.md`
+and update it when new verified asset facts or gaps are discovered.
 
 Before accepting a subjective feel claim, read `DEV_LABS_METHODOLOGY.md` and
 connect the claim to telemetry, a smoke test, a debug overlay or a planned lab.
