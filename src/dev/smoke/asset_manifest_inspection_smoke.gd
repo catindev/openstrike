@@ -1,6 +1,7 @@
 extends SceneTree
 
 const OpenStrikeAssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
+const OpenStrikeAssetManifestRef = preload("res://src/core/assets/asset_manifest.gd")
 const OpenStrikeGoldSrcLocalConfigRef = preload("res://src/core/assets/goldsrc_local_config.gd")
 
 
@@ -40,6 +41,8 @@ func _run() -> int:
 
 	var report = manager.inspect_manifest()
 	var summary: Dictionary = report.to_dictionary()
+	if not _assert(str(summary["metadata"].get("catalog_id", "")) == "asset_manifest_inspection_smoke", "inspection report should retain manifest metadata", summary):
+		return 1
 	if not _assert(not report.is_complete(), "inspection report should be incomplete when one file is missing", summary):
 		return 1
 	if not _assert(report.total_count == 3, "inspection report should count all manifest entries", summary):
@@ -55,12 +58,88 @@ func _run() -> int:
 	if not _assert(int(report.type_counts.get("sound", 0)) == 2, "inspection report should count sounds by type", summary):
 		return 1
 
+	if not _run_manifest_contract_validation_smoke():
+		return 1
+
 	print("Asset manifest inspection smoke passed.")
 	return 0
 
 
+func _run_manifest_contract_validation_smoke() -> bool:
+	var cases: Array[Dictionary] = [
+		{
+			"name": "unsupported_provider",
+			"entry": {
+				"type": "sound",
+				"provider": "unknown",
+				"path": "sound/weapons/ak47-1.wav",
+			},
+			"code": "asset_reference_provider_unsupported",
+		},
+		{
+			"name": "unsupported_type",
+			"entry": {
+				"type": "texture",
+				"path": "sprites/muzzleflash1.spr",
+			},
+			"code": "asset_reference_type_unsupported",
+		},
+		{
+			"name": "extension_mismatch",
+			"entry": {
+				"type": "sound",
+				"path": "models/v_ak47.mdl",
+			},
+			"code": "asset_reference_extension_mismatch",
+		},
+		{
+			"name": "parent_traversal",
+			"entry": {
+				"type": "sound",
+				"path": "sound/../weapons/ak47-1.wav",
+			},
+			"code": "asset_reference_path_traversal",
+		},
+		{
+			"name": "absolute_path",
+			"entry": {
+				"type": "sound",
+				"path": "/tmp/ak47-1.wav",
+			},
+			"code": "asset_reference_path_absolute",
+		},
+		{
+			"name": "backslash_path",
+			"entry": {
+				"type": "sound",
+				"path": "sound\\weapons\\ak47-1.wav",
+			},
+			"code": "asset_reference_path_backslash",
+		},
+	]
+
+	for test_case in cases:
+		var manifest = OpenStrikeAssetManifestRef.new()
+		manifest.configure_from_dictionary({
+			"assets": {
+				"bad.%s" % str(test_case["name"]): test_case["entry"],
+			},
+		}, "asset_manifest_contract_%s" % str(test_case["name"]))
+
+		if not _assert(not manifest.is_valid(), "invalid manifest case should fail validation: %s" % str(test_case["name"]), manifest.to_dictionary()):
+			return false
+		if not _assert(_has_diagnostic(manifest.diagnostics, str(test_case["code"])), "invalid manifest case should report expected diagnostic: %s" % str(test_case["name"]), manifest.to_dictionary()):
+			return false
+
+	return true
+
+
 func _synthetic_manifest() -> Dictionary:
 	return {
+		"metadata": {
+			"catalog_id": "asset_manifest_inspection_smoke",
+			"scope": "Synthetic inspection smoke manifest.",
+		},
 		"assets": {
 			"weapon.ak47.viewmodel": {
 				"type": "view_model",

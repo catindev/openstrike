@@ -233,6 +233,30 @@ For pilot weapon asset catalog changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05B was
   inserted before PR-06.
 
+## Current (PR-05C) checklist
+
+For manifest contract hardening changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  manifest contract negative cases through the manifest inspection smoke.
+* **Manifest inspection smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_manifest_inspection_smoke.gd`
+  when iterating locally on manifest validation.
+* **Negative contract cases:** Confirm smoke coverage for unsupported provider,
+  unsupported type, type/extension mismatch, parent traversal, absolute path
+  and backslash path.
+* **Metadata retention:** Confirm that manifest metadata appears in
+  `OpenStrikeAssetManifest.to_dictionary()` and inspection report output.
+* **Pilot catalog compatibility:** Confirm that
+  `data/assets/cs16_pilot_weapon_assets.json` still passes the hardened
+  contract through `asset_catalog_smoke.gd`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05C was
+  inserted before PR-06.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

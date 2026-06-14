@@ -404,6 +404,44 @@ and avoids baking guessed paths into presentation code.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-05C Manifest contract hardening
+
+**Goal:** Tighten semantic asset manifest validation before presentation code
+starts treating catalog entries as a stable runtime contract.
+
+**Why before PR-06:** The provider/catalog direction is sound, but soft
+manifest validation would still allow mismatched records such as a `sound`
+asset pointing at `.mdl`, unsupported providers or unsafe paths. PR-06 should
+consume a hardened manifest contract instead of inheriting that ambiguity.
+
+**Includes:**
+
+* Asset type allowlist: `view_model`, `sprite`, `sound`.
+* Provider allowlist: `goldsrc`.
+* Type-to-extension validation:
+  `view_model -> .mdl`, `sprite -> .spr`, `sound -> .wav`.
+* Manifest path validation for non-empty relative paths, no absolute paths, no
+  URI paths, no parent traversal and no backslash ambiguity.
+* Top-level manifest metadata retention in manifests and inspection reports.
+* Smoke coverage for bad provider, bad type, extension mismatch, parent
+  traversal, absolute path, backslash path and metadata retention.
+
+**Excludes:**
+
+* Viewmodel rig and presentation orchestration.
+* Animation alias tables and event timelines.
+* Gameplay weapon state.
+* MDL, SPR or WAV decoding.
+* Real asset bytes or local installation paths.
+
+**Acceptance criteria:**
+
+* Invalid manifest records fail validation before provider/presentation use.
+* Inspection reports expose manifest metadata for catalog diagnostics.
+* Existing pilot catalog entries pass the hardened contract.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-06 Weapon and viewmodel orchestration
 
 **Goal:** Add first-person weapon presentation using semantic events.

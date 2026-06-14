@@ -4,6 +4,8 @@ class_name OpenStrikeAssetInspectionReport
 
 const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
 
+var source_path: String = ""
+var metadata: Dictionary = {}
 var total_count: int = 0
 var resolved_count: int = 0
 var missing_count: int = 0
@@ -36,6 +38,8 @@ func is_complete() -> bool:
 
 func to_dictionary() -> Dictionary:
 	return {
+		"source_path": source_path,
+		"metadata": metadata,
 		"total": total_count,
 		"resolved": resolved_count,
 		"missing": missing_count,

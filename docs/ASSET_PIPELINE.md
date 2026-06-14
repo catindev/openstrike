@@ -73,6 +73,24 @@ manifest/provider errors are counted as invalid entries. This distinction keeps
 local installation diagnostics useful without treating every absent optional
 asset as a broken manifest.
 
+Semantic asset manifests are intentionally strict before presentation consumes
+them. The current contract accepts only:
+
+| Type | Provider | Required extension |
+|---|---|---|
+| `view_model` | `goldsrc` | `.mdl` |
+| `sprite` | `goldsrc` | `.spr` |
+| `sound` | `goldsrc` | `.wav` |
+
+Manifest paths must be non-empty relative GoldSrc paths with forward slashes.
+Absolute paths, URI-style paths, Windows absolute paths, `..` traversal and
+backslash paths are rejected during manifest validation rather than deferred to
+runtime presentation code.
+
+Top-level manifest metadata is preserved in `OpenStrikeAssetManifest` and
+`OpenStrikeAssetInspectionReport` so dev tools can identify which catalog was
+checked and why.
+
 Example manifest shape:
 
 ```json
