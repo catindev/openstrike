@@ -1,6 +1,6 @@
 extends RefCounted
 
-class_name BindRegistry
+class_name OpenStrikeBindRegistry
 
 var bindings: Dictionary = {}
 var diagnostics: Array[Dictionary] = []

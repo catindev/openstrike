@@ -38,10 +38,14 @@ All notable changes to this project will be documented in this file.  The format
 * Added a project decision to commit Godot `.gd.uid` sidecar files for stable
   resource UIDs.
 * Added cvar unit documentation for movement and round-rule defaults.
-* Added `CvarRegistry`, `OpenStrikeConfigLoader` and `BindRegistry` for default cvars, user-style overrides, serialization and key-command binding data.
+* Added `OpenStrikeCvarRegistry`, `OpenStrikeConfigLoader` and
+  `OpenStrikeBindRegistry` for default cvars, user-style overrides,
+  serialization and key-command binding data.
 * Added a headless cvar/config smoke test for default cvar loading, overrides, serialization and bind/unbind parsing.
 * Added `docs/CVARS_AND_CONFIG.md` to document the cvar, config and bind layer.
-* Added `AssetManager`, `GoldSrcLocalConfig`, `GoldSrcVFS` and structured asset diagnostics for raw local asset resolution.
+* Added `OpenStrikeAssetManager`, `OpenStrikeGoldSrcLocalConfig`,
+  `OpenStrikeGoldSrcVFS` and structured asset diagnostics for raw local asset
+  resolution.
 * Added a headless Asset VFS smoke test that uses synthetic files under `user://`.
 * Added `docs/LOCAL_GOLDSRC_CONFIG.md` to document the local config schema, search order and VFS path rules.
 * Added `docs/DECISIONS.md` to record legal, architecture, reuse, fallback and changelog rules.
@@ -50,6 +54,15 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Updated local GoldSrc config validation so `half_life_dir` can derive
+  `cstrike_dir` and `valve_dir`, while explicit `cstrike_dir + valve_dir`
+  roots are valid without `half_life_dir`.
+* Prefixed generic public core GDScript classes with `OpenStrike*` while
+  intentionally keeping domain-specific `CSMovement*` names unchanged.
+* Implemented `sv_maxvelocity` as a GoldSrc-style component-wise velocity check
+  and aligned long-run air-strafe smoke expectations with that contract.
+* Documented that `edgefriction` is loaded from cvars but deferred until an
+  edge-trace movement PR introduces the needed collision context.
 * Updated agent and documentation rules so new external research must be
   classified in the source catalog and subjective feel claims must map to a lab,
   telemetry artifact, smoke test or debug overlay.
@@ -81,6 +94,10 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-04E before asset providers because review identified two contract
+  cleanups that should not be inherited by provider work: generic core
+  `class_name` collisions and an air-strafe golden test that encoded unlimited
+  speed despite `sv_maxvelocity=2000` being part of default config.
 * Inserted PR-04D before asset providers because the 3kliksphilip research
   notes add a missing methodology gate: future feel-sensitive work should be
   evidence-backed before presentation and asset work resumes.

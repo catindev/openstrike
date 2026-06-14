@@ -39,7 +39,7 @@ implementation order before adding subsystems.
 
 **Excludes:**
 
-* Runtime AssetManager implementation.
+* Runtime asset-manager implementation.
 * Gameplay logic.
 * Migration of Readytostrike weapon/viewmodel code.
 
@@ -253,6 +253,49 @@ weapon, hitbox and HUD work starts producing subjective feel claims.
   a primary CS 1.6 parity source.
 * The next implementation PRs have a documented rule for mapping feel claims to
   telemetry, smoke tests, debug overlays or planned labs.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
+## PR-04E Asset/config contract cleanup
+
+**Goal:** Clean up the local asset/config contracts before provider work and
+close the one movement cvar/test mismatch that would otherwise lock in a known
+wrong golden model.
+
+**Why before PR-05:** Asset providers should build on stable global class
+names, local GoldSrc root semantics and VFS smoke coverage. Also,
+`sv_maxvelocity=2000` already exists in default settings while the air-strafe
+golden test previously encoded unlimited velocity growth. Fixing that contract
+now keeps the test suite from preserving behavior that the config layer already
+says should be bounded.
+
+**Includes:**
+
+* `OpenStrike*` prefixes for generic public core `class_name` declarations.
+* Local GoldSrc config support for either `half_life_dir` derivation or
+  explicit `cstrike_dir + valve_dir` roots without `half_life_dir`.
+* Asset VFS smoke coverage for derived roots, explicit roots and invalid config
+  diagnostics.
+* GoldSrc-style component-wise `sv_maxvelocity` checks in the movement
+  simulator and independent long-run air-strafe smoke expectations.
+* Documentation updates explaining that `edgefriction` is loaded but still
+  deferred until edge traces exist.
+
+**Excludes:**
+
+* Asset providers, parsers, importers or real GoldSrc fixtures.
+* Edgefriction, bhop, duck timing, hull traces, collision plane solving,
+  stair solving and weapon speed modifiers.
+* Presentation, HUD, viewmodel and weapon lifecycle changes.
+
+**Acceptance criteria:**
+
+* `asset_vfs_smoke.gd` proves both supported local config shapes and invalid
+  diagnostics using synthetic `user://` files only.
+* No generic public core `class_name` declarations remain without the
+  `OpenStrike*` prefix; `CSMovement*` names remain intentionally unchanged.
+* Long-run air-strafe smoke would fail against the previous unlimited-speed
+  golden model and passes with component-wise `sv_maxvelocity`.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 

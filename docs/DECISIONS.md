@@ -79,3 +79,22 @@ not replace primary GoldSrc/CS 1.6 references for exact constants.
 Movement, weapon, hitbox, prediction, HUD and viewmodel feel claims must map to
 telemetry, smoke tests, debug overlays or a planned dev lab described in
 `docs/DEV_LABS_METHODOLOGY.md`.
+
+## 0012. Prefix generic public GDScript class names
+
+Generic reusable global `class_name` declarations in `src/core` use the
+`OpenStrike*` prefix to avoid collisions with Godot addons, editor plugins or
+future imported tooling. Domain-specific game classes keep their domain prefix,
+such as `CSMovement*`, because those names describe project-owned CS-like game
+simulation objects rather than generic utilities.
+
+## 0013. Keep cvar defaults and golden tests synchronized
+
+When a cvar is present in default config and movement smoke tests encode the
+related behavior, the simulator and the independent golden expectation must be
+updated together. `sv_maxvelocity=2000` is therefore implemented before asset
+providers as a narrow movement-contract exception: velocity is checked
+component-wise after velocity-changing phases, and the long-run air-strafe
+golden test uses the same documented contract independently from production
+code. Edgefriction remains deferred because it requires edge traces and hull
+collision data that PR-04E does not introduce.

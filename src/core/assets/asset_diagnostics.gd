@@ -1,6 +1,6 @@
 extends RefCounted
 
-class_name AssetDiagnostics
+class_name OpenStrikeAssetDiagnostics
 
 static func info(code: String, message: String, context: Dictionary = {}) -> Dictionary:
 	return _entry("info", code, message, context)

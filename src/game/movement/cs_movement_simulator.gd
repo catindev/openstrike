@@ -26,16 +26,20 @@ func step(state, input, delta: float, telemetry = null) -> void:
 		if input.jump:
 			state.velocity.y = settings.jump_velocity
 			state.on_ground = false
+		_check_velocity(state)
 
 	if not state.on_ground:
 		_air_accelerate(state, input, frame_delta)
 		_apply_half_gravity(state, frame_delta)
+		_check_velocity(state)
 
 	state.position += state.velocity * frame_delta
 	_resolve_ground(state)
+	_check_velocity(state)
 
 	if not state.on_ground:
 		_apply_half_gravity(state, frame_delta)
+		_check_velocity(state)
 
 	if telemetry != null:
 		telemetry.record(frame_delta, state, input, settings)
@@ -81,6 +85,26 @@ func _air_accelerate(state, input, delta: float) -> void:
 
 func _apply_half_gravity(state, delta: float) -> void:
 	state.velocity.y -= settings.gravity * delta * 0.5
+
+
+func _check_velocity(state) -> void:
+	var max_velocity: float = max(settings.max_velocity, 0.0)
+	if max_velocity <= 0.0:
+		return
+
+	state.velocity.x = _checked_velocity_component(state.velocity.x, max_velocity)
+	state.velocity.y = _checked_velocity_component(state.velocity.y, max_velocity)
+	state.velocity.z = _checked_velocity_component(state.velocity.z, max_velocity)
+
+
+func _checked_velocity_component(value: float, max_velocity: float) -> float:
+	if value != value:
+		return 0.0
+	if value > max_velocity:
+		return max_velocity
+	if value < -max_velocity:
+		return -max_velocity
+	return value
 
 
 func _accelerate(state, input, max_wishspeed: float, acceleration: float, delta: float) -> void:
