@@ -69,6 +69,25 @@ For cvar, config and bind changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   for the PR.
 
+## Current (PR-03A) checklist
+
+For CI and configuration hygiene changes, perform the following checks:
+
+* **Godot project smoke test:** Run `scripts/run_smoke_checks.sh`. This runs
+  the Godot headless project smoke test, the asset VFS smoke test and the
+  cvar/config smoke test using `GODOT_BIN` when it is provided.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check`.
+* **CI coverage:** Confirm that `.github/workflows/ci.yml` runs the same smoke
+  and repository hygiene checks on pull requests and pushes to `main`.
+* **Godot metadata hygiene:** Commit `.gd.uid` sidecars generated for committed
+  project scripts/resources so Godot resource UIDs remain stable.
+* **Documentation coverage:** Confirm that `DECISIONS.md`,
+  `CVARS_AND_CONFIG.md` and this testing document describe the changed rules.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  for the PR.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:
@@ -77,7 +96,8 @@ As the project matures, automated testing will become essential.  Planned areas 
 * **Asset provider tests:** Unit tests for each asset provider (BSP, MDL, WAD, SPR, WAV) to ensure parsers handle valid and malformed data.
 * **Movement telemetry tests:** Automated comparison of movement trajectories against golden data to ensure parity with reference behaviour.
 * **Golden‑file fixtures:** For file parsers, create non‑proprietary fixtures and compare parsed output to golden results.
-* **Continuous integration (CI):** Set up a CI pipeline that runs tests on each PR, builds GDExtensions with sanitizers (ASan/UBSan) and reports regressions.
+* **Expanded CI:** Build GDExtensions with sanitizers (ASan/UBSan), add parser
+  fixtures and report regressions beyond the current smoke gate.
 * **Network simulation tests:** When networking is introduced, simulate client/server scenarios to detect desynchronisation.
 
 Testing will be expanded incrementally with each milestone to cover new functionality.

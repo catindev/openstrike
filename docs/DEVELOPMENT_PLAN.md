@@ -90,6 +90,33 @@ implementation order before adding subsystems.
 * Cvars can be defined, queried, changed at runtime and serialized for user config.
 * Movement and weapon PRs have a stable config API to consume.
 
+## PR-03A CI and config hygiene
+
+**Goal:** Put an automated smoke and repository hygiene gate in place before
+movement work starts.
+
+**Includes:**
+
+* GitHub Actions workflow for Godot headless project smoke, asset VFS smoke,
+  cvar/config smoke, whitespace checks and forbidden asset scans.
+* Local scripts that run the same checks outside CI.
+* Parser hardening for quoted config/bind values.
+* Cvar unit documentation and corrected CS-style defaults where needed.
+* Godot metadata policy for committed `.gd.uid` sidecars.
+
+**Excludes:**
+
+* New movement mechanics.
+* Asset format parsing.
+* Weapon/viewmodel presentation work.
+
+**Acceptance criteria:**
+
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass locally and in CI.
+* Quoted `//` sequences in cvar and bind values are preserved.
+* The changelog and testing docs record the new gate.
+
 ## PR-04 Movement parity
 
 **Goal:** Implement CS 1.6-like player movement on top of cvars.

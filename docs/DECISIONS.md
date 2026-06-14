@@ -55,3 +55,16 @@ failures.
 Every implementation PR must update `CHANGELOG.md` in English. Documentation
 and process changes are recorded there when they affect project behavior,
 workflow or implementation order.
+
+## 0009. Commit Godot UID sidecar files
+
+Godot 4 may generate `.gd.uid` sidecar files for scripts and resources. Commit
+these sidecars when they correspond to committed project files so resource UIDs
+remain stable across machines, editor sessions and CI.
+
+## 0010. Smoke checks are a merge gate
+
+Before movement, gameplay and presentation PRs, CI must run the Godot headless
+project smoke test, asset VFS smoke test, cvar/config smoke test, whitespace
+check and forbidden asset scan. New subsystem PRs should extend this gate
+instead of relying only on manual editor runs.
