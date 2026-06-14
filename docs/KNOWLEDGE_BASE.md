@@ -22,12 +22,16 @@ The following constants are known from public sources and prototypes.  They defi
 | Constant | Value | Notes |
 |---------|------|------|
 | Gravity | `800` | Vertical acceleration in units/s². |
+| Ground accelerate | `10` | Ground acceleration coefficient. |
 | Friction | `4` | Ground friction coefficient. |
 | Stop speed | `100` | Minimum ground speed before friction stops the player. |
 | Step size | `18` | Maximum vertical step height. |
 | Air accelerate | `10` | Air acceleration constant; wishspeed cap is enforced. |
 | Air wishspeed cap | `30` | Maximum wish velocity while airborne. |
+| Jump velocity | `270` | Initial jump impulse; TODO: verify exact tournament build value. |
 | Base maxspeed | `320` | Maximum walking speed (affected by weapon weight). |
+| Standing hull height | `72` | Player hull height when standing. |
+| Ducking hull height | `36` | Player hull height when ducked. |
 | Weapon speed modifiers | *varies* | Each weapon reduces max speed; see weapon definitions. |
 | Bhop cap target | *TODO: verify* | Bunny hop speed cap for GoldSrc; subject to research. |
 

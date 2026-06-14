@@ -88,6 +88,25 @@ For CI and configuration hygiene changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   for the PR.
 
+## Current (PR-04) checklist
+
+For movement parity changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  movement smoke test in addition to project, asset VFS and cvar/config smoke.
+* **Movement smoke test:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/movement_smoke.gd`
+  when iterating locally on movement.
+* **Movement telemetry:** Confirm that `movement_smoke.gd` records telemetry for
+  maxspeed and air-wishspeed assertions.
+* **No presentation coupling:** Confirm that `src/game/movement` does not load
+  assets, viewmodels, HUD, sounds or Godot scene nodes.
+* **Documentation coverage:** Confirm that `MOVEMENT.md`,
+  `CVARS_AND_CONFIG.md` and `KNOWLEDGE_BASE.md` describe any changed movement
+  constants or TODO-verification gaps.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  for the PR.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

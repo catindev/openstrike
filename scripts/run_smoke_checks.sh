@@ -12,3 +12,4 @@ fi
 "${godot_bin}" --headless --path . --quit
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_vfs_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/cvar_config_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/movement_smoke.gd

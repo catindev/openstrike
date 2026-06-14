@@ -1,0 +1,45 @@
+extends RefCounted
+
+class_name CSMovementSettings
+
+var gravity := 800.0
+var ground_accelerate := 10.0
+var friction := 4.0
+var stop_speed := 100.0
+var step_size := 18.0
+var air_accelerate := 10.0
+var air_max_wishspeed := 30.0
+var jump_velocity := 270.0
+var max_speed := 320.0
+var stand_height := 72.0
+var duck_height := 36.0
+
+
+func apply_cvars(cvars) -> void:
+	gravity = cvars.get_float("sv_gravity", gravity)
+	ground_accelerate = cvars.get_float("sv_accelerate", ground_accelerate)
+	friction = cvars.get_float("sv_friction", friction)
+	stop_speed = cvars.get_float("sv_stopspeed", stop_speed)
+	step_size = cvars.get_float("sv_stepsize", step_size)
+	air_accelerate = cvars.get_float("sv_airaccelerate", air_accelerate)
+	air_max_wishspeed = cvars.get_float("sv_air_max_wishspeed", air_max_wishspeed)
+	jump_velocity = cvars.get_float("sv_jumpvelocity", jump_velocity)
+	max_speed = cvars.get_float("sv_maxspeed", max_speed)
+	stand_height = cvars.get_float("sv_player_stand_height", stand_height)
+	duck_height = cvars.get_float("sv_player_duck_height", duck_height)
+
+
+func to_dictionary() -> Dictionary:
+	return {
+		"gravity": gravity,
+		"ground_accelerate": ground_accelerate,
+		"friction": friction,
+		"stop_speed": stop_speed,
+		"step_size": step_size,
+		"air_accelerate": air_accelerate,
+		"air_max_wishspeed": air_max_wishspeed,
+		"jump_velocity": jump_velocity,
+		"max_speed": max_speed,
+		"stand_height": stand_height,
+		"duck_height": duck_height,
+	}
