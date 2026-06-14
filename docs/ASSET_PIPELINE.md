@@ -4,7 +4,21 @@ This document describes the planned asset pipeline for OpenStrike.  As of versio
 
 ## User configuration: `local_goldsrc.json`
 
-OpenStrike reads assets from a user’s local installation of *Counter‑Strike 1.6* / *Half‑Life*.  To locate these files, the user will create a `local_goldsrc.json` file in their game directory specifying the paths to `valve/` and `cstrike/` folders.  This file must not be committed to the repository and is ignored via `.gitignore`.
+OpenStrike will read assets from the user's local installation of *Counter-Strike 1.6* / *Half-Life*.
+
+The local path configuration will be stored in a user-specific `local_goldsrc.json` file. This file is not part of the repository and must never be committed.
+
+The future config should point to the user's local installation directories, for example:
+
+```json
+{
+  "half_life_dir": "/path/to/Half-Life",
+  "cstrike_dir": "/path/to/Half-Life/cstrike",
+  "valve_dir": "/path/to/Half-Life/valve"
+}
+```
+
+The exact schema will be finalized in the AssetManager PR. For PR-00 this file is only documented and ignored by `.gitignore`; no asset loading is implemented.
 
 ## AssetManager
 
