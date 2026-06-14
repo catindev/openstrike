@@ -12,8 +12,9 @@ This directory is the operational memory of the project. Every AI/coding agent m
 6. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
 7. `ASSET_PIPELINE.md` — planned local asset loading model.
 8. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-9. `KNOWLEDGE_BASE.md` — current project knowledge base.
-10. `TESTING.md` — testing strategy and smoke checks.
+9. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+10. `KNOWLEDGE_BASE.md` — current project knowledge base.
+11. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
