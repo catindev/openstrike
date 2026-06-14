@@ -12,16 +12,20 @@ covers:
 * cvar-backed movement settings;
 * ground acceleration toward `sv_maxspeed`;
 * ground friction using `sv_friction` and `sv_stopspeed`;
-* air acceleration with an explicit air wishspeed cap;
+* air acceleration with GoldSrc-style capped `add_speed` and uncapped
+  acceleration amount;
 * jump impulse and half-step gravity integration;
 * duck hull height selection;
-* step-height acceptance based on `sv_stepsize`;
+* step-height helper acceptance based on `sv_stepsize`;
 * telemetry frames for smoke tests and future golden comparisons.
 
 It intentionally does not implement collision planes, edgefriction, water,
 ladders, surfing, basevelocity, weapon speed modifiers or Godot controller
 integration yet. Those belong in later, smaller PRs once the test surface is
 stable.
+
+`CSMovementSimulator.try_step_up()` is a collision-free helper for validating
+`sv_stepsize` behavior. It is not a map/collision-integrated stair solver yet.
 
 ## Runtime classes
 
@@ -45,11 +49,31 @@ as constants, not copied source code.
 | `sv_stopspeed` | `100` | Minimum speed used by low-speed friction. |
 | `sv_stepsize` | `18` | Maximum accepted step height. |
 | `sv_airaccelerate` | `10` | Air acceleration coefficient. |
-| `sv_air_max_wishspeed` | `30` | Air wishspeed cap used by OpenStrike's movement core. |
-| `sv_jumpvelocity` | `270` | Jump impulse used by OpenStrike's movement core. |
+| `sv_air_max_wishspeed` | `30` | OpenStrike-specific parity knob for GoldSrc's air wishspeed cap. |
+| `sv_jumpvelocity` | `270` | OpenStrike-specific parity knob for the jump impulse. |
 | `sv_maxspeed` | `320` | Base movement speed before weapon modifiers. |
 | `sv_player_stand_height` | `72` | Standing player hull height. |
 | `sv_player_duck_height` | `36` | Ducking player hull height. |
+
+Air acceleration intentionally keeps two speeds separate:
+
+```text
+full_wishspeed = sv_maxspeed * input_fraction
+capped_wishspeed = min(full_wishspeed, sv_air_max_wishspeed)
+add_speed = capped_wishspeed - current_speed_along_wishdir
+accel_speed = sv_airaccelerate * full_wishspeed * delta
+final_accel = min(accel_speed, add_speed)
+```
+
+`sv_air_max_wishspeed` does not replace `full_wishspeed` when calculating the
+acceleration amount.
+
+## Timestep
+
+Movement telemetry and smoke tests use explicit fixed timesteps. Current
+parity smoke checks use `0.01` seconds to model 100 fps reference cases. Future
+server-authoritative runtime work must preserve an explicit simulation tick
+instead of silently coupling movement outcomes to render framerate.
 
 Reference-only materials used for behavior verification include Valve
 Developer Community GoldSrc command documentation and the Half-Life Physics
@@ -74,6 +98,9 @@ Reference-only links:
 * telemetry never exceeds `sv_maxspeed` during straight ground acceleration;
 * ground friction stops a released player;
 * air acceleration respects `sv_air_max_wishspeed`;
+* optimal air-strafe gains match an independently calculated 100 fps reference
+  range;
+* jump-frame ground acceleration runs before takeoff;
 * jumping leaves the ground and gravity lands the player;
 * ducking switches hull height;
-* `sv_stepsize` accepts/rejects step heights.
+* the step-height helper accepts/rejects `sv_stepsize` bounds.

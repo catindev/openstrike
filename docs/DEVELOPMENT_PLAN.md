@@ -133,7 +133,34 @@ movement work starts.
 
 **Acceptance criteria:**
 
-* Telemetry matches expected ranges for maxspeed, air wishspeed cap and friction behavior.
+* Telemetry matches expected ranges for maxspeed, air wishspeed cap, air-strafe
+  gain, jump-frame order and friction behavior.
+
+## PR-04A Air acceleration parity fix
+
+**Goal:** Correct the first movement-core parity gap before asset provider work.
+
+**Includes:**
+
+* GoldSrc-style air acceleration with separate full and capped wishspeed values.
+* Jump-frame ordering where ground acceleration runs before takeoff.
+* Discriminating 100 fps air-strafe telemetry smoke coverage.
+* Documentation updates for OpenStrike-specific parity cvars and helper-only
+  step-up behavior.
+
+**Excludes:**
+
+* Collision plane solver, water, ladders, surfing, edgefriction and basevelocity.
+* Weapon speed modifiers.
+* Asset provider work.
+* `class_name` or local GoldSrc config contract cleanup.
+
+**Acceptance criteria:**
+
+* `movement_smoke.gd` fails on the pre-fix capped-wishspeed implementation and
+  passes with independently calculated air-strafe gain.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
 
 ## PR-05 Asset providers for MDL, SPR and WAV
 

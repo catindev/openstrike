@@ -29,6 +29,10 @@ func _run() -> int:
 		return 1
 	if not _run_air_cap(settings):
 		return 1
+	if not _run_air_strafe_gain(settings):
+		return 1
+	if not _run_jump_frame_order(settings):
+		return 1
 	if not _run_jump_and_gravity(settings):
 		return 1
 	if not _run_duck_and_step(settings):
@@ -68,13 +72,49 @@ func _run_friction(settings) -> bool:
 func _run_air_cap(settings) -> bool:
 	var simulator = MovementSimulatorRef.new(settings)
 	var state = MovementStateRef.new()
-	state.position.y = 64.0
+	state.position.y = 4096.0
 	state.on_ground = false
 	var input = MovementInputRef.new(1.0, 0.0, false, false)
 
 	simulator.step(state, input, 0.1)
 
 	return _assert(state.horizontal_speed() <= settings.air_max_wishspeed + 0.01, "air acceleration should respect wishspeed cap", state.snapshot())
+
+
+func _run_air_strafe_gain(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	state.position.y = 4096.0
+	state.velocity = Vector3(0.0, 0.0, settings.max_speed)
+	state.on_ground = false
+	var telemetry = MovementTelemetryRef.new()
+
+	for frame in range(100):
+		var horizontal := state.horizontal_velocity()
+		var perpendicular := Vector3(horizontal.z, 0.0, -horizontal.x).normalized()
+		var strafe_input = MovementInputRef.new(perpendicular.z, perpendicular.x, false, false)
+		simulator.step(state, strafe_input, 0.01, telemetry)
+
+	var expected_speed := sqrt(pow(settings.max_speed, 2.0) + pow(settings.air_max_wishspeed, 2.0) * 100.0)
+	return (
+		_assert(not state.on_ground, "air strafe smoke should remain airborne", state.snapshot())
+		and _assert(state.horizontal_speed() >= settings.max_speed + 100.0, "air strafe should gain meaningful horizontal speed over one second", state.snapshot())
+		and _assert(state.horizontal_speed() >= expected_speed - 0.01, "air strafe should match independently calculated gain lower bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
+		and _assert(state.horizontal_speed() <= expected_speed + 0.01, "air strafe should match independently calculated gain upper bound", {"expected_speed": expected_speed, "state": state.snapshot(), "telemetry": telemetry.last_frame()})
+	)
+
+
+func _run_jump_frame_order(settings) -> bool:
+	var simulator = MovementSimulatorRef.new(settings)
+	var state = MovementStateRef.new()
+	var jump_forward = MovementInputRef.new(1.0, 0.0, true, false)
+
+	simulator.step(state, jump_forward, 0.01)
+
+	return (
+		_assert(not state.on_ground, "jump frame should leave ground after ground acceleration", state.snapshot())
+		and _assert(state.horizontal_speed() > 0.0, "jump frame should preserve ground acceleration before takeoff", state.snapshot())
+	)
 
 
 func _run_jump_and_gravity(settings) -> bool:
