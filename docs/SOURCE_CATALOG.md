@@ -137,6 +137,9 @@ Important references introduced by `VIEWMODEL_WORLD_PROFILE.md` and
 
 * `alanfischer/goldsrc-godot` README for the loader scale default,
   GoldSrc-to-Godot coordinate mapping and BSP conversion flags.
+* `alanfischer/goldsrc-godot` GDExtension API inspection for `GoldSrcMDL` and
+  `GoldSrcSPR` method availability. Use it only through the OpenStrike adapter;
+  do not copy its source into project-owned decoders.
 * Godot `Camera3D` documentation for `fov` and `keep_aspect` semantics.
 * Valve HLSDK references for eye/view offsets and `default_fov` constants,
   as reference only.

@@ -509,6 +509,13 @@ anti-`58.7155`/anti-per-weapon-transform guards described in
 orientation calibration and render them through the locked profile with zero
 per-weapon scale/position/FOV tuning.
 
+**First manual test point:** Before gameplay/gunplay work, use
+`src/dev/tools/viewmodel_manual_preflight.gd` with a local licensed install and
+`alanfischer/goldsrc-godot` installed. The manual visual path must load real
+pilot `v_*.mdl` models at profile scale/FOV with identity camera-local
+transform. If it fails visually, record the symptom and fix the shared profile,
+adapter or one global correction; do not add per-weapon transforms.
+
 **Includes:**
 
 * `docs/VIEWMODEL_WORLD_PROFILE.md` as the required profile contract for unit
@@ -522,6 +529,8 @@ per-weapon scale/position/FOV tuning.
   atlas and coverage report status fields.
 * GoldSrc GDExtension adapter boundary for `alanfischer/goldsrc-godot` rather
   than project-owned MDL/SPR decoders.
+* `data/config/viewmodel_world_profile.json`, profile smoke and a manual
+  preflight tool for real local viewmodel inspection/rendering.
 * `goldsrc_asset_atlas` scanner skeleton or equivalent local inspection command
   that mounts `cstrike` and `valve`, builds a case-insensitive inventory and
   reports model, sprite, sound, HUD, map and dependency coverage without
@@ -549,6 +558,12 @@ per-weapon scale/position/FOV tuning.
 * `VIEWMODEL_WORLD_PROFILE.md` source values exist in config or a profile
   resource and profile smoke covers scale, coordinate determinant, eye heights,
   FOV derivation, `KEEP_HEIGHT`, anti-`58.7155` and no per-weapon transform keys.
+* The GoldSrc renderable adapter reports real `goldsrc-godot` API capabilities
+  and keeps attachments/sockets/MDL events marked as requiring an OpenStrike MDL
+  reader or upstream API until verified.
+* The manual preflight tool can inspect and, when `goldsrc-godot` is installed,
+  visually load a pilot real `v_*.mdl` through the locked profile without
+  printing local paths or committing asset bytes.
 * Coverage status smoke proves the generated schema/document sections are in
   sync with `gen/coverage_status_matrix.json`, validates status fixtures and
   directly asserts the verified/absence/provenance invariants.

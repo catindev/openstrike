@@ -19,6 +19,20 @@ All notable changes to this project will be documented in this file.  The format
 * Added `src/dev/smoke/coverage_status_smoke.gd` and wired it into the shared
   smoke script to verify generated coverage status artifacts, schema fixtures
   and the verified/absence/provenance invariants.
+* Added `data/config/viewmodel_world_profile.json`,
+  `OpenStrikeViewmodelWorldProfile` and
+  `src/dev/smoke/viewmodel_world_profile_smoke.gd` so PR-06 scale,
+  GoldSrc-to-Godot mapping, eye height, FOV and no-per-weapon-transform rules
+  are executable checks before real MDL rendering.
+* Added a closed asset manifest entry allow-list so per-weapon transform keys
+  cannot enter semantic asset catalog entries.
+* Added `OpenStrikeGoldSrcRenderableProvider`,
+  `src/dev/smoke/goldsrc_renderable_adapter_smoke.gd` and the
+  `viewmodel_manual_preflight.gd` tool to bridge semantic pilot viewmodels to
+  `alanfischer/goldsrc-godot` without adding project-owned MDL/SPR decoders.
+* Added `docs/VIEWMODEL_MANUAL_PREFLIGHT.md` with the first local manual test
+  point for loading and visually inspecting real pilot `v_*.mdl` files through
+  the locked profile.
 * Added agent/documentation instructions requiring future world/viewmodel scale,
   coordinate mapping, eye height, camera FOV and first-person placement work to
   read and update the viewmodel/world profile.

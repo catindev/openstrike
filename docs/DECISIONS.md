@@ -100,3 +100,18 @@ and the long-run air-strafe golden test uses the same documented maxvelocity
 contract independently from production code. Edgefriction remains deferred
 because it requires edge traces and hull collision data that PR-04E does not
 introduce.
+
+## 0014. Use goldsrc-godot through an adapter before writing decoders
+
+PR-06 viewmodel runtime uses a thin OpenStrike adapter around
+`alanfischer/goldsrc-godot` instead of adding project-owned MDL/SPR decoders.
+The adapter may depend on runtime classes such as `GoldSrcMDL` and `GoldSrcSPR`
+when the local addon is installed, but CI must also pass when the extension is
+absent by reporting `extension_missing`.
+
+Capabilities are reported field by field. Loader-exposed data such as model
+build, sequence names, sequence fps/frame count, bones, bodyparts and skins may
+be marked `supported_by_loader_api`. Attachments/sockets and MDL animation
+events remain `requires_openstrike_mdl_reader` until either the upstream API
+exposes them or OpenStrike explicitly adds a reader under a separate reviewed
+decision.

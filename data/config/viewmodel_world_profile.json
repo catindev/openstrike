@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "profile_id": "cs16_viewmodel_world_profile",
+    "scope": "CS 1.6 world/viewmodel scale, coordinate mapping, eye offset and FOV source values.",
+    "source": "docs/VIEWMODEL_WORLD_PROFILE.md"
+  },
+  "goldsrc_unit_scale": 0.025,
+  "world_fov_horizontal_ref": 90.0,
+  "viewmodel_fov_horizontal_ref": 90.0,
+  "reference_aspect": 1.3333333333333333,
+  "view_offset_stand": 28.0,
+  "view_offset_duck": 12.0,
+  "camera_keep_aspect": "KEEP_HEIGHT"
+}

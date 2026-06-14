@@ -21,19 +21,21 @@ This directory is the operational memory of the project. Every AI/coding agent m
     presentation and map feel.
 13. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
     eye height and FOV contract for PR-06 profile preflight.
-14. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+14. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
+    instructions before gameplay/gunplay work.
+15. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
     effect and lifecycle asset map for CS 1.6-style orchestration.
-15. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
+16. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
     atlas and coverage report fields.
-16. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+17. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-17. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-18. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+18. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+19. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-19. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+20. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-20. `KNOWLEDGE_BASE.md` — current project knowledge base.
-21. `TESTING.md` — testing strategy and smoke checks.
+21. `KNOWLEDGE_BASE.md` — current project knowledge base.
+22. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -56,6 +58,10 @@ feature docs when new facts are accepted.
 Before changing world/viewmodel scale, coordinate mapping, camera FOV, eye
 height or first-person model placement, read `VIEWMODEL_WORLD_PROFILE.md` and
 update it when profile facts or smoke obligations change.
+
+Before asking a human to visually test real CS 1.6 viewmodels, read
+`VIEWMODEL_MANUAL_PREFLIGHT.md` and use its local commands. Do not replace that
+path with per-weapon transform tuning.
 
 Before changing weapon assets, viewmodel orchestration, weapon animation
 aliases, weapon audio, muzzle flashes, shell ejection, impact effects, grenade

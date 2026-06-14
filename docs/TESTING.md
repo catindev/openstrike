@@ -284,11 +284,27 @@ For local asset catalog inspection tool changes, perform the following checks:
 
 ## Current (PR-06) checklist
 
-For weapon viewmodel orchestration documents and coverage-status contract
+For weapon viewmodel orchestration profile, adapter and coverage-status contract
 changes, perform the following checks:
 
 * **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
-  coverage status smoke after the local catalog inspection tool smoke.
+  coverage status, viewmodel/world profile and GoldSrc renderable adapter
+  smoke checks after the local catalog inspection tool smoke.
+* **Viewmodel/world profile smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/viewmodel_world_profile_smoke.gd`
+  when iterating on unit scale, coordinate mapping, eye height, FOV or
+  per-weapon transform lint.
+* **GoldSrc renderable adapter smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/goldsrc_renderable_adapter_smoke.gd`
+  when iterating on the `alanfischer/goldsrc-godot` adapter boundary.
+* **Manual preflight capability smoke:** Run
+  `Godot --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --capability-smoke`
+  to confirm the local manual tool reports extension availability honestly
+  without requiring real assets in CI.
+* **Local visual preflight:** Developers with a licensed local installation and
+  `goldsrc-godot` installed may run
+  `Godot --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel --visual`.
+  This is opt-in and must not become a CI gate.
 * **Coverage status smoke:** Run
   `Godot --headless --path . --script res://src/dev/smoke/coverage_status_smoke.gd`
   when iterating on coverage status stages, confidence values or generated
@@ -307,6 +323,9 @@ changes, perform the following checks:
   `local_verified` or `local_verified_absence` for real CS 1.6 assets. Those
   confidence states come only from local licensed-install scanner output, and
   that output must remain uncommitted.
+* **No fake sockets/events:** Confirm that attachment/socket and MDL animation
+  event capability remains `requires_openstrike_mdl_reader` until a loader API
+  spike proves those fields are exposed.
 * **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
   confirm that no proprietary GoldSrc assets or local config files are tracked.
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`

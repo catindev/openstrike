@@ -26,6 +26,9 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   player eye height, world camera FOV, viewmodel camera FOV or first-person
   model placement, read `docs/VIEWMODEL_WORLD_PROFILE.md`. Update that profile
   and its smoke expectations when a profile fact changes.
+* Before asking a human to visually test real CS 1.6 viewmodels, read
+  `docs/VIEWMODEL_MANUAL_PREFLIGHT.md` and use that path instead of per-weapon
+  transform tuning.
 * Before changing weapon assets, viewmodel orchestration, weapon animation
   aliases, weapon audio, muzzle flashes, shell ejection, impact effects,
   grenade presentation or HUD weapon sprites, read

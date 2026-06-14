@@ -147,6 +147,22 @@ creates temporary synthetic files under `user://` for every catalog path. This
 validates the tool and manifest contract without requiring a local
 Counter-Strike installation.
 
+## Viewmodel manual preflight
+
+After `alanfischer/goldsrc-godot` is installed locally, developers can preflight
+real pilot viewmodels through the locked OpenStrike profile:
+
+```sh
+Godot --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel
+Godot --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel --visual
+```
+
+This tool resolves pilot semantic IDs through the existing
+`OpenStrikeAssetManager` and VFS, loads real MDL files only from the local
+licensed install, applies `data/config/viewmodel_world_profile.json`, and
+redacts local absolute paths from JSON reports. It must not be replaced by
+per-weapon transform tuning.
+
 ## GoldSrc VFS
 
 The VFS is responsible for resolving paths from the user's configured
@@ -170,11 +186,18 @@ Initial implementation classes:
   semantic provider requests for future presentation systems.
 * `OpenStrikeAssetInspectionReport` exposes manifest preflight summary data for
   dev tools and future catalog validation.
+* `OpenStrikeViewmodelWorldProfile` stores PR-06 source profile values for
+  scale, mapping, eye offset and FOV derivation.
+* `OpenStrikeGoldSrcRenderableProvider` bridges resolved semantic viewmodels to
+  `alanfischer/goldsrc-godot` runtime classes without adding project-owned
+  MDL/SPR decoders.
 * `data/assets/cs16_pilot_weapon_assets.json` provides the first smoke-validated
   pilot catalog for semantic weapon presentation assets.
 * `src/dev/tools/asset_catalog_inspect_local.gd` provides the opt-in local
   inspection command for checking catalogs against a real licensed
   installation while reporting only sanitised diagnostics.
+* `src/dev/tools/viewmodel_manual_preflight.gd` provides the first opt-in
+  visual preflight command for real local `v_*.mdl` viewmodels.
 
 ## GoldSrc providers
 
