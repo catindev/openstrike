@@ -30,6 +30,25 @@ checks:
 * **Configuration hygiene:** Ensure that no `local_goldsrc.json` or user-specific
   path is committed.
 
+## Current (PR-02) checklist
+
+For local GoldSrc configuration and VFS skeleton changes, perform the following
+checks:
+
+* **Godot project smoke test:** Run `Godot --headless --path . --quit`.
+* **Asset VFS smoke test:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_vfs_smoke.gd`.
+  This creates a synthetic temporary tree under `user://` and verifies
+  case-insensitive lookup, cstrike-over-valve overlay order, fallback lookup,
+  path traversal rejection and raw byte reads.
+* **No real GoldSrc fixtures:** Confirm that the repository still contains no
+  `.bsp`, `.mdl`, `.spr`, `.wad`, `.wav`, `.bmp` or committed
+  `local_goldsrc.json` files.
+* **Documentation coverage:** Confirm that `ASSET_PIPELINE.md` and
+  `LOCAL_GOLDSRC_CONFIG.md` describe the implemented schema and VFS behavior.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  for the PR.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

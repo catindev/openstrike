@@ -11,8 +11,9 @@ This directory is the operational memory of the project. Every AI/coding agent m
 5. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
 6. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
 7. `ASSET_PIPELINE.md` — planned local asset loading model.
-8. `KNOWLEDGE_BASE.md` — current project knowledge base.
-9. `TESTING.md` — testing strategy and smoke checks.
+8. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+9. `KNOWLEDGE_BASE.md` — current project knowledge base.
+10. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
