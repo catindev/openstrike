@@ -31,4 +31,6 @@ socket, animation and diagnostics pipeline exists. The immediate path is:
 2. Load local GoldSrc assets legally.
 3. Resolve files through a proper VFS.
 4. Make cvars/config authoritative for gameplay numbers.
-5. Add calibrated presentation only after provider and diagnostics boundaries are in place.
+5. Use the source catalog and dev-lab methodology for any subjective feel claim.
+6. Add calibrated presentation only after provider, diagnostics and evidence
+   boundaries are in place.

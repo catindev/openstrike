@@ -113,6 +113,24 @@ For movement parity changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
   for the PR.
 
+## Current (PR-04D) checklist
+
+For research catalog and dev-lab methodology changes, perform the following
+checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh` even when the PR is
+  documentation-only, to keep the branch integration-safe.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check`.
+* **Source weighting:** Confirm that new external references are classified in
+  `SOURCE_CATALOG.md` and do not replace primary GoldSrc/CS 1.6 references.
+* **Lab evidence rule:** Confirm that subjective feel claims are linked to
+  telemetry, smoke coverage, debug overlays or a planned dev lab through
+  `DEV_LABS_METHODOLOGY.md`.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  explaining any plan-order change.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

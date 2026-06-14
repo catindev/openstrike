@@ -68,3 +68,14 @@ Before movement, gameplay and presentation PRs, CI must run the Godot headless
 project smoke test, asset VFS smoke test, cvar/config smoke test, whitespace
 check and forbidden asset scan. New subsystem PRs should extend this gate
 instead of relying only on manual editor runs.
+
+## 0011. Subjective feel claims require evidence
+
+External research must be classified in `docs/SOURCE_CATALOG.md` before it is
+used to guide implementation. Community-engineering sources such as
+3kliksphilip are useful for experiment design and symptom catalogs, but they do
+not replace primary GoldSrc/CS 1.6 references for exact constants.
+
+Movement, weapon, hitbox, prediction, HUD and viewmodel feel claims must map to
+telemetry, smoke tests, debug overlays or a planned dev lab described in
+`docs/DEV_LABS_METHODOLOGY.md`.

@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `docs/3KLIKSPHILIP_RESEARCH_NOTES.md` as a community-engineering
+  research note for Counter-Strike experiment design, dev labs, latency,
+  hitboxes, mapping, performance, HUD and viewmodel cost.
+* Added `docs/SOURCE_CATALOG.md` to classify external references by source
+  weight and document use/do-not-use rules.
+* Added `docs/DEV_LABS_METHODOLOGY.md` to define the lab contract for turning
+  subjective feel claims into telemetry, debug overlays and acceptance criteria.
+* Added a project decision that subjective feel claims require source
+  classification and lab-backed evidence.
 * Added `docs/CS_1_6_FEEL.md` as the research baseline for movement, weapon,
   prediction, presentation, map and feedback feel.
 * Added agent/documentation instructions to read the CS 1.6 feel baseline before
@@ -41,6 +50,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Updated agent and documentation rules so new external research must be
+  classified in the source catalog and subjective feel claims must map to a lab,
+  telemetry artifact, smoke test or debug overlay.
 * Aligned movement defaults with the CS 1.6 feel baseline: 100 Hz simulation,
   `sv_accelerate=5`, `sv_stopspeed=75`, `edgefriction=2` and
   `sv_maxvelocity=2000`.
@@ -69,6 +81,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-04D before asset providers because the 3kliksphilip research
+  notes add a missing methodology gate: future feel-sensitive work should be
+  evidence-backed before presentation and asset work resumes.
 * Inserted PR-04C before asset providers because the accepted
   `CS_1_6_FEEL.md` baseline identifies fastrun/diagonal acceleration as a
   movement acceptance criterion; this keeps PR-05 from building presentation
