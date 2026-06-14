@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added GoldSrc asset provider contracts for semantic asset manifests, asset
+  references, provider results and raw local MDL/SPR/WAV byte loading through
+  `OpenStrikeAssetManager`.
+* Added an asset provider smoke test with synthetic `user://` MDL/SPR/WAV files
+  to verify semantic viewmodel, sprite and sound requests without committing
+  proprietary fixtures.
 * Added `docs/AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` as the required
   project-specific Godot/GDScript workflow guide for AI agents.
 * Added `docs/3KLIKSPHILIP_RESEARCH_NOTES.md` as a community-engineering
@@ -56,6 +62,8 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Extended the shared smoke-check script to run the asset provider contract
+  smoke before cvar and movement checks.
 * Updated local GoldSrc config validation so `half_life_dir` can derive
   `cstrike_dir` and `valve_dir`, while explicit `cstrike_dir + valve_dir`
   roots are valid without `half_life_dir`.
@@ -101,6 +109,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Started PR-05 with semantic provider contracts and synthetic smoke coverage
+  before adding a real CS 1.6 asset catalog, so provider work does not hardcode
+  guessed model, sprite, sound or animation mappings.
 * Inserted PR-04E before asset providers because review identified two contract
   cleanups that should not be inherited by provider work: generic core
   `class_name` collisions and an air-strafe golden test that encoded unlimited

@@ -52,4 +52,8 @@ connect the claim to telemetry, a smoke test, a debug overlay or a planned lab.
 
 ## Current status
 
-`0.1.0` is a bootstrap milestone. It creates the clean Godot project, repository structure, documentation, agent instructions, legal boundaries and default cvar data. It does not implement gameplay, asset loading, movement, weapons, HUD or networking.
+`0.1.0` began as a bootstrap milestone. The repository now also contains the
+first local GoldSrc config/VFS layer, cvar/config layer, movement simulation
+core and asset provider contracts. It still does not implement real gameplay
+weapons, HUD, networking, map loading or decoded GoldSrc model/sprite/audio
+presentation.

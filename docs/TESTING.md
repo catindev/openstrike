@@ -161,6 +161,32 @@ exception, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` explains why PR-04E was
   inserted before asset providers.
 
+## Current (PR-05) checklist
+
+For GoldSrc asset provider contract changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  asset provider smoke test in addition to project, Asset VFS, cvar/config and
+  movement checks.
+* **Asset provider contract smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/asset_provider_smoke.gd`
+  when iterating locally on provider code. The smoke test must use synthetic
+  files created under `user://`, not committed `.mdl`, `.spr` or `.wav`
+  fixtures.
+* **Semantic request boundary:** Confirm that presentation-facing code can
+  request viewmodel, sprite and sound assets by semantic IDs while physical
+  GoldSrc paths remain in manifest/provider data only.
+* **Diagnostics:** Confirm that missing semantic IDs, missing physical files and
+  type mismatches produce structured diagnostics.
+* **No parser shortcut:** Confirm that PR-05 does not add placeholder
+  resources or incomplete MDL/SPR/WAV decoders in production paths.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records the provider
+  contract and explains why real CS asset mappings remain separate.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:
