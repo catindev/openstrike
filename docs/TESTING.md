@@ -11,6 +11,25 @@ For the bootstrap milestone, manual verification is sufficient:
 * **Configuration files:** Ensure that no `local_goldsrc.json` or other user‑specific configuration files are committed.
 * **Documentation coverage:** Confirm that documentation has been updated or created to reflect any new changes.
 
+## Current (PR-01) checklist
+
+For bootstrap integrity and project-contract changes, perform the following
+checks:
+
+* **Godot project smoke test:** Run `Godot --headless --path . --quit` or open
+  the project manually. The project must have a valid main scene and must not
+  report `no main scene defined`.
+* **Documentation consistency:** Confirm that `ROADMAP.md`,
+  `DEVELOPMENT_PLAN.md`, `ARCHITECTURE.md`, `ASSET_PIPELINE.md` and
+  `DECISIONS.md` agree on implementation order: local config/VFS and cvars
+  come before movement, viewmodel and weapon presentation work.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` contains an English entry
+  for the PR.
+* **No bundled Valve assets:** Search the repository for prohibited file types
+  (`.bsp`, `.mdl`, `.spr`, `.wad`, `.wav`, `.bmp`) and ensure none are present.
+* **Configuration hygiene:** Ensure that no `local_goldsrc.json` or user-specific
+  path is committed.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

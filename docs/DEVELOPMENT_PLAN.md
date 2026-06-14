@@ -1,186 +1,186 @@
 # Development Plan
 
-This document outlines the initial series of pull requests (PRs) planned for the OpenStrike project.  Each PR represents a focused, incremental contribution following the GitHub Flow model.  Contributors should not combine unrelated changes into a single PR.
+This plan defines the first pull requests for OpenStrike. Each PR must be a
+small, reviewable step. The project follows GitHub Flow: one conceptual change
+per branch, with documentation and changelog updates in the same PR.
 
-## PR‑00 Bootstrap
+## PR-00 Bootstrap
 
-**Goal:** Lay the groundwork for the project with a minimal Godot 4 project and documentation.
-
-**Includes:**
-
-* Create repository structure, `.gitignore` and `.gitattributes`.
-* Add Godot `project.godot` file and a `Main.tscn` scene that displays a bootstrap screen with project name, version and legal notice.
-* Add initial documentation: roadmap, development plan, legal originality guidelines, architecture, asset pipeline, knowledge base and testing strategy.
-* Add `AGENTS.md` with rules for AI agents.
-
-**Excludes:**
-
-* Any gameplay code, asset loading or movement logic.
-* AssetManager implementation or parsing of GoldSrc formats.
-* Migration of code from Readytostrike or other prototypes.
-
-**Acceptance criteria:**
-
-* Project opens in Godot 4.x and runs the main scene without errors.
-* Repository contains the documented structure and documentation files.
-* No Valve assets or local user configuration files are present.
-
-## PR‑01 Core utilities and diagnostics
-
-**Goal:** Introduce foundational utilities and diagnostic tools to aid development.
+**Goal:** Create the minimal Godot project and legal/documentation baseline.
 
 **Includes:**
 
-* Basic logging, assertions and debug utilities under `src/core/`.
-* A simple diagnostics overlay or console accessible via a debug flag.
-* Unit test harness setup for future modules.
+* Godot project configuration and `scenes/app/Main.tscn`.
+* Repository structure for `src/core`, `src/game`, `src/presentation`, `src/dev` and `data`.
+* Initial legal, architecture, asset pipeline, testing and roadmap documents.
+* `AGENTS.md` with non-negotiable agent and legal rules.
 
 **Excludes:**
 
-* Asset loading or gameplay logic.
+* Gameplay, asset loading, movement, weapons, HUD and networking.
+* Any Valve, Half-Life, Counter-Strike or extracted GoldSrc assets.
 
 **Acceptance criteria:**
 
-* Utilities can be imported from `src/core` without circular dependencies.
-* Diagnostic overlay can be toggled on and off during runtime.
+* The project opens in Godot and the main scene runs.
+* No local user paths or proprietary assets are committed.
 
-## PR‑02 AssetManager
+## PR-01 Bootstrap integrity and project contract
 
-**Goal:** Implement a unified `AssetManager` to locate and read GoldSrc assets from the user’s local installation.
+**Goal:** Keep the project bootable and align documentation around the new
+implementation order before adding subsystems.
 
 **Includes:**
 
-* Definition of `local_goldsrc.json` format and loading mechanism.
-* Basic virtual file system abstraction to read files from `valve/` and `cstrike/` directories.
-* Placeholder interfaces for BSP, MDL, WAD, SPR and WAV providers.
+* Valid `project.godot` with a working main scene entry point.
+* Decision log for legal, architecture and reuse boundaries.
+* Roadmap and development plan aligned with the GoldSrc reimplementation strategy.
+* Changelog entry for all project-contract changes.
 
 **Excludes:**
 
-* Parsing of any GoldSrc file formats.
-* Caching or conversion of assets.
+* Runtime AssetManager implementation.
+* Gameplay logic.
+* Migration of Readytostrike weapon/viewmodel code.
 
 **Acceptance criteria:**
 
-* Given a valid `local_goldsrc.json`, the `AssetManager` can locate and read raw bytes from expected directories.
-* Appropriate error handling is implemented when the configuration is missing or invalid.
+* `Godot --headless --path . --quit` succeeds.
+* Documentation agrees that VFS/cvars precede movement and weapon presentation.
+* The changelog records the change in English.
 
-## PR‑03 GoldSrc VFS
+## PR-02 Local configuration and VFS skeleton
 
-**Goal:** Provide a virtual file system layer that mimics GoldSrc’s search paths and file resolution rules.
+**Goal:** Introduce the local GoldSrc configuration and raw file resolution layer.
 
 **Includes:**
 
-* Resolution order for game directories, mod directories and PAK files.
-* Support for searching for files by extension and name.
+* `local_goldsrc.json` schema documentation and loader.
+* Local path validation for `valve/` and `cstrike/`.
+* VFS interfaces for GoldSrc-like search paths and case-insensitive lookup.
+* Diagnostics for missing, invalid or incomplete installations.
 
 **Excludes:**
 
-* Parsing of PAK, WAD or BSP archives themselves.
+* BSP, MDL, SPR, WAD, PAK or WAV parsing.
+* Any bundled proprietary asset or cached extracted asset.
 
 **Acceptance criteria:**
 
-* The VFS correctly resolves file paths in unit tests across typical GoldSrc directory structures.
+* Given a valid local config, the VFS can resolve and read raw files from the configured installation.
+* Missing files produce structured diagnostics, not placeholders.
 
-## PR‑04 Movement parity
+## PR-03 Cvars, config and binds
 
-**Goal:** Implement a player controller that matches *Counter‑Strike 1.6* movement behaviour.
+**Goal:** Make configuration values authoritative before implementing movement or gameplay.
 
 **Includes:**
 
-* Physics constants (gravity, friction, stopspeed, stepsize, etc.) loaded from cvars.
-* Basic walking, jumping and air movement respecting GoldSrc limits.
+* Cvar registry with defaults from `data/cvars/default.cfg`.
+* Read-only default config loading and user override hooks.
+* Command/bind data structures for later console and menu integration.
 
 **Excludes:**
 
-* Weapon handling, animations or view bobbing.
+* Networked console commands.
+* Gameplay systems that only consume cvars later.
 
 **Acceptance criteria:**
 
-* Movement telemetry matches expected ranges from the knowledge base (e.g. maxspeed 320, air wishspeed cap 30).
+* Cvars can be defined, queried, changed at runtime and serialized for user config.
+* Movement and weapon PRs have a stable config API to consume.
 
-## PR‑05 Cvars/config/binds
+## PR-04 Movement parity
 
-**Goal:** Introduce a cvar system and configuration/binding management.
+**Goal:** Implement CS 1.6-like player movement on top of cvars.
 
 **Includes:**
 
-* Data structures for console variables with default values (see `data/cvars/default.cfg`).
-* Parsing of configuration files and user binds.
-* Command registration mechanism for developer console.
+* Ground acceleration, friction, jump, air acceleration, ducking and step behavior.
+* Telemetry capture for movement tests.
+* Public GoldSrc/CS movement constants marked as reference data.
 
 **Excludes:**
 
-* Networking or remote console features.
+* Weapon handling, recoil, viewmodel bob or presentation.
 
 **Acceptance criteria:**
 
-* Cvars can be defined, queried and modified at runtime and saved/loaded from config files.
+* Telemetry matches expected ranges for maxspeed, air wishspeed cap and friction behavior.
 
-## PR‑06 Viewmodel/weapon presentation migration
+## PR-05 Asset providers for MDL, SPR and WAV
 
-**Goal:** Port the visual representation of weapons and hands from the prototype in a structured manner.
+**Goal:** Load core weapon presentation assets through provider APIs.
 
 **Includes:**
 
-* Scene graph components for viewmodels.
-* Animation playback and recoil camera logic.
+* Provider interfaces for view models, sprites and audio streams.
+* Legal runtime loading from the user's local installation.
+* Diagnostics for missing animations, sprites and sounds.
 
 **Excludes:**
 
-* Damage calculation or bullet simulation.
+* Gameplay weapon authority.
+* Procedural placeholder weapons, sounds or muzzle flashes.
 
 **Acceptance criteria:**
 
-* Viewmodel animations play correctly when triggered by stub events in the game logic.
+* Presentation code can request assets by semantic IDs.
+* Gameplay code does not contain direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
 
-## PR‑07 Weapon server model
+## PR-06 Weapon and viewmodel orchestration
 
-**Goal:** Implement the authoritative server‑side representation of weapons and ammunition.
+**Goal:** Add first-person weapon presentation using semantic events.
 
 **Includes:**
 
-* Data structures for weapon definitions, ammo counts and firing modes.
-* Basic firing and reload timers.
+* Viewmodel rig or camera layer for first-person models.
+* Weapon animation alias resolver.
+* Weapon event timeline for draw, fire, reload, shell eject and muzzle flash.
+* Audio and effect orchestration boundaries.
 
 **Excludes:**
 
-* Client‑side effects or audio.
+* Damage, armor and full combat model.
 
 **Acceptance criteria:**
 
-* Weapon logic runs deterministically and can be tested without the client presentation layer.
+* A weapon can be deployed, fired and reloaded through semantic events.
+* Missing assets produce diagnostics and disabled features, not fake fallback meshes or sounds.
 
-## PR‑08 Combat/damage/armor
+## PR-07 BSP map pipeline
 
-**Goal:** Add combat logic, hit detection and armor mechanics.
+**Goal:** Load real GoldSrc maps through the asset pipeline.
 
 **Includes:**
 
-* Hitboxes, damage scaling and falloff.
-* Armor absorption and health reduction.
-* Death and respawn handling.
+* BSP discovery and map definitions.
+* Entity-lump metadata extraction.
+* Spawn point discovery.
+* Initial collision/import integration.
 
 **Excludes:**
 
-* Networking or lag compensation.
+* Full PVS optimization and all interactive map entities.
 
 **Acceptance criteria:**
 
-* Damage calculations match expected values based on reference data.
+* A local BSP map can be selected, loaded and used for player spawning without committing map assets.
 
-## PR‑09 BSP import integration
+## PR-08 Server-authoritative local game loop
 
-**Goal:** Finalise integration of BSP file loading with the asset pipeline and VFS.
+**Goal:** Run offline gameplay through a server-style game layer.
 
 **Includes:**
 
-* Parsing of GoldSrc BSP format into Godot mesh and collision objects.
-* Support for lightmaps and texture lookup via WAD files.
+* GameDirector or equivalent local authoritative simulation root.
+* Round state skeleton, teams and spawn assignment.
+* Deterministic weapon runtime state.
 
 **Excludes:**
 
-* Visleaf culling or advanced rendering optimisations.
+* LAN networking and lag compensation.
 
 **Acceptance criteria:**
 
-* BSP maps load without crashes and are navigable in a test environment.
+* Single-player/offline play uses the same game-layer authority that future networking will use.
