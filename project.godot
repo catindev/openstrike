@@ -1,0 +1,10 @@
+; OpenStrike project configuration for Godot 4.x
+
+# This is the main configuration file for the OpenStrike Godot project.
+# It specifies the project's name, version and entry point. Do not edit
+# these values in subsequent PRs without updating the version appropriately.
+
+[application]
+config/name="OpenStrike"
+config/version="0.1.0-dev"
+run/main_scene="res://scenes/app/Main.tscn"
