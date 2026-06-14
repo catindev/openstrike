@@ -46,6 +46,41 @@ The first asset-manager milestone only locates and reads raw files. Format
 parsing comes later, after path resolution, overlay order and diagnostics are
 stable.
 
+The current PR-05 provider-contract step adds semantic manifest loading on top
+of that raw VFS layer:
+
+* `OpenStrikeAssetManifest` validates a JSON-compatible dictionary of semantic
+  asset IDs.
+* `OpenStrikeAssetReference` records one semantic ID, asset type, provider and
+  GoldSrc-relative path.
+* `OpenStrikeGoldSrcAssetProvider` resolves references through the configured
+  VFS and returns `OpenStrikeAssetProviderResult` objects.
+* `OpenStrikeAssetProviderResult` carries provider diagnostics, VFS resolution
+  details and raw bytes for later MDL/SPR/WAV parsers.
+
+This provider step intentionally does **not** decode MDL, SPR or WAV formats
+yet. It proves that presentation code can ask for semantic IDs such as a
+viewmodel, sprite or sound without knowing physical paths. Format-specific
+decoding and a real CS 1.6 asset catalog must be added in later, separately
+reviewable PRs after path and animation facts are verified.
+
+Example manifest shape:
+
+```json
+{
+  "assets": {
+    "weapon.ak47.viewmodel": {
+      "type": "view_model",
+      "provider": "goldsrc",
+      "path": "models/v_ak47.mdl",
+      "metadata": {
+        "format": "mdl"
+      }
+    }
+  }
+}
+```
+
 ## GoldSrc VFS
 
 The VFS is responsible for resolving paths from the user's configured
@@ -64,6 +99,9 @@ Initial implementation classes:
 * `OpenStrikeGoldSrcVFS` resolves relative GoldSrc paths through the configured roots.
 * `OpenStrikeAssetManager` exposes raw resolve/read operations.
 * `OpenStrikeAssetDiagnostics` provides structured diagnostic entries.
+* `OpenStrikeAssetManifest`, `OpenStrikeAssetReference`,
+  `OpenStrikeGoldSrcAssetProvider` and `OpenStrikeAssetProviderResult` expose
+  semantic provider requests for future presentation systems.
 
 ## GoldSrc providers
 
@@ -95,6 +133,8 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 
 ## Future tasks
 
+* Add a verified CS 1.6 weapon presentation asset catalog after local
+  installation inspection and source classification.
 * Add PAK/WAD container lookup after raw filesystem lookup is stable.
 * Implement parsers for MDL, BSP, WAD, SPR and WAV files.
 * Design HUD layout readers for text‑based HUD definitions.

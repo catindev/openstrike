@@ -306,19 +306,30 @@ says should be bounded.
 
 **Includes:**
 
-* Provider interfaces for view models, sprites and audio streams.
-* Legal runtime loading from the user's local installation.
-* Diagnostics for missing animations, sprites and sounds.
+* Semantic asset manifest and reference objects.
+* Provider result objects that expose diagnostics, VFS resolution details and
+  raw bytes for later format decoders.
+* GoldSrc provider methods for viewmodel, sprite and sound semantic IDs.
+* Legal runtime loading from the user's local installation through VFS only.
+* Smoke coverage using synthetic `user://` MDL/SPR/WAV files.
+* Diagnostics for missing semantic IDs, missing physical assets and type
+  mismatches.
 
 **Excludes:**
 
 * Gameplay weapon authority.
 * Procedural placeholder weapons, sounds or muzzle flashes.
+* Full MDL, SPR or WAV decoding.
+* A real CS 1.6 weapon asset catalog until paths and animation aliases are
+  verified.
 
 **Acceptance criteria:**
 
 * Presentation code can request assets by semantic IDs.
 * Gameplay code does not contain direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
+* Missing assets produce structured diagnostics without placeholder resources.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
 
 ## PR-06 Weapon and viewmodel orchestration
 
