@@ -14,6 +14,7 @@ covers:
 * ground friction using `sv_friction` and `sv_stopspeed`;
 * air acceleration with GoldSrc-style capped `add_speed` and uncapped
   acceleration amount;
+* GoldSrc-style directional button states and W+A fastrun transient telemetry;
 * jump impulse and half-step gravity integration;
 * duck hull height selection;
 * step-height helper acceptance based on `sv_stepsize`;
@@ -28,10 +29,10 @@ stable.
 `sv_stepsize` behavior. It is not a map/collision-integrated stair solver yet.
 
 `docs/CS_1_6_FEEL.md` is the broader research baseline for feel-sensitive
-movement work. Current gaps called out by that baseline include fastrun
-transients, bhop FOG and mega-bunny damping, timed duck/double-duck,
-edgefriction traces, GoldSrc hull traces and collision-integrated step
-handling.
+movement work. Current gaps called out by that baseline include full
+mouse-yaw-coupled fastrun lab coverage, bhop FOG and mega-bunny damping, timed
+duck/double-duck, edgefriction traces, GoldSrc hull traces and
+collision-integrated step handling.
 
 ## Runtime classes
 
@@ -77,6 +78,13 @@ final_accel = min(accel_speed, add_speed)
 `sv_air_max_wishspeed` does not replace `full_wishspeed` when calculating the
 acceleration amount.
 
+Fastrun telemetry uses directional button states instead of a single normalized
+input vector. A newly pressed directional button can be represented as `0.5`
+for the first 100 Hz tick, then `1.0` while held. The current smoke case starts
+from a 250 ups weapon-speed run, applies W+A half-state input and expects the
+first diagonal frame near `251.24` ups, then verifies a held-diagonal transient
+peak in the CS 1.6 reference range.
+
 ## Timestep
 
 Movement telemetry and smoke tests use explicit fixed timesteps. Current
@@ -106,6 +114,7 @@ Reference-only links:
 * cvar loading into movement settings;
 * ground acceleration reaches `sv_maxspeed`;
 * telemetry never exceeds `sv_maxspeed` during straight ground acceleration;
+* W+A fastrun first-frame and held-diagonal transient speed ranges at 100 Hz;
 * ground friction stops a released player;
 * air acceleration respects `sv_air_max_wishspeed`;
 * optimal air-strafe gains match an independently calculated 100 fps reference

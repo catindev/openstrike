@@ -98,9 +98,10 @@ For movement parity changes, perform the following checks:
   `Godot --headless --path . --script res://src/dev/smoke/movement_smoke.gd`
   when iterating locally on movement.
 * **Movement telemetry:** Confirm that `movement_smoke.gd` records telemetry for
-  maxspeed and air-wishspeed assertions. Air-strafe expected ranges must be
-  calculated independently from the reference equation, not copied from the
-  current implementation output.
+  maxspeed, fastrun and air-wishspeed assertions. Air-strafe expected ranges
+  must be calculated independently from the reference equation, not copied from
+  the current implementation output. Fastrun checks must keep the first
+  half-state W+A frame and held-diagonal transient ranges explicit.
 * **Explicit timestep:** Movement smoke tests must state the `delta` they use.
   Current parity smoke checks use `movement_sim_hz = 100`, or `0.01` seconds,
   for 100 fps reference cases.

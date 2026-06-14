@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.  The format
   prediction, presentation, map and feedback feel.
 * Added agent/documentation instructions to read the CS 1.6 feel baseline before
   feel-sensitive work.
+* Added `docs/GDSCRIPT_AGENT_NOTES.md` to record GDScript/Godot pitfalls that
+  slow agents down, starting with `clamp()` type inference and cascade preload
+  errors.
+* Added explicit fastrun/diagonal movement smoke coverage for the CS 1.6
+  M-002 acceptance case.
 * Added a cvar-backed CS-style movement simulation core for ground
   acceleration, friction, air acceleration, jump, duck and step-height checks.
 * Added movement telemetry snapshots for smoke tests and future golden
@@ -39,6 +44,8 @@ All notable changes to this project will be documented in this file.  The format
 * Aligned movement defaults with the CS 1.6 feel baseline: 100 Hz simulation,
   `sv_accelerate=5`, `sv_stopspeed=75`, `edgefriction=2` and
   `sv_maxvelocity=2000`.
+* Added GoldSrc-style directional button-state input helpers so smoke tests can
+  distinguish released, just-pressed and held movement buttons.
 * Updated movement smoke checks to use the cvar-backed fixed timestep.
 * Fixed movement air acceleration to use separate full and capped wishspeed
   values for GoldSrc-style air-strafe gain.
@@ -62,6 +69,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-04C before asset providers because the accepted
+  `CS_1_6_FEEL.md` baseline identifies fastrun/diagonal acceleration as a
+  movement acceptance criterion; this keeps PR-05 from building presentation
+  work on an unverified movement contract.
+* Added a process rule requiring future GDScript/Godot stumbling blocks to be
+  documented in `docs/GDSCRIPT_AGENT_NOTES.md` in the same PR.
 * Closed superseded pull request #3 without merge in favor of a smaller bootstrap/project-contract branch from `main`.
 
 ## [0.1.0] – Bootstrap

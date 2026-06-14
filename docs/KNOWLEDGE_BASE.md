@@ -36,6 +36,8 @@ The following constants are known from public sources and prototypes.  They defi
 | Standing hull height | `72` | Player hull height when standing. |
 | Ducking hull height | `36` | Player hull height when ducked. |
 | Weapon speed modifiers | *varies* | Each weapon reduces max speed; see weapon definitions. |
+| W+A fastrun first frame | `~251.24 ups` | Smoke coverage uses 250 ups weapon speed, 100 Hz and a just-pressed side button half-state. |
+| W+A fastrun transient peak | `~262 ups` | Held diagonal movement should produce a short ground-speed transient, not modern no-gain normalization. |
 | Bhop cap target | *TODO: verify* | Bunny hop speed cap for GoldSrc; subject to research. |
 
 ## Systems to reproduce
