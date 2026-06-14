@@ -2,7 +2,7 @@
 
 This document outlines the initial series of pull requests (PRs) planned for the OpenStrike project.  Each PR represents a focused, incremental contribution following the GitHub Flow model.  Contributors should not combine unrelated changes into a single PR.
 
-## PR‑00 Bootstrap
+## PR‑00 Bootstrap
 
 **Goal:** Lay the groundwork for the project with a minimal Godot 4 project and documentation.
 
@@ -25,26 +25,31 @@ This document outlines the initial series of pull requests (PRs) planned for the
 * Repository contains the documented structure and documentation files.
 * No Valve assets or local user configuration files are present.
 
-## PR‑01 Core utilities and diagnostics
+## PR‑01 Core utilities and diagnostics
 
 **Goal:** Introduce foundational utilities and diagnostic tools to aid development.
 
 **Includes:**
 
-* Basic logging, assertions and debug utilities under `src/core/`.
-* A simple diagnostics overlay or console accessible via a debug flag.
-* Unit test harness setup for future modules.
+* Basic logging utilities under `src/core/` (e.g. `Logger` with `info`, `warn` and `error` helpers).
+* Startup diagnostics utility under `src/core/diagnostics/` providing functions to query the Godot version and report a simple diagnostics status.
+* Minimal configuration loader skeleton under `src/core/config/`.
+* Update the main scene (`scenes/app/Main.tscn`) to display the Godot version and diagnostics status alongside the bootstrap text.
+* Add a simple debug overlay or diagnostics label that can display diagnostic information on screen.
 
 **Excludes:**
 
 * Asset loading or gameplay logic.
+* Parsing of GoldSrc file formats or any user configuration beyond the skeleton loader.
 
 **Acceptance criteria:**
 
 * Utilities can be imported from `src/core` without circular dependencies.
-* Diagnostic overlay can be toggled on and off during runtime.
+* The main scene runs and shows the project name, version, legal notice, Godot version and diagnostics status.
+* A diagnostics overlay or label is present on screen (or can be toggled via a debug flag) showing at least a basic status.
+* No proprietary assets or local configuration files are committed.
 
-## PR‑02 AssetManager
+## PR‑02 AssetManager
 
 **Goal:** Implement a unified `AssetManager` to locate and read GoldSrc assets from the user’s local installation.
 
@@ -64,7 +69,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 * Given a valid `local_goldsrc.json`, the `AssetManager` can locate and read raw bytes from expected directories.
 * Appropriate error handling is implemented when the configuration is missing or invalid.
 
-## PR‑03 GoldSrc VFS
+## PR‑03 GoldSrc VFS
 
 **Goal:** Provide a virtual file system layer that mimics GoldSrc’s search paths and file resolution rules.
 
@@ -81,7 +86,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * The VFS correctly resolves file paths in unit tests across typical GoldSrc directory structures.
 
-## PR‑04 Movement parity
+## PR‑04 Movement parity
 
 **Goal:** Implement a player controller that matches *Counter‑Strike 1.6* movement behaviour.
 
@@ -98,7 +103,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * Movement telemetry matches expected ranges from the knowledge base (e.g. maxspeed 320, air wishspeed cap 30).
 
-## PR‑05 Cvars/config/binds
+## PR‑05 Cvars/config/binds
 
 **Goal:** Introduce a cvar system and configuration/binding management.
 
@@ -116,7 +121,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * Cvars can be defined, queried and modified at runtime and saved/loaded from config files.
 
-## PR‑06 Viewmodel/weapon presentation migration
+## PR‑06 Viewmodel/weapon presentation migration
 
 **Goal:** Port the visual representation of weapons and hands from the prototype in a structured manner.
 
@@ -133,7 +138,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * Viewmodel animations play correctly when triggered by stub events in the game logic.
 
-## PR‑07 Weapon server model
+## PR‑07 Weapon server model
 
 **Goal:** Implement the authoritative server‑side representation of weapons and ammunition.
 
@@ -150,7 +155,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * Weapon logic runs deterministically and can be tested without the client presentation layer.
 
-## PR‑08 Combat/damage/armor
+## PR‑08 Combat/damage/armor
 
 **Goal:** Add combat logic, hit detection and armor mechanics.
 
@@ -168,7 +173,7 @@ This document outlines the initial series of pull requests (PRs) planned for the
 
 * Damage calculations match expected values based on reference data.
 
-## PR‑09 BSP import integration
+## PR‑09 BSP import integration
 
 **Goal:** Finalise integration of BSP file loading with the asset pipeline and VFS.
 
