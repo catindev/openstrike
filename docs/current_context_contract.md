@@ -45,6 +45,11 @@ viewmodel/map runtime and eventual gameplay authority.
 * PR-08B adds the first synthetic OpenStrike-owned BSP30 collision vertical
   slice: typed header/lump parsing for planes, clipnodes and GoldSrc 64-byte
   models, plus a limited synthetic `OpenStrikeBspClipnodeTraceBackend`.
+* PR-08B.1 adds a local real-BSP Contract A diagnostic. A sanitized
+  `maps/de_dust2.bsp` inspection found distinct model-0 standing and duck
+  clipnode headnodes with non-empty reachable trees, so PR-08B runtime
+  plane-offset Contract A remains synthetic-only and must not be promoted to
+  real-map clipnodes without a later contact-level diagnostic.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -79,6 +84,9 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 * `src/core/bsp/` contains the synthetic BSP30 collision reader slice and
   limited clipnode trace backend. It is a clean OpenStrike-owned proof for
   synthetic buffers, not yet a real-map gameplay collision authority.
+* `src/dev/tools/bsp30_real_map_contract_a_inspect.gd` provides an opt-in
+  local typed-load diagnostic for licensed BSP30 maps. It reports sanitized
+  reader/headnode/clipnode-tree facts and has a CI-safe synthetic smoke mode.
 * `src/core/maps/map_entity_index.gd` classifies imported BSP entity metadata
   for spawns, buyzones, bomb targets, illusionary brushes, triggers and
   collision policy, and exposes sanitized spawn descriptors for runtime
@@ -123,8 +131,12 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 * `goldsrc-godot` license is absent in the vendored snapshot; public
   redistribution remains blocked until resolved.
 * The OpenStrike-owned BSP reader/clipnode backend is currently synthetic-only.
-  Real local BSP typed-load inspection and real-map collision authority are
-  still future tasks.
+  Real local BSP typed-load inspection exists for sanitized diagnostics, but
+  real-map contact traces and real-map collision authority are still future
+  tasks.
+* The local `de_dust2` Contract A diagnostic is evidence for distinct
+  hull-specific clipnode trees, but it is not a contact golden and does not
+  decide the final real-map plane-space trace contract.
 * Real map collision currently uses imported Godot scene collision, useful for
   labs but not final CS 1.6 parity.
 * Runtime sessions accept commands and emit snapshots, but player movement
@@ -149,9 +161,9 @@ Scope:
   `OpenStrikeTraceBackend` boundary for dev/smoke use;
 * finalize shared trace result fields needed by both backends;
 * keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
-  limited/synthetic;
+  limited/synthetic and not promoted by the real-BSP Contract A diagnostic;
 * do not add PMove, PlayerMoveService, LocalGameSession movement, weapons, HUD,
-  real map golden tests or WAD/miptexture parsing.
+  real map contact golden tests or WAD/miptexture parsing.
 
 ## 8. Definition of done for the next task
 

@@ -213,6 +213,11 @@ Initial implementation classes:
   entity, PVS and collision capabilities without claiming GoldSrc hull-trace
   parity. It scans BSP ASCII metadata for referenced WAD filenames so
   map-specific archives can be loaded from the local VFS.
+* `src/dev/tools/bsp30_real_map_contract_a_inspect.gd` provides an opt-in
+  local diagnostic for loading a licensed BSP through the same VFS into
+  `OpenStrikeBspMapResource`, reporting sanitized collision-lump and model-0
+  hull-headnode facts while keeping PR-08B runtime plane offsets synthetic-only
+  until real-map contact verification exists.
 * `src/dev/labs/bsp_walkable/bsp_walkable_lab.gd` provides the first opt-in
   real-map walk test against a local BSP and writes local telemetry under
   `user://telemetry/bsp_walkable/`. The lab also resolves local

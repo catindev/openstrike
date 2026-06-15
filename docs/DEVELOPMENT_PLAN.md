@@ -788,8 +788,9 @@ full round rules in the same PR.
 For the GoldSrc runtime spine, follow `docs/COMPACT_PR_TASK_PACKETS.md` in
 order and do not pull neighboring packet scope forward. PR-08B is the
 synthetic BSP30 reader/clipnode trace proof described in
-`docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`; after that, continue with PR-08C
-backend capability integration, not runtime movement integration.
+`docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`; after that, run the narrow
+PR-08B.1 real-BSP Contract A diagnostic, then continue with PR-08C backend
+capability integration, not runtime movement integration.
 
 ## PR-08B BSP30 collision vertical slice
 
@@ -820,6 +821,38 @@ minimal synthetic clipnode hull trace.
 * No Valve assets or real `.bsp` files are committed.
 * `OpenStrikeGodotSceneTraceBackend` remains temporary non-parity.
 * The hull-extent contract decision is recorded in `docs/DECISIONS.md`.
+
+## PR-08B.1 Real BSP Contract A diagnostic
+
+**Goal:** Check the PR-08B synthetic hull-extent Contract A against sanitized
+facts from a real local BSP30 map without promoting real-map collision
+authority.
+
+**Includes:**
+
+* Opt-in headless diagnostic command for a local licensed BSP such as
+  `maps/de_dust2.bsp`.
+* Loading through `OpenStrikeAssetManager` and GoldSrc VFS into
+  `OpenStrikeBspMapResource`.
+* Sanitized output for BSP version, collision-relevant lump counts, model-0
+  `headnode[0..3]`, reachable standing/duck clipnode summaries and reader
+  diagnostics.
+* Synthetic `user://` smoke mode wired into shared checks.
+* Test report and decision update that keep Contract A scoped correctly.
+
+**Excludes:**
+
+* Real BSP files, extracted lumps, local absolute paths, committed telemetry or
+  real-map contact goldens.
+* PMove, `PlayerMoveService`, `LocalGameSession` movement, backend switching,
+  weapon loop, HUD, economy, bots or networking.
+
+**Acceptance criteria:**
+
+* The diagnostic can inspect a licensed local BSP when a local config exists.
+* CI validates the tool through synthetic fixtures only.
+* Contract A is not promoted beyond PR-08B synthetic fixtures unless
+  contact-level real-map evidence proves that plane-space contract.
 
 ## PR-08 Server-authoritative local game loop
 

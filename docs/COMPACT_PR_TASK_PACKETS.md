@@ -196,6 +196,65 @@ Reason = ...
 
 ---
 
+## PR-08B.1 — Real BSP Contract A diagnostic
+
+### Goal
+
+Check how the PR-08B synthetic hull-extent Contract A relates to a real local
+BSP30 map, without turning the result into gameplay collision authority.
+
+### Includes
+
+* Local-only developer command:
+
+```text
+--map=maps/de_dust2.bsp
+```
+
+* Load the map through `OpenStrikeAssetManager` / GoldSrc VFS into
+  `OpenStrikeBspMapResource`.
+* Report sanitized facts only:
+
+```text
+version
+lump lengths/counts
+planes count
+clipnodes count
+models count
+model 0 headnode[0..3]
+standing/duck reachable clipnode summary
+diagnostics
+```
+
+* Add a CI-safe synthetic smoke mode that writes only temporary `user://`
+  fixtures.
+* Add a local test report and decision update explaining whether Contract A can
+  be promoted beyond synthetic fixtures.
+
+### Excludes
+
+* No real BSP files or extracted lump bytes.
+* No local absolute paths in committed docs or output.
+* No real-map contact assertions or golden fractions.
+* No PMove.
+* No PlayerMoveService.
+* No LocalGameSession movement.
+* No weapon, HUD, economy, bots or networking.
+* No WAD/miptexture parsing.
+* No production backend switch.
+
+### Acceptance
+
+* The local command can inspect a licensed BSP when `user://local_goldsrc.json`
+  is available.
+* Shared smoke checks cover the tool through synthetic `user://` fixtures.
+* `docs/DECISIONS.md` and `docs/test_reports/` record the Contract A status.
+* Contract A remains synthetic-only unless real-map contact evidence proves
+  otherwise.
+* CI does not require Valve assets.
+
+---
+
 ## PR-08C — Clipnode backend capability integration
 
 ### Goal
@@ -239,6 +298,10 @@ BspClipnodeTraceBackend
 ---
 
 ## PR-08D — Local BSP typed-load inspection
+
+Initial Contract A inspection was pulled forward into PR-08B.1. Keep PR-08D
+only for broader local typed-load diagnostics beyond that scoped hull-extent
+question.
 
 ### Goal
 

@@ -258,3 +258,31 @@ offsets on top of already pre-expanded hull-space planes. Denylisted
 Xash3D/HLSDK source files were not opened for this implementation; the
 implementation follows the in-repo runtime-spine spec and synthetic byte-layout
 tests.
+
+## 0023. Real BSP Contract A diagnostics do not promote runtime offsets
+
+After PR-08B, OpenStrike added a local-only diagnostic for the PR-08B
+hull-extent question. The diagnostic loads a licensed BSP through the existing
+GoldSrc VFS into `OpenStrikeBspMapResource`, reports sanitized typed-reader
+facts and inspects model-0 clipnode hull roots without committing BSP bytes,
+local paths or contact goldens.
+
+A local `maps/de_dust2.bsp` run on 2026-06-15 parsed BSP30 data with non-empty
+planes, clipnodes and GoldSrc 64-byte models. Model 0 exposed distinct
+clipnode headnodes for standing and duck hulls:
+
+```text
+headnode[1] = 0
+headnode[3] = 4521
+```
+
+The reachable standing and duck clipnode trees were both non-empty and had no
+invalid references in the diagnostic. This is real-map evidence for compiled
+hull-specific collision data, not for one shared point-space tree that can
+blindly receive PR-08B runtime offsets.
+
+Therefore PR-08B Contract A remains synthetic-only. Real BSP collision work
+must not promote runtime hull offsets to licensed map clipnodes until a later
+contact-level diagnostic proves where the hull offset lives for that real
+map/path. The current result supports keeping the BSP backend limited and
+blocking PMove/contact authority from relying on Contract A as real-map truth.

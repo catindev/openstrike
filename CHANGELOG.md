@@ -34,6 +34,15 @@ All notable changes to this project will be documented in this file.  The format
   non-solid and Source-style 48-byte model rejection without Valve assets.
 * Added top-level BSP trace `contents_code` reporting and synthetic collision
   normal assertions so future slide/PMove work can rely on the trace contract.
+* Added `src/dev/tools/bsp30_real_map_contract_a_inspect.gd`, an opt-in
+  local BSP30 diagnostic that loads a licensed map through the existing
+  GoldSrc VFS, reports sanitized typed-reader and model-0 hull facts, and
+  keeps PR-08B hull-offset Contract A blocked from real-map promotion.
+* Added a synthetic smoke mode for the real-BSP Contract A diagnostic and wired
+  it into shared smoke checks without requiring Valve assets in CI.
+* Added `docs/test_reports/2026-06-15_real_bsp_contract_a_de_dust2.md` with
+  sanitized local `de_dust2` inspection results for the PR-08B hull-extent
+  contract question.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -318,6 +327,9 @@ All notable changes to this project will be documented in this file.  The format
 * Recorded the PR-08B synthetic hull-extent decision: the smoke fixture uses
   runtime plane offsets over point-space planes, scoped to synthetic BSP30
   clipnodes and not asserted as the final real-map hull-space contract.
+* Inserted a narrow real-BSP Contract A diagnostic step after PR-08B so local
+  typed-load evidence can keep synthetic hull-offset behavior separate from
+  future real-map collision authority before PMove or gameplay integration.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.

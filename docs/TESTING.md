@@ -499,6 +499,32 @@ following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08B.1 real BSP Contract A diagnostic checklist
+
+For the local real-BSP hull-extent diagnostic, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  Contract A diagnostic in `--synthetic-smoke --summary-only` mode, so CI does
+  not require Valve assets.
+* **Synthetic diagnostic smoke:** Run
+  `Godot --headless --path . --script res://src/dev/tools/bsp30_real_map_contract_a_inspect.gd -- --synthetic-smoke --summary-only`
+  when iterating on the tool.
+* **Local real-BSP diagnostic:** Developers with a licensed local installation
+  may run
+  `Godot --headless --path . --script res://src/dev/tools/bsp30_real_map_contract_a_inspect.gd -- --config=user://local_goldsrc.json --map=maps/de_dust2.bsp`.
+  This is opt-in and must not become a required CI gate.
+* **Report redaction:** Confirm tool output does not expose local absolute
+  paths, VFS roots, `resolved_path` or VFS `tried` paths. Committed reports may
+  include sanitized relative map names and aggregate counts/headnodes only.
+* **Contract honesty:** Confirm the report does not claim real-map contact
+  parity or promote PR-08B runtime plane offsets beyond synthetic fixtures.
+* **Scope boundary:** Confirm the PR does not add PMove,
+  `PlayerMoveService`, `LocalGameSession` movement, weapon loop, HUD, economy,
+  bots, WAD/miptexture parsing or a production backend switch.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

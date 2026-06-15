@@ -313,6 +313,13 @@ the offset:
 > is a silent double-offset bug. The §8' standing-hull test guards the chosen
 > contract only if the fixture states its plane-space.
 
+> **Post-PR-08B local diagnostic:** a 2026-06-15 local `maps/de_dust2.bsp`
+> typed-load inspection found distinct model-0 standing and duck clipnode
+> headnodes with non-empty reachable trees. This is evidence for compiled
+> hull-specific real-map collision data and blocks promoting PR-08B's runtime
+> plane-offset Contract A beyond synthetic fixtures. It is not yet a
+> contact-level golden test, so the real-map trace contract remains future work.
+
 ### 5.3 PointContents
 
 For an absolute point `p`, walk the same clipnode tree (hull 0 for a true point, or
