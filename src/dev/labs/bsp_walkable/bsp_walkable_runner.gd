@@ -4,19 +4,20 @@ class_name OpenStrikeBspWalkableRunner
 
 const AssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
 const BspProviderRef = preload("res://src/core/maps/goldsrc_bsp_runtime_provider.gd")
+const LocalGameSessionRef = preload("res://src/game/runtime/openstrike_local_game_session.gd")
 const MapEntityIndexRef = preload("res://src/core/maps/map_entity_index.gd")
-const TraceBackendRef = preload("res://src/core/collision/godot_scene_trace_backend.gd")
-const MovementMathRef = preload("res://src/game/movement/cs_movement_math.gd")
 const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
+const PlayerSlotRef = preload("res://src/game/runtime/openstrike_player_slot.gd")
+const RoundStateRef = preload("res://src/game/runtime/openstrike_round_state.gd")
+const TraceBackendRef = preload("res://src/core/collision/godot_scene_trace_backend.gd")
 const TraceLoggerRef = preload("res://src/dev/labs/bsp_walkable/bsp_walkable_trace_logger.gd")
+const UserCommandRef = preload("res://src/game/runtime/openstrike_user_command.gd")
 const ViewmodelWorldProfileRef = preload("res://src/core/units/viewmodel_world_profile.gd")
 
 const DEFAULT_MAP_PATH := "maps/de_dust2.bsp"
 const MOUSE_SENSITIVITY := 0.0022
 const MIN_PITCH := deg_to_rad(-89.0)
 const MAX_PITCH := deg_to_rad(89.0)
-const PLAYER_WIDTH_UNITS := 32.0
-const SPAWN_LIFT_UNITS := 2.0
 const LAB_WALK_MAX_SPEED_UNITS := 250.0
 const FOOTSTEP_MIN_SPEED_UPS := 80.0
 const FOOTSTEP_SLOW_INTERVAL_SEC := 0.48
@@ -44,6 +45,50 @@ const MOVEMENT_SOUND_PATHS = {
 	],
 }
 
+
+class RuntimeSpawnIndexAdapter:
+	var _source_index = null
+	var _scale := 1.0
+
+
+	func _init(source_index = null, profile_scale: float = 1.0) -> void:
+		_source_index = source_index
+		_scale = maxf(profile_scale, 0.000001)
+
+
+	func spawn_descriptors_for_classes(preferred_classes: Array[String]) -> Array[Dictionary]:
+		if _source_index == null or not _source_index.has_method("spawn_descriptors_for_classes"):
+			return []
+
+		var source_descriptors: Array = _source_index.spawn_descriptors_for_classes(preferred_classes)
+		var output: Array[Dictionary] = []
+		for descriptor_variant in source_descriptors:
+			if not descriptor_variant is Dictionary:
+				continue
+			var descriptor: Dictionary = descriptor_variant.duplicate(true)
+			descriptor["position_godot"] = _vector_to_array_static(_vector_from_value_static(descriptor.get("position", Vector3.ZERO)))
+			descriptor["position"] = _godot_to_runtime_units(_vector_from_value_static(descriptor.get("position", Vector3.ZERO)))
+			descriptor["source"] = "%s_runtime_adapter" % str(descriptor.get("source", "unknown"))
+			output.append(descriptor)
+		return output
+
+
+	func _godot_to_runtime_units(value: Vector3) -> Vector3:
+		return value / _scale
+
+
+	static func _vector_from_value_static(value) -> Vector3:
+		if value is Vector3:
+			return value
+		if value is Array and value.size() >= 3:
+			return Vector3(float(value[0]), float(value[1]), float(value[2]))
+		return Vector3.ZERO
+
+
+	static func _vector_to_array_static(value: Vector3) -> Array[float]:
+		return [value.x, value.y, value.z]
+
+
 var config_path := "user://local_goldsrc.json"
 var map_path := DEFAULT_MAP_PATH
 var trace_enabled := true
@@ -57,12 +102,15 @@ var _settings
 var _provider
 var _entity_index
 var _trace_backend
+var _runtime_session
+var _runtime_player_id := 0
+var _runtime_snapshot := {}
+var _runtime_player_report := {}
 var _logger
 var _map_node: Node = null
-var _body: CharacterBody3D = null
+var _body: Node3D = null
 var _camera_pivot: Node3D = null
 var _camera: Camera3D = null
-var _hull_shape: BoxShape3D = null
 var _overlay: Label = null
 var _environment: Environment = null
 var _movement_audio_players: Array[AudioStreamPlayer] = []
@@ -143,7 +191,7 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _started or _body == null:
+	if not _started or _runtime_session == null:
 		return
 
 	_accumulator += minf(delta, 0.25)
@@ -156,7 +204,7 @@ func _physics_process(delta: float) -> void:
 
 		var input := _read_input()
 		var before := _state_snapshot()
-		_step_lab_movement(fixed_delta, input)
+		_step_runtime_movement(fixed_delta, input)
 		var after := _state_snapshot()
 		var trace_entry := _trace_entry(fixed_delta, input, before, after)
 		_logger.record_tick(trace_entry)
@@ -253,23 +301,9 @@ func _setup_world_lighting() -> void:
 
 
 func _setup_player() -> void:
-	_body = CharacterBody3D.new()
-	_body.name = "BspLabPlayer"
-	_body.floor_max_angle = deg_to_rad(46.0)
-	_body.safe_margin = _profile.scaled_units(1.0)
-	_body.motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
+	_body = Node3D.new()
+	_body.name = "BspLabPlayerPresentation"
 	add_child(_body)
-
-	var collision_shape := CollisionShape3D.new()
-	collision_shape.name = "GoldSrcApproxHull"
-	_hull_shape = BoxShape3D.new()
-	_hull_shape.size = Vector3(
-		_profile.scaled_units(PLAYER_WIDTH_UNITS),
-		_profile.scaled_units(_settings.stand_height),
-		_profile.scaled_units(PLAYER_WIDTH_UNITS)
-	)
-	collision_shape.shape = _hull_shape
-	_body.add_child(collision_shape)
 
 	_camera_pivot = Node3D.new()
 	_camera_pivot.name = "CameraPitchPivot"
@@ -281,21 +315,23 @@ func _setup_player() -> void:
 	_camera.current = true
 	_camera_pivot.add_child(_camera)
 
-	var spawn_node := _find_spawn_node()
-	var spawn_position := Vector3(0.0, _profile.scaled_units(_settings.stand_height), 0.0)
-	if spawn_node != null:
-		spawn_position = spawn_node.global_position
-		_spawn_report = _spawn_node_report(spawn_node)
-		_yaw = _yaw_from_spawn(spawn_node)
-	else:
-		_spawn_report = {
-			"classname": "fallback_origin",
-			"position_godot": _vector_to_array(spawn_position),
-		}
-	spawn_position.y += _profile.scaled_units(SPAWN_LIFT_UNITS)
-	_body.global_position = spawn_position
+	_setup_runtime_session()
+	_update_runtime_snapshot()
+	_apply_runtime_snapshot_to_presentation()
 	_update_duck_shape(false)
 	_apply_camera_rotation()
+
+
+func _setup_runtime_session() -> void:
+	var runtime_settings = MovementSettingsRef.new()
+	runtime_settings.max_speed = minf(runtime_settings.max_speed, LAB_WALK_MAX_SPEED_UNITS)
+	_settings = runtime_settings
+
+	var spawn_index = RuntimeSpawnIndexAdapter.new(_entity_index, _profile.goldsrc_unit_scale)
+	_runtime_session = LocalGameSessionRef.new()
+	_runtime_session.configure(_settings.fixed_delta(), spawn_index, _settings, _trace_backend)
+	_runtime_player_id = _runtime_session.add_player("bsp_walkable_local", PlayerSlotRef.TEAM_COUNTER_TERRORIST)
+	_runtime_session.start_round(RoundStateRef.PHASE_FREEZE_TIME)
 
 
 func _setup_overlay() -> void:
@@ -327,6 +363,10 @@ func _setup_trace_logger(load_result: Dictionary) -> void:
 		"profile": _profile.to_dictionary(),
 		"movement_settings": _settings.to_dictionary(),
 		"lab_max_speed_ups": LAB_WALK_MAX_SPEED_UNITS,
+		"movement_authority": "OpenStrikeLocalGameSession",
+		"presentation_follows_snapshot": true,
+		"runtime_tick": int(_runtime_snapshot.get("tick", 0)),
+		"runtime_player": _runtime_player_report.duplicate(true),
 		"spawn": _spawn_report,
 		"map_metadata": _map_metadata,
 		"map_entity_index": _map_entity_index_report,
@@ -673,112 +713,104 @@ func _read_input() -> Dictionary:
 	return input
 
 
-func _step_lab_movement(delta: float, input: Dictionary) -> void:
-	var on_floor := _body.is_on_floor()
-	var started_on_floor := on_floor
+func _step_runtime_movement(delta: float, input: Dictionary) -> void:
+	var started_on_floor := bool(_runtime_player_report.get("on_ground", true))
 	var ducked := bool(input.get("duck", false))
-	var jumped := false
+	var jumped := bool(input.get("jump_pressed", false))
 	_last_step_up_attempted = false
 	_last_step_up_applied = false
 	_last_movement_audio_events.clear()
-	_update_duck_shape(ducked)
 
-	if on_floor:
-		_velocity_ups = MovementMathRef.apply_friction(
-			_velocity_ups,
-			_settings.stop_speed,
-			_settings.friction,
-			delta
-		)
-
-	var wish_direction := _world_wish_direction(float(input.get("forward", 0.0)), float(input.get("side", 0.0)))
-	var has_wish := wish_direction.length_squared() > 0.0
-	if has_wish:
-		var wish_speed: float = minf(_settings.max_speed, LAB_WALK_MAX_SPEED_UNITS)
-		if on_floor:
-			_velocity_ups = MovementMathRef.accelerate(
-				_velocity_ups,
-				wish_direction,
-				wish_speed,
-				_settings.ground_accelerate,
-				delta
-			)
-		else:
-			_velocity_ups = MovementMathRef.air_accelerate(
-				_velocity_ups,
-				wish_direction,
-				wish_speed,
-				_settings.air_max_wishspeed,
-				_settings.air_accelerate,
-				delta
-			)
-
-	if on_floor and bool(input.get("jump_pressed", false)):
-		_velocity_ups.y = _settings.jump_velocity
-		on_floor = false
-		jumped = true
-
-	if not on_floor:
-		_velocity_ups.y -= _settings.gravity * delta
-	elif _velocity_ups.y < 0.0:
-		_velocity_ups.y = -2.0
-
-	_velocity_ups = MovementMathRef.check_velocity_components(_velocity_ups, _settings.max_velocity)
-	var previous_position := _body.global_position
-	var horizontal_velocity_godot: Vector3 = Vector3(_velocity_ups.x, 0.0, _velocity_ups.z) * _profile.goldsrc_unit_scale
-	var was_on_floor := _body.is_on_floor()
-	_body.velocity = _velocity_ups * _profile.goldsrc_unit_scale
-	_body.move_and_slide()
-
-	if was_on_floor and horizontal_velocity_godot.length_squared() > 0.0001 and _has_blocking_wall_collision():
-		_last_step_up_attempted = true
-		var blocked_position := _body.global_position
-		if _try_step_up(previous_position, blocked_position, horizontal_velocity_godot, delta):
-			_last_step_up_applied = true
-
-	_velocity_ups = _body.velocity / _profile.goldsrc_unit_scale
-	_update_movement_audio(input, started_on_floor, _body.is_on_floor(), ducked, jumped)
+	var command_axes := _runtime_command_axes(input)
+	var command = UserCommandRef.new()
+	command.configure(
+		int(_runtime_session.current_tick) + 1,
+		_runtime_player_id,
+		float(command_axes.get("forward", 0.0)),
+		float(command_axes.get("side", 0.0)),
+		jumped,
+		ducked,
+		_yaw,
+		_pitch
+	)
+	_runtime_session.queue_command(command)
+	_runtime_session.step(delta)
+	_update_runtime_snapshot()
+	_apply_runtime_snapshot_to_presentation()
+	_update_movement_audio(input, started_on_floor, bool(_runtime_player_report.get("on_ground", true)), ducked, jumped)
 
 
-func _world_wish_direction(forward: float, side: float) -> Vector3:
+func _runtime_command_axes(input: Dictionary) -> Dictionary:
+	var forward := float(input.get("forward", 0.0))
+	var side := float(input.get("side", 0.0))
 	var yaw_basis := Basis(Vector3.UP, _yaw)
-	var forward_axis := yaw_basis * Vector3.FORWARD
-	var right_axis := yaw_basis * Vector3.RIGHT
-	return MovementMathRef.wish_direction_from_axes(forward, side, forward_axis, right_axis)
+	var desired := yaw_basis * Vector3(side, 0.0, -forward)
+	desired.y = 0.0
+	if desired.length_squared() > 1.0:
+		desired = desired.normalized()
+	return {
+		"forward": desired.z,
+		"side": desired.x,
+	}
+
+
+func _update_runtime_snapshot() -> void:
+	if _runtime_session == null:
+		return
+	_runtime_snapshot = _runtime_session.snapshot().to_dictionary()
+	_runtime_player_report = _player_report_for_id(_runtime_player_id)
+	_velocity_ups = _vector_from_value(_runtime_player_report.get("velocity", Vector3.ZERO))
+	_yaw = float(_runtime_player_report.get("view_yaw", _yaw))
+	_pitch = float(_runtime_player_report.get("view_pitch", _pitch))
+	_tick = int(_runtime_snapshot.get("tick", _tick))
+	_update_step_flags_from_runtime_trace()
+	_update_spawn_report_from_runtime_player()
+
+
+func _player_report_for_id(player_id: int) -> Dictionary:
+	var players: Array = _runtime_snapshot.get("players", [])
+	for player_variant in players:
+		if not player_variant is Dictionary:
+			continue
+		var player: Dictionary = player_variant
+		if int(player.get("player_id", 0)) == player_id:
+			return player.duplicate(true)
+	return {}
+
+
+func _apply_runtime_snapshot_to_presentation() -> void:
+	if _body == null:
+		return
+	var origin := _vector_from_value(_runtime_player_report.get("origin", Vector3.ZERO))
+	_body.global_position = _runtime_to_godot_units(origin)
+	_update_duck_shape(bool(_runtime_player_report.get("ducked", false)))
+	_apply_camera_rotation()
+
+
+func _update_step_flags_from_runtime_trace() -> void:
+	var movement_state: Dictionary = _runtime_player_report.get("movement_state", {})
+	var trace_summary: Dictionary = movement_state.get("last_trace_summary", {})
+	var contact: Dictionary = trace_summary.get("contact", {})
+	var step: Dictionary = contact.get("step", {})
+	_last_step_up_attempted = bool(step.get("attempted", false))
+	_last_step_up_applied = bool(step.get("selected", false))
+
+
+func _update_spawn_report_from_runtime_player() -> void:
+	if _runtime_player_report.is_empty():
+		return
+	var spawn_position := _vector_from_value(_runtime_player_report.get("spawn_position", Vector3.ZERO))
+	_spawn_report = {
+		"classname": str(_runtime_player_report.get("spawn_classname", "")),
+		"position_runtime_units": _vector_to_array(spawn_position),
+		"position_godot": _vector_to_array(_runtime_to_godot_units(spawn_position)),
+		"yaw": float(_runtime_player_report.get("spawn_yaw", 0.0)),
+		"source": "local_game_session_spawn_descriptor",
+	}
 
 
 func _update_duck_shape(ducked: bool) -> void:
-	var height: float = _settings.duck_height if ducked else _settings.stand_height
-	_hull_shape.size.y = _profile.scaled_units(height)
 	_camera_pivot.position.y = _profile.scaled_units(_profile.view_offset_duck if ducked else _profile.view_offset_stand)
-
-
-func _has_blocking_wall_collision() -> bool:
-	for index in range(_body.get_slide_collision_count()):
-		var collision := _body.get_slide_collision(index)
-		if collision != null and collision.get_normal().y < 0.5:
-			return true
-	return false
-
-
-func _try_step_up(base_position: Vector3, blocked_position: Vector3, horizontal_velocity_godot: Vector3, delta: float) -> bool:
-	var step_height: float = _profile.scaled_units(_settings.step_size)
-	var old_velocity := _body.velocity
-
-	_body.global_position = base_position + Vector3.UP * step_height
-	_body.velocity = horizontal_velocity_godot
-	_body.move_and_slide()
-	_body.velocity = Vector3(0.0, -step_height / maxf(delta, 0.001), 0.0)
-	_body.move_and_slide()
-
-	var climbed: bool = _body.is_on_floor() and _body.global_position.y > base_position.y + _profile.scaled_units(1.0)
-	if not climbed:
-		_body.global_position = blocked_position
-		_body.velocity = old_velocity
-		return false
-
-	_body.velocity = Vector3(horizontal_velocity_godot.x, 0.0, horizontal_velocity_godot.z)
-	return true
 
 
 func _apply_camera_rotation() -> void:
@@ -786,12 +818,6 @@ func _apply_camera_rotation() -> void:
 		_body.rotation.y = _yaw
 	if _camera_pivot != null:
 		_camera_pivot.rotation.x = _pitch
-
-
-func _find_spawn_node() -> Node3D:
-	if _entity_index == null:
-		return null
-	return _entity_index.select_spawn_node()
 
 
 func _disable_non_blocking_entity_collision() -> Dictionary:
@@ -843,39 +869,18 @@ func _disable_collision_tree(root: Node) -> Dictionary:
 	return counts
 
 
-func _spawn_node_report(node: Node3D) -> Dictionary:
-	var entity := {}
-	if node.has_meta("entity") and node.get_meta("entity") is Dictionary:
-		entity = node.get_meta("entity")
-	return {
-		"classname": str(entity.get("classname", "")),
-		"origin": str(entity.get("origin", "")),
-		"angles": str(entity.get("angles", "")),
-		"position_godot": _vector_to_array(node.global_position),
-	}
-
-
-func _yaw_from_spawn(node: Node3D) -> float:
-	var entity := {}
-	if node.has_meta("entity") and node.get_meta("entity") is Dictionary:
-		entity = node.get_meta("entity")
-	var angles := str(entity.get("angles", "")).split(" ", false)
-	if angles.size() >= 2 and String(angles[1]).is_valid_float():
-		return -deg_to_rad(float(String(angles[1]).to_float()))
-	return node.global_rotation.y
-
-
 func _state_snapshot() -> Dictionary:
 	if _body == null:
 		return {}
 	return {
 		"position_godot": _vector_to_array(_body.global_position),
-		"velocity_godot": _vector_to_array(_body.velocity),
+		"velocity_godot": _vector_to_array(_velocity_ups * _profile.goldsrc_unit_scale),
 		"velocity_ups": _vector_to_array(_velocity_ups),
 		"yaw": _yaw,
 		"pitch": _pitch,
-		"on_floor": _body.is_on_floor(),
-		"floor_normal": _vector_to_array(_body.get_floor_normal()),
+		"on_floor": bool(_runtime_player_report.get("on_ground", true)),
+		"floor_normal": _vector_to_array(Vector3.UP),
+		"runtime_player": _runtime_player_report.duplicate(true),
 	}
 
 
@@ -899,31 +904,19 @@ func _trace_entry(delta: float, input: Dictionary, before: Dictionary, after: Di
 		"step_up_attempted": _last_step_up_attempted,
 		"step_up_applied": _last_step_up_applied,
 		"movement_audio_events": _last_movement_audio_events.duplicate(),
-		"on_floor": _body.is_on_floor(),
-		"floor_normal": _vector_to_array(_body.get_floor_normal()),
-		"slide_collision_count": _body.get_slide_collision_count(),
+		"on_floor": bool(_runtime_player_report.get("on_ground", true)),
+		"floor_normal": _vector_to_array(Vector3.UP),
+		"slide_collision_count": 0,
 		"slide_collisions": _slide_reports(),
+		"movement_authority": "OpenStrikeLocalGameSession",
+		"presentation_follows_snapshot": true,
+		"runtime_snapshot_tick": int(_runtime_snapshot.get("tick", _tick)),
+		"runtime_player": _runtime_player_report.duplicate(true),
 	}
 
 
 func _slide_reports() -> Array[Dictionary]:
-	var reports: Array[Dictionary] = []
-	if _body == null:
-		return reports
-
-	for index in range(_body.get_slide_collision_count()):
-		var collision := _body.get_slide_collision(index)
-		if collision == null:
-			continue
-		var collider = collision.get_collider()
-		reports.append({
-			"index": index,
-			"position": _vector_to_array(collision.get_position()),
-			"normal": _vector_to_array(collision.get_normal()),
-			"collider_class": collider.get_class() if collider != null else "",
-			"collider_name": str(collider.name) if collider is Node else "",
-		})
-	return reports
+	return []
 
 
 func _update_overlay() -> void:
@@ -945,8 +938,8 @@ func _update_overlay() -> void:
 		str(_velocity_ups.snapped(Vector3(0.1, 0.1, 0.1))),
 		_velocity_ups.length(),
 		Vector2(_velocity_ups.x, _velocity_ups.z).length(),
-		str(_body.is_on_floor()),
-		_body.get_slide_collision_count(),
+		str(bool(_runtime_player_report.get("on_ground", true))),
+		0,
 		str(paths.get("trace_path", "")),
 	]
 
@@ -970,6 +963,18 @@ func _config_path_kind(path: String) -> String:
 	if path.begins_with("res://"):
 		return "repo"
 	return "absolute_or_external"
+
+
+func _runtime_to_godot_units(value: Vector3) -> Vector3:
+	return value * _profile.goldsrc_unit_scale
+
+
+func _vector_from_value(value) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return Vector3.ZERO
 
 
 func _vector_to_array(value: Vector3) -> Array[float]:

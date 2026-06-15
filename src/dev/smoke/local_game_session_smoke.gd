@@ -110,6 +110,14 @@ func _run() -> int:
 		return 1
 	if not _assert(tick_report["players"][0]["last_command_tick"] == 1, "Applied command should update player command tick", tick_report["players"][0]):
 		return 1
+	if not _assert(tick_report["players"][0].has("movement_state"), "Player snapshot should include movement state", tick_report["players"][0]):
+		return 1
+	if not _assert(float(tick_report["players"][0]["origin"][2]) > 0.0, "Applied movement command should advance player origin", tick_report["players"][0]):
+		return 1
+	if not _assert(float(tick_report["players"][0]["velocity"][2]) > 0.0, "Applied movement command should update player velocity", tick_report["players"][0]):
+		return 1
+	if not _assert(float(tick_report["players"][0]["view_yaw"]) == 0.5, "Applied movement command should update snapshot yaw", tick_report["players"][0]):
+		return 1
 
 	print("Local game session smoke passed.")
 	return 0

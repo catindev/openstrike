@@ -648,6 +648,55 @@ For the synthetic step and duck-hull packet, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-09A LocalGameSession movement command checklist
+
+For the runtime movement session packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  local game session smoke that proves queued commands advance snapshot origin,
+  velocity and view state.
+* **Focused runtime smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd`
+  when iterating on `OpenStrikeLocalGameSession`,
+  `OpenStrikePlayerSlot` or `OpenStrikeUserCommand`.
+* **Snapshot contract:** Confirm player snapshots include `origin`, `velocity`,
+  `view_yaw`, `view_pitch`, `ducked`, `on_ground` and nested
+  `movement_state`.
+* **Runtime boundary:** Confirm `src/game/runtime` does not import dev labs,
+  presentation scripts, scene nodes or local GoldSrc assets.
+* **Scope boundary:** Confirm the PR does not add weapons, HUD, damage,
+  economy, bots or a real BSP default movement backend.
+* **Godot controller boundary:** Confirm runtime/player movement code does not
+  use `CharacterBody3D` or `move_and_slide`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
+## PR-09B BSP lab runtime snapshot checklist
+
+For the BSP walkable lab runtime-snapshot packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  BSP walkable capability smoke source guard.
+* **Focused capability smoke:** Run
+  `Godot --headless --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --capability-smoke`
+  when iterating on the BSP walkable runner.
+* **Presentation ownership:** Confirm the lab creates
+  `OpenStrikeLocalGameSession`, queues `OpenStrikeUserCommand` values and moves
+  presentation nodes from runtime snapshots.
+* **No local movement equations:** Confirm
+  `src/dev/labs/bsp_walkable/bsp_walkable_runner.gd` does not define local
+  acceleration/friction/step movement, `CharacterBody3D`, `move_and_slide` or a
+  `MovementMathRef` dependency.
+* **Telemetry contract:** Confirm trace summaries and per-tick entries record
+  `movement_authority="OpenStrikeLocalGameSession"` and
+  `presentation_follows_snapshot=true`.
+* **Scope boundary:** Confirm the PR does not add weapons, HUD, real-map contact
+  goldens or a final real BSP movement backend.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

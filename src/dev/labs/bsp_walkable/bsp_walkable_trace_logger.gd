@@ -39,7 +39,7 @@ func start(initial_summary: Dictionary, trace_enabled: bool = true) -> void:
 	summary["step_up_attempts"] = 0
 	summary["step_up_successes"] = 0
 	summary["slide_collision_count"] = 0
-	summary["movement_adapter"] = "bsp_walkable_lab_scaled_cs_cvars"
+	summary["movement_adapter"] = "local_game_session_snapshot"
 
 	if enabled:
 		trace_file = FileAccess.open(trace_user_path, FileAccess.WRITE)

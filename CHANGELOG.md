@@ -76,6 +76,17 @@ All notable changes to this project will be documented in this file.  The format
   shared smoke checks to verify low-ceiling duck passage, a synthetic 18-unit
   step success and a too-high step failure without promoting backend Contract A
   numbers to real-map goldens.
+* Added runtime movement application to `OpenStrikeLocalGameSession`: player
+  slots now own movement state, user commands convert to PMove-facing commands
+  and snapshots publish origin, velocity, view angles, duck state, ground state
+  and nested movement state.
+* Added local game session smoke coverage proving queued movement commands
+  advance snapshot origin/velocity and update view state.
+* Added BSP walkable lab runtime-snapshot wiring: the lab creates a local game
+  session, queues commands and moves presentation from runtime snapshots instead
+  of owning movement equations.
+* Added a BSP walkable capability smoke source guard to keep the lab on runtime
+  snapshots and out of `CharacterBody3D`/`move_and_slide` movement ownership.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

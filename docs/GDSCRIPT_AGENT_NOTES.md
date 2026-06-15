@@ -308,3 +308,38 @@ var step_vector: Vector3 = Vector3.UP * max(step_size, 0.0)
 
 Prefer this style for vector math that combines typed vectors with generic
 numeric helpers.
+
+## 2026-06-16: Annotate dictionaries built from conditional method calls
+
+### Symptom
+
+After adding runtime movement state to `OpenStrikePlayerSlot`, Godot failed to
+compile the player slot script with:
+
+```text
+Parse Error: Cannot infer the type of "movement_report" variable because the value doesn't have a set type.
+```
+
+The failing local used `:=` with a ternary that called a method on a dynamic
+runtime object in one branch and returned `{}` in the other branch:
+
+```gdscript
+var movement_report := movement_state.to_dictionary() if movement_state != null and movement_state.has_method("to_dictionary") else {}
+```
+
+### Cause
+
+GDScript cannot reliably infer a concrete `Dictionary` type from a conditional
+expression that combines a dynamic method return value with an empty dictionary.
+The dependent scripts may then report cascading preload/constructor errors.
+
+### Fix
+
+Add an explicit local type annotation:
+
+```gdscript
+var movement_report: Dictionary = movement_state.to_dictionary() if movement_state != null and movement_state.has_method("to_dictionary") else {}
+```
+
+Prefer explicit `Dictionary` annotations when a local is derived from optional
+runtime objects, method calls or `{}` fallbacks.

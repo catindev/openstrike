@@ -65,8 +65,38 @@ func _run_capability_smoke() -> int:
 	if str(capabilities.get("hull_trace", "")) != BspProviderRef.CAP_REQUIRES_OPENSTRIKE_BSP_READER:
 		push_error("BSP lab capability smoke failed: hull_trace must remain requires_openstrike_bsp_reader.")
 		return 1
+	if not _run_runtime_snapshot_source_guard():
+		return 1
 	print("BSP walkable lab capability smoke passed.")
 	return 0
+
+
+func _run_runtime_snapshot_source_guard() -> bool:
+	var source := _read_text("res://src/dev/labs/bsp_walkable/bsp_walkable_runner.gd")
+	if source == "":
+		push_error("BSP lab capability smoke failed: runner source is unreadable.")
+		return false
+	var checks := {
+		"OpenStrikeLocalGameSession": "runner must create a LocalGameSession",
+		"queue_command": "runner must queue runtime commands",
+		"presentation_follows_snapshot": "runner telemetry must state snapshot presentation ownership",
+	}
+	for needle in checks.keys():
+		if not source.contains(str(needle)):
+			push_error("BSP lab capability smoke failed: %s." % str(checks[needle]))
+			return false
+	for forbidden in ["CharacterBody3D", "move_and_slide", "func _step_lab_movement", "MovementMathRef"]:
+		if source.contains(forbidden):
+			push_error("BSP lab capability smoke failed: runner must not contain %s." % forbidden)
+			return false
+	return true
+
+
+func _read_text(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text()
 
 
 func _run_load_smoke(options: Dictionary) -> int:
