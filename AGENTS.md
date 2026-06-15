@@ -40,6 +40,13 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   Edit only `gen/coverage_status_matrix.json` by hand for status vocabulary
   changes, then regenerate the schema/document artifacts with `gen/generate.py`.
 * Before accepting a subjective feel claim, read `docs/DEV_LABS_METHODOLOGY.md` and map the claim to telemetry, a smoke test, a debug overlay or a planned dev lab.
+* After every user-assisted run in a test scene, inspect the trace/log
+  artifacts and write a short test report with observations, telemetry facts,
+  conclusions and next actions before moving on.
+* Before changing BSP map loading, player spawn selection or map collision,
+  read decision 0017 in `docs/DECISIONS.md` and the PR-07 checklist in
+  `docs/TESTING.md`. Keep imported Godot scene collision distinct from GoldSrc
+  clipnode/hull trace parity in code, docs and telemetry.
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.
 * When adding, updating or relying on committed third-party code or binary
   dependencies, read and update `docs/THIRD_PARTY_DEPENDENCIES.md`. Do not

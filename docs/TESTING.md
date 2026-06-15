@@ -334,6 +334,56 @@ changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records the coverage
   status contract and why it was added before scanner/coverage report work.
 
+## Current (PR-07) checklist
+
+For the walkable BSP lab and real-map validation slice, perform the following
+checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  GoldSrc BSP runtime provider smoke after the renderable adapter smoke.
+* **BSP provider smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/goldsrc_bsp_runtime_provider_smoke.gd`
+  when iterating on BSP capabilities. It must pass even when the native
+  GDExtension is absent by reporting `extension_missing`.
+* **BSP lab capability smoke:** Run
+  `Godot --headless --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --capability-smoke`
+  to confirm the manual lab's dependency contract without real assets.
+* **Local BSP load smoke:** Developers with a licensed local installation may
+  run `scripts/bootstrap_gdextensions.sh` and then
+  `Godot --headless --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --load-smoke --map=maps/de_dust2.bsp`.
+  This should report map-specific referenced WADs such as `cs_dust.wad` for
+  `de_dust2`. It is opt-in and must not become a CI gate because CI does not
+  have Valve assets.
+* **Manual BSP walk test:** Developers with a licensed local installation may
+  run
+  `Godot --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --map=maps/de_dust2.bsp`.
+  Controls are WASD, mouse look, Space jump, Ctrl/C duck, F2 mouse release and
+  Cmd+Q or window close to quit. Esc is intentionally not bound to quit so
+  accidental key presses do not end manual telemetry sessions. The manual lab
+  opens fullscreen by default; add `--windowed` for windowed debugging.
+  It should render local `gfx/env/<skyname>*` skybox faces when the BSP
+  `worldspawn.skyname` is present, and play local `sound/player/pl_step*.wav`,
+  `pl_jump*.wav` and `pl_jumpland2.wav` movement sounds.
+* **Telemetry review:** After manual testing, inspect
+  `user://telemetry/bsp_walkable/<session_id>/summary.json` and
+  `trace.jsonl`. The trace should record
+  `collision_source=godot_scene_collision`, movement input/state, floor
+  normals, slide collisions, step-up attempts, movement audio events and speed
+  in UPS. The summary should include `lab_max_speed_ups=250` for the no-weapon
+  walkable lab, a report of disabled trigger-like brush collisions,
+  `skybox.status=loaded` for `de_dust2`, and loaded movement WAV counts.
+  After the trace/log review, write a report under `docs/test_reports/` with
+  observations, telemetry facts, conclusions and next actions.
+* **Collision honesty:** Confirm that manual/test output never describes the
+  imported Godot scene collision as GoldSrc hull trace parity. Clipnodes,
+  hull sizes and hull trace stay `requires_openstrike_bsp_reader`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` explains why the next
+  manual test moved to a real BSP map before more greybox/gunplay tuning.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

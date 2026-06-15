@@ -208,6 +208,18 @@ Initial implementation classes:
   installation while reporting only sanitised diagnostics.
 * `src/dev/tools/viewmodel_manual_preflight.gd` provides the first opt-in
   visual preflight command for real local `v_*.mdl` viewmodels.
+* `OpenStrikeGoldSrcBspRuntimeProvider` bridges local BSP/WAD loading to the
+  vendored `alanfischer/goldsrc-godot` runtime classes and reports map scene,
+  entity, PVS and collision capabilities without claiming GoldSrc hull-trace
+  parity. It scans BSP ASCII metadata for referenced WAD filenames so
+  map-specific archives can be loaded from the local VFS.
+* `src/dev/labs/bsp_walkable/bsp_walkable_lab.gd` provides the first opt-in
+  real-map walk test against a local BSP and writes local telemetry under
+  `user://telemetry/bsp_walkable/`. The lab also resolves local
+  `gfx/env/<skyname>{ft,bk,lf,rt,up,dn}` skybox faces and basic
+  `sound/player` movement WAVs through the VFS for manual validation. These
+  are dev-lab presentation aids, not a replacement for the later BSP sky
+  surface, material footstep and soundscape contracts.
 
 ## GoldSrc providers
 
@@ -220,7 +232,7 @@ The following GoldSrc asset formats are supported by the original game and will 
 * **WAV** – uncompressed 8‑bit/16‑bit PCM audio.  GoldSrc uses WAV for all sounds.
 * **HUD text files** – layout definitions for HUD elements (e.g. `sprites/hud.txt`).
 
-The engine will implement parsers or importers for each of these formats.  It may also leverage Godot’s GDExtension API for performance‑critical tasks such as BSP parsing.
+The engine will implement parsers or importers for each of these formats.  It may also leverage Godot’s GDExtension API for performance‑critical tasks such as BSP parsing. The first BSP runtime path uses `goldsrc-godot` imported scene geometry and Godot collision as `godot_scene_collision`; GoldSrc clipnodes, player hulls and trace parity remain separate capabilities until an OpenStrike BSP reader or verified loader API provides them.
 
 ## Excluded from the repository
 

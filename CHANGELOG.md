@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `OpenStrikeGoldSrcBspRuntimeProvider` to load local GoldSrc BSP maps
+  through the existing VFS and vendored `alanfischer/goldsrc-godot`, reporting
+  BSP/WAD/PVS/entity/imported-collision capabilities without claiming GoldSrc
+  hull-trace parity.
+* Added `src/dev/smoke/goldsrc_bsp_runtime_provider_smoke.gd` and wired it
+  into the shared smoke script so BSP capabilities stay honest on platforms
+  with and without the native GDExtension.
+* Added `src/dev/labs/bsp_walkable/bsp_walkable_lab.gd`, a real-map manual
+  test path that loads `maps/de_dust2.bsp`, spawns a first-person
+  `CharacterBody3D`, uses the shared world profile/cvar-scaled movement values
+  and writes per-tick JSONL telemetry plus a session summary under
+  `user://telemetry/bsp_walkable/`.
+* Added BSP-referenced WAD discovery so map-specific archives such as
+  `cs_dust.wad` are loaded from the local VFS before map meshes are built.
 * Vendored `alanfischer/goldsrc-godot` under `addons/goldsrc/` as the
   project-owned GoldSrc loader dependency for PR-06 viewmodel preflight,
   without committing Valve asset bytes or local generated imports.
@@ -132,6 +146,24 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Updated the near-term plan so the next manual validation point is a walkable
+  real BSP map with trace logging, not further greybox or weapon tuning.
+* Adjusted the walkable BSP lab after the first manual run: no-weapon movement
+  is capped to 250 ups, non-blocking trigger-like brush entities are removed
+  from player collision, step-up attempts are logged, and lab lighting is
+  reduced to avoid washing out imported textures.
+* Extended the walkable BSP lab to render local GoldSrc skybox faces from
+  `worldspawn.skyname` as an environment panorama, hide imported BSP `sky`
+  render meshes that otherwise occlude the background, open the manual test
+  fullscreen by default, and play local first-person movement WAVs for
+  footsteps, jump and landing events.
+* Added a dev-lab reporting rule and recorded the first BSP walkable lab report
+  after the user-assisted `de_dust2` skybox/audio test.
+* Removed Esc-to-quit from the walkable BSP lab so accidental key presses do
+  not terminate manual telemetry sessions; use Cmd+Q or close the window.
+* Documented `godot_scene_collision` as the first BSP lab's temporary collision
+  bridge while GoldSrc clipnodes, player hulls and hull traces remain
+  `requires_openstrike_bsp_reader`.
 * Updated PR-06 documentation so `goldsrc-godot` is treated as a vendored
   OpenStrike dependency while real CS 1.6 assets remain local-only and
   user-licensed.
@@ -195,6 +227,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-07 as a map-first walkable BSP lab after review and manual-test
+  feedback showed that greybox-only tuning risks moving OpenStrike away from
+  CS 1.6 map scale, lighting, collision and spawn constraints.
 * Paused roadmap feature work to close the ReadyToStrike reuse gap by making
   `goldsrc-godot` an explicit OpenStrike project dependency instead of relying
   on symlinks, per-machine addon installs or project-owned duplicate decoders.
