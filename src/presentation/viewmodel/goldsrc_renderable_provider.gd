@@ -71,7 +71,11 @@ func build_view_model(asset_result, profile, build_model: bool = true) -> Dictio
 	if not bool(output["capabilities"].get("extension_available", false)):
 		output["diagnostics"].append(OpenStrikeAssetDiagnosticsRef.error(
 			"goldsrc_godot_extension_missing",
-			"The goldsrc-godot GDExtension is not available; install/build it before real viewmodel rendering.",
+			(
+				"The vendored goldsrc-godot GDExtension is not available; "
+				+ "run scripts/bootstrap_gdextensions.sh and confirm a native "
+				+ "library exists for this platform before real viewmodel rendering."
+			),
 			{"provider": PROVIDER_ID, "source_url": PROVIDER_URL}
 		))
 		return output

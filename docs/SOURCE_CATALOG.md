@@ -147,3 +147,24 @@ Important references introduced by `VIEWMODEL_WORLD_PROFILE.md` and
   mapping documentation.
 * Public GoldSrc QC, HUD, overview and weapon-info references as scanner design
   input, not as generated runtime truth.
+
+## `alanfischer/goldsrc-godot`
+
+Type: third-party project dependency and GoldSrc loader API reference.
+
+Use for:
+
+* loading local licensed GoldSrc MDL/SPR files through Godot runtime classes;
+* validating which viewmodel facts are exposed by the loader API;
+* avoiding project-owned duplicate MDL/SPR decoders before a concrete API gap
+  requires one.
+
+Do not use for:
+
+* bundling Valve assets or generated imports;
+* bypassing OpenStrike's semantic asset provider and VFS layers;
+* claiming support for sockets, attachments or animation events unless the
+  loader API exposes those fields or a separate OpenStrike reader is approved.
+
+Current dependency metadata is tracked in
+`docs/THIRD_PARTY_DEPENDENCIES.md`.

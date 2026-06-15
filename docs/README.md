@@ -14,28 +14,29 @@ This directory is the operational memory of the project. Every AI/coding agent m
 6. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
 7. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
 8. `ASSET_PIPELINE.md` — planned local asset loading model.
-9. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-10. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
-11. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-12. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+9. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
+10. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+11. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+12. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
+13. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-13. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
+14. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
     eye height and FOV contract for PR-06 profile preflight.
-14. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
+15. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
     instructions before gameplay/gunplay work.
-15. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+16. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
     effect and lifecycle asset map for CS 1.6-style orchestration.
-16. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
+17. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
     atlas and coverage report fields.
-17. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+18. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-18. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-19. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+19. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+20. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-20. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+21. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-21. `KNOWLEDGE_BASE.md` — current project knowledge base.
-22. `TESTING.md` — testing strategy and smoke checks.
+22. `KNOWLEDGE_BASE.md` — current project knowledge base.
+23. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -50,6 +51,9 @@ pitfall and fix to `GDSCRIPT_AGENT_NOTES.md` in the same PR.
 
 Before changing Godot code, scenes, resources, presentation, asset-provider code
 or Godot smoke/CI checks, read `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
+
+Before adding, updating or using committed third-party code or binary
+dependencies, read `THIRD_PARTY_DEPENDENCIES.md` and update it in the same PR.
 
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked

@@ -511,10 +511,11 @@ per-weapon scale/position/FOV tuning.
 
 **First manual test point:** Before gameplay/gunplay work, use
 `src/dev/tools/viewmodel_manual_preflight.gd` with a local licensed install and
-`alanfischer/goldsrc-godot` installed. The manual visual path must load real
-pilot `v_*.mdl` models at profile scale/FOV with identity camera-local
-transform. If it fails visually, record the symptom and fix the shared profile,
-adapter or one global correction; do not add per-weapon transforms.
+the vendored `alanfischer/goldsrc-godot` dependency enabled by
+`scripts/bootstrap_gdextensions.sh`. The manual visual path must load real pilot
+`v_*.mdl` models at profile scale/FOV with identity camera-local transform. If
+it fails visually, record the symptom and fix the shared profile, adapter or
+one global correction; do not add per-weapon transforms.
 
 **Includes:**
 
@@ -561,9 +562,10 @@ adapter or one global correction; do not add per-weapon transforms.
 * The GoldSrc renderable adapter reports real `goldsrc-godot` API capabilities
   and keeps attachments/sockets/MDL events marked as requiring an OpenStrike MDL
   reader or upstream API until verified.
-* The manual preflight tool can inspect and, when `goldsrc-godot` is installed,
-  visually load a pilot real `v_*.mdl` through the locked profile without
-  printing local paths or committing asset bytes.
+* The manual preflight tool can inspect and, when the vendored
+  `goldsrc-godot` dependency is enabled for the current platform, visually load
+  a pilot real `v_*.mdl` through the locked profile without printing local paths
+  or committing asset bytes.
 * Coverage status smoke proves the generated schema/document sections are in
   sync with `gen/coverage_status_matrix.json`, validates status fixtures and
   directly asserts the verified/absence/provenance invariants.

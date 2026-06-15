@@ -302,7 +302,8 @@ changes, perform the following checks:
   to confirm the local manual tool reports extension availability honestly
   without requiring real assets in CI.
 * **Local visual preflight:** Developers with a licensed local installation and
-  `goldsrc-godot` installed may run
+  a matching vendored `goldsrc-godot` native library may run
+  `scripts/bootstrap_gdextensions.sh` and then
   `Godot --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel --visual`.
   This is opt-in and must not become a CI gate.
 * **Coverage status smoke:** Run

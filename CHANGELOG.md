@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Vendored `alanfischer/goldsrc-godot` under `addons/goldsrc/` as the
+  project-owned GoldSrc loader dependency for PR-06 viewmodel preflight,
+  without committing Valve asset bytes or local generated imports.
+* Added `scripts/bootstrap_gdextensions.sh` to manage local
+  `.godot/extension_list.cfg`, enable the GoldSrc GDExtension only when a
+  matching native library exists, and clear macOS quarantine attributes from
+  vendored dylibs.
+* Added `docs/THIRD_PARTY_DEPENDENCIES.md` to track committed dependency
+  provenance, license status, vendored paths and operational rules.
 * Added `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working map
   for CS 1.6 asset coverage levels, weapon/model/audio/effect/HUD/map domains,
   scanner outputs and PR-06 generated-atlas acceptance criteria.
@@ -120,6 +129,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Updated PR-06 documentation so `goldsrc-godot` is treated as a vendored
+  OpenStrike dependency while real CS 1.6 assets remain local-only and
+  user-licensed.
+* Extended the shared smoke-check script to bootstrap GDExtension registration
+  before Godot headless checks, preserving `extension_missing` behavior on
+  platforms without committed native binaries.
 * Extended the shared smoke-check script to run the local asset catalog
   inspection tool in synthetic mode after pilot catalog validation and before
   cvar/movement checks.
@@ -177,6 +192,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Paused roadmap feature work to close the ReadyToStrike reuse gap by making
+  `goldsrc-godot` an explicit OpenStrike project dependency instead of relying
+  on symlinks, per-machine addon installs or project-owned duplicate decoders.
 * Tightened PR-06 into a profile/scanner-first sequence: PR-06A locks and
   smoke-tests the world/viewmodel profile before real `.mdl` rendering, and
   PR-06B consumes local GoldSrc assets through generated atlas diagnostics
