@@ -82,7 +82,9 @@ Gameplay не знает путей вроде `models/v_ak47.mdl` или `sound
 - Используй Godot 4.x stable, закреплённый проектом.
 - Не опирайся на `latest` docs, если они описывают будущую/нестабильную версию.
 - При изменении engine version обнови `docs/`, CI/export notes и compatibility notes.
-- Не добавляй addon/GDExtension без проверки лицензии и платформенной совместимости macOS.
+- Не добавляй или не обновляй addon/GDExtension без проверки
+  `docs/THIRD_PARTY_DEPENDENCIES.md`, license status и платформенной
+  совместимости macOS.
 
 ---
 

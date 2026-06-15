@@ -6,6 +6,54 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Vendored `alanfischer/goldsrc-godot` under `addons/goldsrc/` as the
+  project-owned GoldSrc loader dependency for PR-06 viewmodel preflight,
+  without committing Valve asset bytes or local generated imports.
+* Added the shared `viewmodel_basis_correction=rotate_y_180` profile setting
+  after visual preflight proved `goldsrc-godot` runtime MDL geometry otherwise
+  sits behind Godot cameras.
+* Added `scripts/bootstrap_gdextensions.sh` to manage local
+  `.godot/extension_list.cfg`, enable the GoldSrc GDExtension only when a
+  matching native library exists, and clear macOS quarantine attributes from
+  vendored dylibs.
+* Added `docs/THIRD_PARTY_DEPENDENCIES.md` to track committed dependency
+  provenance, license status, vendored paths and operational rules.
+* Added `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working map
+  for CS 1.6 asset coverage levels, weapon/model/audio/effect/HUD/map domains,
+  scanner outputs and PR-06 generated-atlas acceptance criteria.
+* Added `docs/VIEWMODEL_WORLD_PROFILE.md` as the required PR-06A profile
+  contract for GoldSrc unit scale, coordinate mapping, eye height, world FOV,
+  viewmodel FOV, no-per-weapon-transform rules and profile smoke obligations.
+* Added `docs/COVERAGE_STATUS_CONTRACT.md`,
+  `gen/coverage_status_matrix.json`, `gen/generate.py` and the generated
+  `data/schemas/coverage_status.schema.json` contract for scanner, generated
+  atlas and coverage report status pairs.
+* Added `src/dev/smoke/coverage_status_smoke.gd` and wired it into the shared
+  smoke script to verify generated coverage status artifacts, schema fixtures
+  and the verified/absence/provenance invariants.
+* Added `data/config/viewmodel_world_profile.json`,
+  `OpenStrikeViewmodelWorldProfile` and
+  `src/dev/smoke/viewmodel_world_profile_smoke.gd` so PR-06 scale,
+  GoldSrc-to-Godot mapping, eye height, FOV and no-per-weapon-transform rules
+  are executable checks before real MDL rendering.
+* Added a closed asset manifest entry allow-list so per-weapon transform keys
+  cannot enter semantic asset catalog entries.
+* Added `OpenStrikeGoldSrcRenderableProvider`,
+  `src/dev/smoke/goldsrc_renderable_adapter_smoke.gd` and the
+  `viewmodel_manual_preflight.gd` tool to bridge semantic pilot viewmodels to
+  `alanfischer/goldsrc-godot` without adding project-owned MDL/SPR decoders.
+* Added `docs/VIEWMODEL_MANUAL_PREFLIGHT.md` with the first local manual test
+  point for loading and visually inspecting real pilot `v_*.mdl` files through
+  the locked profile.
+* Added agent/documentation instructions requiring future world/viewmodel scale,
+  coordinate mapping, eye height, camera FOV and first-person placement work to
+  read and update the viewmodel/world profile.
+* Added agent/documentation instructions requiring future asset scanner,
+  generated atlas and coverage report status changes to read the coverage
+  status contract and edit only the matrix source of truth by hand.
+* Added agent/documentation instructions requiring future weapon/viewmodel,
+  animation, audio, muzzle flash, shell ejection, impact, grenade and HUD
+  weapon-sprite work to read and update the asset orchestration atlas.
 * Added an opt-in headless local asset catalog inspection tool for checking the
   pilot CS 1.6 weapon presentation catalog against `user://local_goldsrc.json`
   or an explicit config path without exposing local absolute paths in reports.
@@ -84,6 +132,12 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Updated PR-06 documentation so `goldsrc-godot` is treated as a vendored
+  OpenStrike dependency while real CS 1.6 assets remain local-only and
+  user-licensed.
+* Extended the shared smoke-check script to bootstrap GDExtension registration
+  before Godot headless checks, preserving `extension_missing` behavior on
+  platforms without committed native binaries.
 * Extended the shared smoke-check script to run the local asset catalog
   inspection tool in synthetic mode after pilot catalog validation and before
   cvar/movement checks.
@@ -141,6 +195,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Paused roadmap feature work to close the ReadyToStrike reuse gap by making
+  `goldsrc-godot` an explicit OpenStrike project dependency instead of relying
+  on symlinks, per-machine addon installs or project-owned duplicate decoders.
+* Tightened PR-06 into a profile/scanner-first sequence: PR-06A locks and
+  smoke-tests the world/viewmodel profile before real `.mdl` rendering, and
+  PR-06B consumes local GoldSrc assets through generated atlas diagnostics
+  instead of eyeballed model scale, FOV, offset or timing guesses.
 * Inserted PR-05D before weapon/viewmodel orchestration so the pilot catalog can
   be checked against a developer's licensed local installation through the same
   provider/VFS contract before PR-06 consumes it.

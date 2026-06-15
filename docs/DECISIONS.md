@@ -100,3 +100,51 @@ and the long-run air-strafe golden test uses the same documented maxvelocity
 contract independently from production code. Edgefriction remains deferred
 because it requires edge traces and hull collision data that PR-04E does not
 introduce.
+
+## 0014. Use goldsrc-godot through an adapter before writing decoders
+
+PR-06 viewmodel runtime uses a thin OpenStrike adapter around
+`alanfischer/goldsrc-godot` instead of adding project-owned MDL/SPR decoders.
+The adapter may depend on runtime classes such as `GoldSrcMDL` and `GoldSrcSPR`
+when the vendored addon is bootstrapped on a platform with a matching native
+library, but CI must also pass when the extension is absent by reporting
+`extension_missing`.
+
+Capabilities are reported field by field. Loader-exposed data such as model
+build, sequence names, sequence fps/frame count, bones, bodyparts and skins may
+be marked `supported_by_loader_api`. Attachments/sockets and MDL animation
+events remain `requires_openstrike_mdl_reader` until either the upstream API
+exposes them or OpenStrike explicitly adds a reader under a separate reviewed
+decision.
+
+## 0015. Vendor goldsrc-godot as a project dependency
+
+OpenStrike vendors `alanfischer/goldsrc-godot` under `addons/goldsrc/` so the
+core asset pipeline has one reviewed dependency path instead of per-developer
+symlinks, ad hoc local addon installs or project-owned duplicate decoders.
+This dependency is code and native loader binaries only; Valve asset bytes,
+local generated imports and user configuration remain forbidden.
+
+`scripts/bootstrap_gdextensions.sh` owns `.godot/extension_list.cfg` setup.
+The file stays git-ignored because it is Godot-local state, but the bootstrap
+step is part of `scripts/run_smoke_checks.sh`. When a matching native library
+exists, Godot sees `GoldSrcMDL` and `GoldSrcSPR`; when it does not, the adapter
+must keep reporting `extension_missing` rather than faking renderable content.
+
+The current vendored binary set is macOS-only. Linux CI therefore validates the
+disabled-extension path until Linux binaries are added or the dependency build
+becomes part of CI.
+
+## 0016. Apply one shared viewmodel MDL basis correction
+
+Manual PR-06 visual preflight showed that `goldsrc-godot` runtime MDL geometry
+loads successfully at `scale_factor=0.025`, but the camera-local bounds for
+AK-47, USP and knife sit on positive Z. Godot `Camera3D` looks along negative Z,
+so identity placement puts the model behind the camera and opens a non-empty
+tool window with no visible weapon.
+
+OpenStrike therefore sets `viewmodel_basis_correction=rotate_y_180` in the
+shared viewmodel/world profile and applies it once to the viewmodel root in the
+manual preflight path. The correction is orientation-only: it preserves up,
+handedness and scale, and introduces no position offset. Per-weapon transforms,
+scale tweaks and FOV changes remain forbidden.

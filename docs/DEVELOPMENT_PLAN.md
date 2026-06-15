@@ -491,21 +491,95 @@ unavailable locally.
 
 **Goal:** Add first-person weapon presentation using semantic events.
 
+**Why atlas-first:** The project goal is a near-complete CS 1.6
+reimplementation, not a four-weapon visual spike. PR-06 must start from a
+world/viewmodel profile contract, a weapon/model/audio/effect lifecycle
+contract and local inspection tooling so OpenStrike does not repeat the
+Readytostrike pattern of guessing viewmodel scale, FOV, offsets and timings by
+eye.
+
+**PR-06A profile preflight:** Before rendering any `.mdl` in a dev scene,
+OpenStrike must add the source-value profile fields, smoke-test scale,
+GoldSrc-to-Godot coordinate mapping, eye heights, FOV derivation and the
+anti-`58.7155`/anti-per-weapon-transform guards described in
+`docs/VIEWMODEL_WORLD_PROFILE.md`.
+
+**PR-06B real-asset runtime:** After the profile preflight, load the pilot
+`v_*.mdl` files through the GoldSrc GDExtension adapter, run the shared
+orientation calibration and render them through the locked profile with zero
+per-weapon scale/position/FOV tuning.
+
+**First manual test point:** Before gameplay/gunplay work, use
+`src/dev/tools/viewmodel_manual_preflight.gd` with a local licensed install and
+the vendored `alanfischer/goldsrc-godot` dependency enabled by
+`scripts/bootstrap_gdextensions.sh`. The manual visual path must load real pilot
+`v_*.mdl` models at profile scale/FOV with only the shared profile basis
+correction. If it fails visually, record the symptom and fix the shared profile,
+adapter or one global correction; do not add per-weapon transforms.
+
 **Includes:**
 
+* `docs/VIEWMODEL_WORLD_PROFILE.md` as the required profile contract for unit
+  scale, coordinate mapping, eye height, world FOV, viewmodel FOV and
+  no-per-weapon-transform rules.
+* `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required asset and lifecycle
+  contract for weapon/viewmodel/audio/effect work.
+* `docs/COVERAGE_STATUS_CONTRACT.md`,
+  `gen/coverage_status_matrix.json` and the generated
+  `data/schemas/coverage_status.schema.json` contract for scanner, generated
+  atlas and coverage report status fields.
+* GoldSrc GDExtension adapter boundary for `alanfischer/goldsrc-godot` rather
+  than project-owned MDL/SPR decoders.
+* `data/config/viewmodel_world_profile.json`, profile smoke and a manual
+  preflight tool for real local viewmodel inspection/rendering.
+* `goldsrc_asset_atlas` scanner skeleton or equivalent local inspection command
+  that mounts `cstrike` and `valve`, builds a case-insensitive inventory and
+  reports model, sprite, sound, HUD, map and dependency coverage without
+  copying assets or printing local absolute paths.
+* Local inspection output for pilot weapons that reports model availability,
+  sequence names, sequence durations, attachments/events when exposed,
+  HUD/effect candidates and sound/sprite availability.
 * Viewmodel rig or camera layer for first-person models.
 * Weapon animation alias resolver.
-* Weapon event timeline for draw, fire, reload, shell eject and muzzle flash.
+* Weapon event timeline for draw, fire, reload, melee, grenade release, shell
+  eject and muzzle flash, with source-confidence metadata.
 * Audio and effect orchestration boundaries.
 
 **Excludes:**
 
 * Damage, armor and full combat model.
+* Full weapon catalog completion beyond the pilot set unless inspection proves
+  the mappings.
+* Per-weapon model scale/position tuning as the primary fix for incorrect
+  world/viewmodel FOV or unit-scale contracts.
+* BSP runtime/map collision implementation beyond scanner coverage.
 
 **Acceptance criteria:**
 
+* `VIEWMODEL_WORLD_PROFILE.md` source values exist in config or a profile
+  resource and profile smoke covers scale, coordinate determinant, eye heights,
+  FOV derivation, `KEEP_HEIGHT`, anti-`58.7155` and no per-weapon transform keys.
+* The GoldSrc renderable adapter reports real `goldsrc-godot` API capabilities
+  and keeps attachments/sockets/MDL events marked as requiring an OpenStrike MDL
+  reader or upstream API until verified.
+* The manual preflight tool can inspect and, when the vendored
+  `goldsrc-godot` dependency is enabled for the current platform, visually load
+  a pilot real `v_*.mdl` through the locked profile without printing local paths
+  or committing asset bytes.
+* Coverage status smoke proves the generated schema/document sections are in
+  sync with `gen/coverage_status_matrix.json`, validates status fixtures and
+  directly asserts the verified/absence/provenance invariants.
+* Weapon/viewmodel code consumes semantic IDs and atlas-backed contracts, not
+  direct `models/*.mdl`, `sprites/*.spr` or `sound/*.wav` paths.
+* Scanner/inspection output produces reviewable diagnostics for actual local MDL
+  sequences/durations, model roles, HUD candidates, audio, sprite/effect and
+  map coverage, clearly marking `verified`, `manual_unverified` and `unknown`.
 * A weapon can be deployed, fired and reloaded through semantic events.
+* Knife primary/secondary and grenade select/throw/switch rules are represented
+  as lifecycle states, even if the first runtime surface remains limited.
 * Missing assets produce diagnostics and disabled features, not fake fallback meshes or sounds.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
 
 ## PR-07 BSP map pipeline
 

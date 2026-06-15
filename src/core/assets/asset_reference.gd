@@ -5,6 +5,7 @@ class_name OpenStrikeAssetReference
 const OpenStrikeAssetDiagnosticsRef = preload("res://src/core/assets/asset_diagnostics.gd")
 
 const ALLOWED_PROVIDERS := ["goldsrc"]
+const ALLOWED_ENTRY_KEYS := ["type", "path", "provider", "metadata"]
 const TYPE_EXTENSIONS := {
 	"view_model": ".mdl",
 	"sprite": ".spr",
@@ -38,6 +39,7 @@ func configure(id: StringName, data: Dictionary) -> void:
 			{"asset_id": str(asset_id)}
 		))
 
+	_validate_entry_keys(data)
 	_validate(requested_path)
 
 
@@ -106,6 +108,18 @@ func _validate(requested_path: String) -> void:
 			"asset_reference_provider_unsupported",
 			"Asset reference provider is not supported by the current manifest contract.",
 			{"asset_id": str(asset_id), "provider": str(provider_id), "allowed": ALLOWED_PROVIDERS}
+		))
+
+
+func _validate_entry_keys(data: Dictionary) -> void:
+	for key in data.keys():
+		var key_text := str(key)
+		if ALLOWED_ENTRY_KEYS.has(key_text):
+			continue
+		diagnostics.append(OpenStrikeAssetDiagnosticsRef.error(
+			"asset_reference_unknown_key",
+			"Asset manifest entries may only use the approved top-level keys.",
+			{"asset_id": str(asset_id), "key": key_text, "allowed": ALLOWED_ENTRY_KEYS}
 		))
 
 

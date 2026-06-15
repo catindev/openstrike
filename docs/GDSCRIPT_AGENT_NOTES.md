@@ -106,3 +106,52 @@ var input = MovementInputRef.new(
 
 When local Godot and CI disagree, trust CI and record the portability issue
 here.
+
+## 2026-06-15: GDExtension scripts need `.godot/extension_list.cfg`
+
+### Symptom
+
+After `git clean -fdx`, `Godot --script` could compile OpenStrike but
+`ClassDB.class_exists("GoldSrcMDL")` stayed false even though
+`addons/goldsrc/goldsrc.gdextension` existed.
+
+### Cause
+
+Godot's ignored `.godot/extension_list.cfg` is local editor state. A committed
+`.gdextension` file alone is not enough for headless script runs to load the
+native classes after the local `.godot/` cache is removed.
+
+### Fix
+
+Run the project bootstrap before GDExtension-dependent smoke or manual
+preflight commands:
+
+```sh
+scripts/bootstrap_gdextensions.sh
+```
+
+The shared `scripts/run_smoke_checks.sh` already does this. Keep
+`.godot/extension_list.cfg` uncommitted.
+
+## 2026-06-15: macOS quarantine can block vendored dylibs
+
+### Symptom
+
+Godot reported the `goldsrc-godot` extension as unavailable on macOS even
+though the `.gdextension` file and matching `.dylib` were present.
+
+### Cause
+
+Native binaries copied from browser-downloaded artifacts can carry the
+`com.apple.quarantine` extended attribute. macOS may block Godot from loading
+the library before the GDExtension classes are registered.
+
+### Fix
+
+`scripts/bootstrap_gdextensions.sh` removes quarantine from
+`addons/goldsrc/bin` on macOS when `xattr` is available. If debugging manually,
+the equivalent command is:
+
+```sh
+xattr -dr com.apple.quarantine addons/goldsrc/bin
+```

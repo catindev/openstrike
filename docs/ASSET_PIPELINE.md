@@ -2,7 +2,10 @@
 
 This document describes the planned asset pipeline for OpenStrike. The current
 implementation covers local config validation, raw VFS lookup and raw byte
-reads. GoldSrc format parsing is intentionally left for later milestones.
+reads. Real pilot viewmodel rendering uses the vendored
+`alanfischer/goldsrc-godot` GDExtension through an OpenStrike adapter; broader
+format parsing and OpenStrike-owned MDL/socket/event readers remain later
+milestones.
 
 ## User configuration: `local_goldsrc.json`
 
@@ -147,6 +150,29 @@ creates temporary synthetic files under `user://` for every catalog path. This
 validates the tool and manifest contract without requiring a local
 Counter-Strike installation.
 
+## Viewmodel manual preflight
+
+`alanfischer/goldsrc-godot` is vendored under `addons/goldsrc/`. Developers can
+preflight real pilot viewmodels through the locked OpenStrike profile after
+bootstrap enables the GDExtension for the current platform:
+
+```sh
+scripts/bootstrap_gdextensions.sh
+Godot --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel
+Godot --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel --visual
+```
+
+This tool resolves pilot semantic IDs through the existing
+`OpenStrikeAssetManager` and VFS, loads real MDL files only from the local
+licensed install, applies `data/config/viewmodel_world_profile.json`, and
+redacts local absolute paths from JSON reports. It must not be replaced by
+per-weapon transform tuning.
+
+The current vendored dependency includes macOS native libraries. Platforms
+without a matching `addons/goldsrc/bin` library keep the adapter in the
+`extension_missing` state; this is intentional for CI until additional native
+builds are added.
+
 ## GoldSrc VFS
 
 The VFS is responsible for resolving paths from the user's configured
@@ -170,11 +196,18 @@ Initial implementation classes:
   semantic provider requests for future presentation systems.
 * `OpenStrikeAssetInspectionReport` exposes manifest preflight summary data for
   dev tools and future catalog validation.
+* `OpenStrikeViewmodelWorldProfile` stores PR-06 source profile values for
+  scale, mapping, eye offset and FOV derivation.
+* `OpenStrikeGoldSrcRenderableProvider` bridges resolved semantic viewmodels to
+  the vendored `alanfischer/goldsrc-godot` runtime classes without adding
+  project-owned MDL/SPR decoders.
 * `data/assets/cs16_pilot_weapon_assets.json` provides the first smoke-validated
   pilot catalog for semantic weapon presentation assets.
 * `src/dev/tools/asset_catalog_inspect_local.gd` provides the opt-in local
   inspection command for checking catalogs against a real licensed
   installation while reporting only sanitised diagnostics.
+* `src/dev/tools/viewmodel_manual_preflight.gd` provides the first opt-in
+  visual preflight command for real local `v_*.mdl` viewmodels.
 
 ## GoldSrc providers
 
@@ -211,7 +244,10 @@ Any extracted or imported Valve assets (e.g. cached conversions) are also disall
 * Extend the pilot catalog after additional local-installation checks and
   source classification, keeping unverified paths out of production data.
 * Add PAK/WAD container lookup after raw filesystem lookup is stable.
-* Implement parsers for MDL, BSP, WAD, SPR and WAV files.
+* Add OpenStrike-owned readers only where the vendored loader API does not
+  expose required facts such as viewmodel sockets or MDL animation events.
+* Implement parsers for BSP, WAD, WAV and any MDL/SPR fields that remain
+  unavailable through the dependency.
 * Design HUD layout readers for text‑based HUD definitions.
 * Create a tool to validate `local_goldsrc.json` and detect missing assets.
 * Support dynamic loading/unloading of assets at runtime.

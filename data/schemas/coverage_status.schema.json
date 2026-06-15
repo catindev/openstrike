@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstrike/schemas/coverage_status.schema.json",
+  "title": "OpenStrike asset coverage status (stage x confidence)",
+  "type": "object",
+  "required": [
+    "stage",
+    "confidence"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "stage": {
+      "enum": [
+        "unknown",
+        "not_applicable",
+        "source_missing",
+        "source_found",
+        "parsed",
+        "semantic_mapped",
+        "orchestration_ready",
+        "blocked"
+      ]
+    },
+    "confidence": {
+      "enum": [
+        "none",
+        "hand_seeded",
+        "manual_unverified",
+        "unverified_read",
+        "local_verified",
+        "synthetic_verified",
+        "local_verified_absence"
+      ]
+    },
+    "capability_scanner_supported": {
+      "type": "boolean",
+      "description": "Capability, NOT result. Whether the scanner CAN check this field. PR-06B uses a richer capability enum; see PR-06B spec."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "unknown"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "not_applicable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "source_missing"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "local_verified_absence"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "source_found"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "unverified_read"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "parsed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "unverified_read",
+              "local_verified",
+              "synthetic_verified"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "semantic_mapped"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "hand_seeded",
+              "unverified_read",
+              "manual_unverified",
+              "local_verified",
+              "synthetic_verified"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "orchestration_ready"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "hand_seeded",
+              "unverified_read",
+              "manual_unverified",
+              "local_verified",
+              "synthetic_verified"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "blocked"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "confidence": {
+            "enum": [
+              "none",
+              "unverified_read"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

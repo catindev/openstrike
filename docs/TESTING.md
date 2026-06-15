@@ -282,6 +282,58 @@ For local asset catalog inspection tool changes, perform the following checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` records why PR-05D was
   inserted before PR-06.
 
+## Current (PR-06) checklist
+
+For weapon viewmodel orchestration profile, adapter and coverage-status contract
+changes, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  coverage status, viewmodel/world profile and GoldSrc renderable adapter
+  smoke checks after the local catalog inspection tool smoke.
+* **Viewmodel/world profile smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/viewmodel_world_profile_smoke.gd`
+  when iterating on unit scale, coordinate mapping, eye height, FOV or
+  per-weapon transform lint.
+* **GoldSrc renderable adapter smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/goldsrc_renderable_adapter_smoke.gd`
+  when iterating on the `alanfischer/goldsrc-godot` adapter boundary.
+* **Manual preflight capability smoke:** Run
+  `Godot --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --capability-smoke`
+  to confirm the local manual tool reports extension availability honestly
+  without requiring real assets in CI.
+* **Local visual preflight:** Developers with a licensed local installation and
+  a matching vendored `goldsrc-godot` native library may run
+  `scripts/bootstrap_gdextensions.sh` and then
+  `Godot --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --asset-id=weapon.ak47.viewmodel --visual`.
+  This is opt-in and must not become a CI gate.
+* **Coverage status smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/coverage_status_smoke.gd`
+  when iterating on coverage status stages, confidence values or generated
+  artifacts.
+* **Generated artifact check:** Run `python3 gen/generate.py --check` and
+  confirm that `data/schemas/coverage_status.schema.json` and the generated
+  sections in `docs/COVERAGE_STATUS_CONTRACT.md` match
+  `gen/coverage_status_matrix.json`.
+* **Single editable source:** Confirm that coverage status changes are made by
+  editing only `gen/coverage_status_matrix.json` by hand, then regenerating
+  schema and documentation with `gen/generate.py`.
+* **Status invariants:** Confirm that smoke coverage rejects verified trust
+  before parse, verified absence outside `source_missing`, and
+  `hand_seeded`/`manual_unverified` outside semantic intent stages.
+* **Local verification boundary:** Confirm that CI fixtures do not claim
+  `local_verified` or `local_verified_absence` for real CS 1.6 assets. Those
+  confidence states come only from local licensed-install scanner output, and
+  that output must remain uncommitted.
+* **No fake sockets/events:** Confirm that attachment/socket and MDL animation
+  event capability remains `requires_openstrike_mdl_reader` until a loader API
+  spike proves those fields are exposed.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh` and
+  confirm that no proprietary GoldSrc assets or local config files are tracked.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+* **Changelog coverage:** Confirm that `CHANGELOG.md` records the coverage
+  status contract and why it was added before scanner/coverage report work.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:
