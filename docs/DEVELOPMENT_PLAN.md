@@ -926,6 +926,38 @@ future PMove work.
 * The smoke test proves defaults and keeps the new data layer free of Godot
   character-controller dependencies.
 
+## PR-08F PlayerMoveService free-volume movement
+
+**Goal:** Create `OpenStrikePlayerMoveService` over existing movement math for
+backend-independent movement before contact solving.
+
+**Includes:**
+
+* `src/game/player/player_move_service.gd`.
+* Conversion between PR-08E player DTOs and the existing cvar-backed movement
+  simulator/math.
+* Friction, ground acceleration, air acceleration, jump impulse, gravity,
+  component maxvelocity and duck hull metadata through existing movement
+  contracts.
+* Trace backend capability metadata as a placeholder only.
+* Smoke coverage proving service-driven ground acceleration and air-strafe
+  gain while guarding against `CharacterBody3D`, `move_and_slide` and
+  `trace_hull` use.
+
+**Excludes:**
+
+* Trace-slide contact movement, step-up, ramps, edgefriction, real-map contact
+  goldens, `LocalGameSession` movement integration, weapons, HUD, economy and
+  bots.
+
+**Acceptance criteria:**
+
+* Existing free-volume movement behavior can be driven through
+  `OpenStrikePlayerMoveService`.
+* The PR does not duplicate acceleration/friction equations outside the
+  existing movement core.
+* No authoritative Godot character controller or contact trace is introduced.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

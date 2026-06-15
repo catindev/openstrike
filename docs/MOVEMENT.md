@@ -53,10 +53,15 @@ movement packets will consume:
   view angles and command frametime.
 * `OpenStrikePlayerMoveResult` stores the resulting state, source command,
   trace summary and diagnostics.
+* `OpenStrikePlayerMoveService` drives free-volume movement through the
+  existing `CSMovementSimulator`/`CSMovementMath` contracts and returns
+  `OpenStrikePlayerMoveResult`.
 
 These are pure serializable `RefCounted` objects. They do not implement
-movement, do not use `CharacterBody3D` and are not wired into
-`OpenStrikeLocalGameSession` yet.
+contact movement, do not use `CharacterBody3D` and are not wired into
+`OpenStrikeLocalGameSession` yet. The service keeps trace backend information
+as metadata only until a later synthetic contact packet adds trace-slide
+movement.
 
 `src/game/movement` contains the earlier cvar-backed movement simulator:
 

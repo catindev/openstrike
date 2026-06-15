@@ -573,6 +573,29 @@ For the pure player movement DTO packet, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08F PlayerMoveService free-volume movement checklist
+
+For the free-volume movement service packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  player move service smoke after player move types smoke.
+* **PlayerMoveService smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/player_move_service_smoke.gd`
+  when iterating on `src/game/player/player_move_service.gd`.
+* **Movement ownership:** Confirm the service delegates movement equations to
+  the existing cvar-backed movement simulator/math rather than copying
+  acceleration or friction formulas.
+* **Trace placeholder:** Confirm trace backend data is metadata-only in this
+  packet and `trace_hull` is not called.
+* **Scope boundary:** Confirm the PR does not add trace-slide contact movement,
+  step-up, ramps, edgefriction, real-map contact goldens,
+  `LocalGameSession` movement integration, weapons, HUD, economy or bots.
+* **Godot controller boundary:** Confirm the service does not use
+  `CharacterBody3D` or `move_and_slide`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

@@ -56,6 +56,13 @@ All notable changes to this project will be documented in this file.  The format
 * Added `src/dev/smoke/player_move_types_smoke.gd` and wired it into shared
   smoke checks to verify defaults, dictionary roundtrips and the absence of
   `CharacterBody3D` dependencies in the new player movement DTOs.
+* Added `OpenStrikePlayerMoveService` as the first PMove-facing free-volume
+  service over the existing cvar-backed movement simulator/math, with trace
+  backend metadata kept as a placeholder only.
+* Added `src/dev/smoke/player_move_service_smoke.gd` and wired it into shared
+  smoke checks to verify service-driven ground acceleration, air-strafe gain,
+  jump/duck metadata and the absence of contact trace or Godot character-body
+  dependencies.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

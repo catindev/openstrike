@@ -61,6 +61,11 @@ viewmodel/map runtime and eventual gameplay authority.
   `OpenStrikePlayerState`, `OpenStrikePlayerMoveCommand` and
   `OpenStrikePlayerMoveResult`, with dictionary roundtrip smoke coverage and no
   `CharacterBody3D` dependency.
+* PR-08F adds `OpenStrikePlayerMoveService` as the first PMove-facing
+  free-volume movement service. It delegates movement equations to the existing
+  cvar-backed movement simulator/math and keeps trace backend data as metadata
+  only; it does not add contact movement, step-up or runtime session movement
+  integration.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -84,8 +89,9 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-After PR-08B, current `main` is at the synthetic BSP30 collision vertical
-slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
+After PR-08F, current `main` is at the synthetic BSP30 collision vertical
+slice plus the first free-volume PMove-facing service and context hygiene
+workflow:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
@@ -110,8 +116,10 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
   `OpenStrikeGodotSceneTraceBackend`.
 * `src/game/movement/` contains current deterministic movement simulation and
   smoke-tested math helpers.
-* `src/game/player/` contains PMove-facing state/command/result DTOs only. It
-  does not yet contain `PlayerMoveService` or contact movement.
+* `src/game/player/` contains PMove-facing state/command/result DTOs plus
+  `OpenStrikePlayerMoveService`. The service can drive backend-independent
+  free-volume movement through existing movement contracts, but it does not yet
+  perform trace-slide contact movement.
 * `src/game/runtime/` contains `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot`, `OpenStrikeUserCommand`, `OpenStrikeRoundState` and
   `OpenStrikeGameSnapshot`. Runtime consumes sanitized spawn descriptors from
@@ -170,27 +178,29 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08F: PlayerMoveService free-volume movement`.
+Start `PR-08G: PlayerMoveService contact loop on synthetic backend`.
 
 Scope:
 
-* create `src/game/player/player_move_service.gd`;
-* drive backend-independent free-volume movement through existing
-  `CSMovementMath` / current movement contracts;
-* use `TraceBackend` only as a dependency placeholder and do not add contact
-  movement yet;
-* do not add step-slide, ramps, edgefriction, LocalGameSession movement,
-  weapons, HUD, real map contact golden tests or WAD/miptexture parsing;
-* keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
-  limited/synthetic unless a later packet changes that contract.
+* add minimal trace-slide contact movement through the synthetic
+  `OpenStrikeBspClipnodeTraceBackend`;
+* trace up to four iterations, stop on a clear fraction and slide velocity by
+  plane normal on contact;
+* report contact summary data through `OpenStrikePlayerMoveResult`;
+* keep contact goldens synthetic-BSP-only;
+* do not add step-up, edgefriction, real-map contact goldens, Godot backend
+  contact goldens, `LocalGameSession` movement, weapons, HUD, economy or bots.
 
 ## 8. Definition of done for the next task
 
 The next task is done when:
 
-* existing movement smoke can be driven through `PlayerMoveService`;
-* air-strafe regression remains guarded;
-* no `move_and_slide` or duplicate movement equations are introduced;
+* a synthetic wall stops the player through the BSP clipnode backend;
+* synthetic open space moves freely;
+* contact tests use the BSP backend only;
+* Godot contact remains telemetry-only/non-golden;
+* no step-up, edgefriction, real-map golden or runtime session movement is
+  introduced;
 * the selected packet is completed without neighboring scope;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
