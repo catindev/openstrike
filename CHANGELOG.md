@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
+  `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
+  narrow collision/query boundary for BSP runtime work. The current Godot scene
+  backend reports `godot_scene_collision`, unverified confidence and
+  `goldsrc_parity=false`, while `trace_hull` and `point_contents` remain
+  blocked on an OpenStrike BSP reader.
+* Added `OpenStrikeMapEntityIndex` to classify imported BSP entity metadata for
+  player spawns, buyzones, bomb targets, illusionary brushes, trigger-like
+  volumes and unknown classes outside the dev lab runner.
+* Added trace backend and map entity index smoke checks and wired them into
+  `scripts/run_smoke_checks.sh`.
+* Added `docs/test_reports/2026-06-15_tracebackend_map_entity_index.md` with
+  the local auto-exit BSP runner trace/backend/entity-index verification.
 * Added `docs/TAINTED_LABS_POLICY.md`, `docs/TAINT_LEDGER.md` and
   `docs/PUBLIC_OPEN_SOURCE_EXIT_PLAN.md` so dirty labs, unlicensed dependency
   risk and public release gates are explicit before more runtime work builds on
@@ -159,6 +172,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Changed the BSP walkable lab to consume `OpenStrikeMapEntityIndex` for spawn
+  selection and non-blocking entity collision policy instead of keeping a
+  hardcoded class list in the runner.
+* Extended BSP walkable lab telemetry with trace backend source, confidence,
+  `goldsrc_parity_collision=false` and a map entity index report, so manual
+  tests can distinguish temporary Godot scene collision from future GoldSrc
+  hull trace.
 * Changed the BSP walkable lab to consume shared movement math instead of
   owning duplicate friction, acceleration and maxvelocity equations. Its air
   branch now preserves the PR-04A rule that full wishspeed drives acceleration
@@ -248,6 +268,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
+  work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
+  without pretending a GoldSrc BSP reader already exists.
 * Inserted PR-07.1 as a cleanup-only runtime spine step before TraceBackend,
   weapons or LocalGameServer work, so PR-07 remains a dev lab and does not
   become production architecture by accident.

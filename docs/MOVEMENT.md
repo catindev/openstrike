@@ -29,6 +29,12 @@ stable.
 
 `CSMovementSimulator.try_step_up()` is a collision-free helper for validating
 `sv_stepsize` behavior. It is not a map/collision-integrated stair solver yet.
+Future collision-integrated movement must consume an explicit trace backend
+contract. `OpenStrikeGodotSceneTraceBackend` is acceptable for the current BSP
+walkable lab only as `godot_scene_collision` with unverified confidence; it is
+not a source for GoldSrc contact-movement golden tests. GoldSrc-style hull
+trace, contents checks, edgefriction and step solving remain blocked on an
+OpenStrike-owned BSP reader/clipnode backend or an equivalently verified API.
 
 `docs/CS_1_6_FEEL.md` is the broader research baseline for feel-sensitive
 movement work. Current gaps called out by that baseline include full

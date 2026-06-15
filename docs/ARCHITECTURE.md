@@ -22,6 +22,15 @@ scenes/app/Main.tscn # entry point scene for the application
 
 This layer contains reusable engine‑level functionality that does not depend on *Counter‑Strike* rules or assets.  Examples include logging, configuration management, mathematics, virtual file system abstractions and asset management.  Code in `core` should be portable and testable in isolation.
 
+Map runtime contracts also live in `core`. `OpenStrikeTraceBackend` defines the
+query boundary for `trace_ray`, `trace_hull`, `point_contents` and capability
+reporting; `OpenStrikeGodotSceneTraceBackend` is only the current walkable-lab
+bridge to imported Godot scene collision and is not GoldSrc hull/clipnode
+parity. `OpenStrikeMapEntityIndex` owns imported BSP entity classification such
+as spawns, buyzones, bomb targets, illusionary brushes and trigger-like
+volumes, so dev labs and future game systems do not duplicate entity-policy
+lists.
+
 ### `src/game/`
 
 The game layer implements the actual game rules and authoritative simulation.  This includes movement mechanics, physics constants, weapon logic, economy, round rules and team management.  It should not depend on any particular source of assets; instead it consumes abstracted data via the asset manager or configuration.

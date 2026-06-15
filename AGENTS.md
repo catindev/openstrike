@@ -48,9 +48,10 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   artifacts and write a short test report with observations, telemetry facts,
   conclusions and next actions before moving on.
 * Before changing BSP map loading, player spawn selection or map collision,
-  read decision 0017 in `docs/DECISIONS.md` and the PR-07 checklist in
-  `docs/TESTING.md`. Keep imported Godot scene collision distinct from GoldSrc
-  clipnode/hull trace parity in code, docs and telemetry.
+  read decisions 0017 and 0018 in `docs/DECISIONS.md` and the PR-07/PR-07.2
+  checklists in `docs/TESTING.md`. Keep imported Godot scene collision
+  distinct from GoldSrc clipnode/hull trace parity in code, docs and
+  telemetry, and route spawn/entity policy through `OpenStrikeMapEntityIndex`.
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.
 * When adding, updating or relying on committed third-party code or binary
   dependencies, read and update `docs/THIRD_PARTY_DEPENDENCIES.md`. Do not
