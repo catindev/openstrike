@@ -155,3 +155,127 @@ the equivalent command is:
 ```sh
 xattr -dr com.apple.quarantine addons/goldsrc/bin
 ```
+
+## 2026-06-15: Do not read `global_position` before adding imported BSP nodes to the tree
+
+### Symptom
+
+The BSP load smoke passed but printed repeated Godot errors:
+
+```text
+Condition "!is_inside_tree()" is true. Returning: Transform3D()
+```
+
+The errors came from collecting spawn metadata immediately after
+`GoldSrcBSP.build_mesh()`, before the imported BSP node was added to the active
+scene tree.
+
+### Cause
+
+`Node3D.global_position`/`global_transform` are only valid once the node is
+inside the tree. Imported BSP entity nodes can still be inspected before that,
+but their local `transform.origin` must be used for pre-tree metadata.
+
+### Fix
+
+When writing loader/provider diagnostics before `add_child(map_node)`, use:
+
+```gdscript
+if node_3d.is_inside_tree():
+	return node_3d.global_position
+return node_3d.transform.origin
+```
+
+Runtime code that runs after the map node has been added to the scene can still
+use `global_position`.
+
+## 2026-06-15: Scan BSP text fields as sanitized bytes
+
+### Symptom
+
+`de_dust2.bsp` referenced `cs_dust.wad`, but the first provider pass only
+loaded the hardcoded common WAD list because the referenced WAD scan returned
+no map-specific filenames.
+
+### Cause
+
+A BSP file is binary. Converting the full file directly with
+`PackedByteArray.get_string_from_ascii()` leaves NUL and other control bytes in
+the resulting string, which makes simple regex extraction brittle even when
+`strings` shows the expected `*.wad` text.
+
+### Fix
+
+When extracting loose ASCII metadata from a BSP before a real lump parser
+exists, copy the bytes and replace non-printable values with spaces first:
+
+```gdscript
+for index in range(bytes.size()):
+	var value := int(bytes[index])
+	if value < 32 or value > 126:
+		bytes[index] = 32
+var text := bytes.get_string_from_ascii()
+```
+
+This is acceptable for diagnostic/dependency discovery only. It is not a
+replacement for a reviewed BSP entity-lump parser.
+
+## 2026-06-15: Annotate temporaries derived from dynamic runtime objects
+
+### Symptom
+
+The BSP lab compiled its smoke path but reported parse errors for locals such
+as `horizontal_velocity_godot`, `fixed_delta` and `step_height` after adding
+runtime movement code.
+
+### Cause
+
+GDScript cannot always infer types from fields on dynamically typed objects
+loaded through `preload(...).new()` or GDExtension-adjacent runtime paths.
+
+### Fix
+
+Prefer explicit local annotations in dev tools and labs when the expression
+touches dynamic project objects:
+
+```gdscript
+var fixed_delta: float = _settings.fixed_delta()
+var horizontal_velocity_godot: Vector3 = velocity * scale
+```
+
+This keeps smoke output focused on real runtime issues instead of parser
+warnings cascading through dependent scripts.
+
+## 2026-06-15: Keep local asset paths out of dev-lab telemetry
+
+### Symptom
+
+The BSP walkable lab needs to load local skybox textures and movement WAVs
+from the user's licensed GoldSrc installation, but telemetry and summary files
+must remain safe to share in reviews.
+
+### Cause
+
+Godot's `Image.load()` and `AudioStreamWAV.load_from_file()` require real
+filesystem paths for local files. The VFS resolver returns those paths, but
+summary/log artifacts should not expose a user's absolute Steam installation
+path or make proprietary asset locations look like committed project data.
+
+### Fix
+
+Use absolute resolved paths only inside transient runtime variables, and write
+only relative GoldSrc paths plus loaded/found status to trace summaries:
+
+```gdscript
+var resolved: Dictionary = asset_manager.resolve_asset("gfx/env/desft.tga")
+var image := Image.new()
+image.load(str(resolved.get("resolved_path", "")))
+
+summary["skybox_face"] = {
+	"relative_path": "gfx/env/desft.tga",
+	"loaded": true,
+}
+```
+
+Do not add `resolved_path`, `root` or VFS `tried` arrays to manual test
+reports unless the user explicitly asks for local debugging details.

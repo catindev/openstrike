@@ -16,7 +16,7 @@ GPL-licensed source code. External projects are reference material only.
 | M2 | Movement parity on top of cvars. | Player movement uses cvar-backed GoldSrc constants and telemetry matches expected CS 1.6 ranges. |
 | M3 | GoldSrc format providers for MDL, SPR and WAV. | Weapon models, sprites and sounds load through providers without direct file paths in gameplay code. |
 | M4 | Viewmodel and weapon presentation orchestration. | A world/viewmodel profile contract, CS 1.6 asset orchestration atlas and local scanner back the viewmodel rig; scale/FOV are smoke-tested, animation aliases resolve from inspected model facts and semantic events drive sound/effects. |
-| M5 | BSP map pipeline and entity metadata. | A local BSP map can be discovered, imported or loaded, entity metadata is available, and player spawn points come from map data. |
+| M5 | BSP map pipeline and entity metadata. | A local BSP map can be discovered, imported, walked in a manual lab, and player spawn/collision telemetry comes from map data instead of a custom greybox. |
 | M6 | Server-authoritative local game loop. | Offline play runs through an authoritative game layer with round state, teams and deterministic weapon state. |
 | M7 | Bomb defusal MVP, economy and buy flow. | A de_ round can be played locally with money, buy zones, C4 states and win conditions. |
 | M8 | Sprite HUD, menus, radar and diagnostics tools. | HUD and menus use GoldSrc data/layouts where applicable, and development tools expose asset, animation, socket and map status. |
@@ -36,5 +36,7 @@ socket, animation and diagnostics pipeline exists. The immediate path is:
    `.mdl` files in a dev scene.
 7. Build and maintain the CS 1.6 asset orchestration atlas before treating
    weapon models, animation timings, sounds or effects as implementation facts.
-8. Add calibrated presentation only after provider, diagnostics and evidence
+8. Validate movement and scale on a real local BSP map before judging gunplay in
+   a surrogate scene.
+9. Add calibrated presentation only after provider, diagnostics and evidence
    boundaries are in place.

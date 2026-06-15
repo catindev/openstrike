@@ -148,3 +148,28 @@ shared viewmodel/world profile and applies it once to the viewmodel root in the
 manual preflight path. The correction is orientation-only: it preserves up,
 handedness and scale, and introduces no position offset. Per-weapon transforms,
 scale tweaks and FOV changes remain forbidden.
+
+## 0017. Validate movement on real BSP maps before more greybox tuning
+
+Review feedback and local ReadyToStrike experience showed that greybox-only
+weapon and movement testing can push OpenStrike toward tuning symptoms in a
+surrogate scene instead of reproducing CS 1.6 constraints. PR-07 therefore
+starts with a walkable BSP lab on a real local map such as `maps/de_dust2.bsp`
+before further subjective gunplay testing.
+
+The first lab may use the scene collision that `alanfischer/goldsrc-godot`
+generates from imported BSP geometry. That collision source must be reported as
+`godot_scene_collision`, not as GoldSrc parity. GoldSrc-style clipnodes,
+player hulls and trace semantics remain `requires_openstrike_bsp_reader` until
+OpenStrike either owns that reader/trace path or the dependency exposes a
+verified API.
+
+Manual map tests must write telemetry under `user://telemetry/` with map path,
+spawn metadata, collision source, cvar-scaled movement state, floor/wall slide
+contacts and session summary. The logs are local evidence for review and must
+not include committed Valve assets or local absolute paths.
+
+The walkable lab filters known non-blocking/trigger-like entities such as
+`func_buyzone`, `func_bomb_target` and `func_illusionary` out of player
+collision. This is still not a final GoldSrc contents/solid implementation; it
+only prevents the first manual lab from treating trigger brushes as walls.

@@ -33,10 +33,11 @@ This directory is the operational memory of the project. Every AI/coding agent m
 19. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
 20. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-21. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+21. `test_reports/` — persistent reports from user-assisted dev-lab runs.
+22. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-22. `KNOWLEDGE_BASE.md` — current project knowledge base.
-23. `TESTING.md` — testing strategy and smoke checks.
+23. `KNOWLEDGE_BASE.md` — current project knowledge base.
+24. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -79,11 +80,18 @@ and then regenerating schema/document artifacts with `../gen/generate.py`.
 
 Before accepting a subjective feel claim, read `DEV_LABS_METHODOLOGY.md` and
 connect the claim to telemetry, a smoke test, a debug overlay or a planned lab.
+After a user-assisted test scene run, inspect the trace/log artifacts and write
+the report under `test_reports/` before moving to implementation follow-ups.
+
+Before changing BSP map loading, spawn selection or map collision, read
+decision 0017 in `DECISIONS.md` and the PR-07 checklist in `TESTING.md`; keep
+`godot_scene_collision` separate from GoldSrc clipnode/hull trace parity.
 
 ## Current status
 
 `0.1.0` began as a bootstrap milestone. The repository now also contains the
 first local GoldSrc config/VFS layer, cvar/config layer, movement simulation
-core and asset provider contracts. It still does not implement real gameplay
-weapons, HUD, networking, map loading or decoded GoldSrc model/sprite/audio
-presentation.
+core, asset provider contracts, vendored `goldsrc-godot` adapters and an
+opt-in real BSP walkable lab. It still does not implement real gameplay
+weapons, HUD, networking, final GoldSrc hull-trace collision or complete
+decoded GoldSrc model/sprite/audio presentation.

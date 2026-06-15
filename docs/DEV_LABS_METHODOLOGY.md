@@ -18,6 +18,22 @@ Every dev lab should define:
 * reference notes and source weight;
 * acceptance criteria.
 
+## Manual Test Reports
+
+After every user-assisted run in a test scene, the agent must inspect the
+available trace/log artifacts and write a short report under
+`docs/test_reports/` before moving on. The report should include:
+
+* test scene, map and command used;
+* user-visible observations from the run;
+* trace/log facts that confirm or contradict those observations;
+* current conclusion about the feature under test;
+* concrete next actions or deferred items.
+
+Do not treat a manual run as complete just because the scene launched. The
+report is the handoff artifact that lets reviewers and later agents understand
+what was actually learned.
+
 ## Evidence Rules
 
 * A feel claim must map to a lab, smoke test or telemetry artifact before it is
@@ -42,6 +58,7 @@ implementation scope.
 | `hitbox_lab` | M6+ | Render model, server hitbox, predicted hitbox and animation mismatch debug. |
 | `hitreg_lab` | M6+ | Bullet trace, accepted/rejected hit explanation and deterministic replay. |
 | `input_latency_lab` | M6+ | Input event to usercmd, prediction, server tick, feedback and render timing. |
+| `bsp_walkable_lab` | M5 | Real BSP map loading, spawn selection, imported collision contacts, speed and floor/wall telemetry before greybox or gunplay tuning. |
 | `map_entities_lab` | M5 | Entity-lump counts, spawn/buyzone/objective metadata and debug volumes. |
 | `bsp_visibility_lab` | M5+ | Active leaf, visible leaves, PVS and surface count diagnostics. |
 | `hud_cost_lab` | M8 | HUD draw cost, nodes, asset lookup and frame-time impact. |

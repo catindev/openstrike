@@ -581,24 +581,65 @@ adapter or one global correction; do not add per-weapon transforms.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
-## PR-07 BSP map pipeline
+## PR-07 Walkable BSP lab
 
-**Goal:** Load real GoldSrc maps through the asset pipeline.
+**Goal:** Make the next manual test happen on a real GoldSrc BSP map, not a
+custom greybox, so movement, scale, FOV, lighting and collision feedback are
+evaluated in the environment OpenStrike must actually reproduce.
+
+**Why before more gunplay tuning:** The project already proved that visual
+weapon tests on a surrogate scene invite eye-balled offsets and scale tweaks.
+The narrower PR-07 target is a local `de_dust2`-style BSP walk test with
+telemetry. That gives reviewers and manual testers evidence about map loading,
+spawn selection, imported collision, floor/wall contacts and movement feel
+before weapons are judged in a non-CS space.
 
 **Includes:**
 
-* BSP discovery and map definitions.
-* Entity-lump metadata extraction.
-* Spawn point discovery.
-* Initial collision/import integration.
+* `OpenStrikeGoldSrcBspRuntimeProvider` capability reporting for
+  `alanfischer/goldsrc-godot` BSP/WAD loading.
+* Real local BSP loading through the existing GoldSrc VFS, without committing
+  `.bsp`, `.wad` or local config files.
+* Referenced WAD discovery from BSP metadata so map-specific texture archives
+  such as `cs_dust.wad` are loaded instead of relying only on common WADs.
+* Entity metadata inspection, class counts and `info_player_*` spawn discovery.
+* A manual `bsp_walkable_lab` command that loads `maps/de_dust2.bsp`, spawns a
+  first-person `CharacterBody3D`, applies the shared world profile FOV/scale and
+  uses CS cvar-scaled movement values with a 250 ups lab maxspeed for a
+  no-weapon walkable test.
+* Runtime disabling of trigger-like/non-solid brush collisions such as
+  buyzones, bomb targets and illusionary brushes so the lab does not treat CS
+  trigger volumes as walls.
+* JSONL per-tick trace and summary output under `user://telemetry/bsp_walkable/`
+  containing map path, collision source, movement input/state, speed, floor
+  normals, slide contacts and step-up attempts.
+* Smoke coverage proving the BSP provider does not claim GoldSrc clipnode,
+  hull-size or hull-trace support before those APIs exist.
 
 **Excludes:**
 
-* Full PVS optimization and all interactive map entities.
+* Full GoldSrc BSP reader, clipnode traversal or hull trace parity.
+* PVS optimization beyond capability reporting.
+* Interactive map entities, bombsites, buyzones, doors, breakables, water,
+  ladders, soundscape, material-aware footsteps, decals or weapon combat.
+* Treating `godot_scene_collision` as final CS 1.6 collision parity.
 
 **Acceptance criteria:**
 
-* A local BSP map can be selected, loaded and used for player spawning without committing map assets.
+* The provider reports BSP scene loading, imported scene collision, PVS and WAD
+  capabilities honestly and marks clipnodes/hull trace as requiring an
+  OpenStrike BSP reader.
+* A local `maps/de_dust2.bsp` load smoke can resolve WADs, build the map, count
+  entity/spawn metadata, report referenced WADs and confirm imported collision
+  shapes.
+* A manual tester can run the BSP walkable lab, move/jump/duck around the real
+  map in fullscreen, see the local GoldSrc skybox, hear basic movement
+  footsteps/jump/landing sounds and quit with trace/summary files written to
+  `user://telemetry/`.
+* Documentation and changelog explain that PR-07 temporarily prioritizes
+  real-map validation over further greybox/weapon tuning.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
 
 ## PR-08 Server-authoritative local game loop
 
