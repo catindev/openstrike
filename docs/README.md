@@ -5,42 +5,46 @@ This directory is the operational memory of the project. Every AI/coding agent m
 ## Reading order
 
 1. `../AGENTS.md` — mandatory agent rules.
-2. `LEGAL_ORIGINALITY.md` — legal and originality boundaries.
-3. `TAINTED_LABS_POLICY.md`, `TAINT_LEDGER.md` and
+2. `agent_context_hygiene.md` — task-packet, assumptions and handoff workflow
+   for preventing context rot.
+3. `current_context_contract.md` — compact current operational context for new
+   agents. Update it when accepted project state changes.
+4. `LEGAL_ORIGINALITY.md` — legal and originality boundaries.
+5. `TAINTED_LABS_POLICY.md`, `TAINT_LEDGER.md` and
    `PUBLIC_OPEN_SOURCE_EXIT_PLAN.md` — dirty lab boundaries, accepted
    pre-release risks and release gates.
-4. `DECISIONS.md` — binding implementation decisions and project boundaries.
-5. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
-6. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
+6. `DECISIONS.md` — binding implementation decisions and project boundaries.
+7. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
+8. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
    Godot code, GDScript, scenes, resources, presentation, asset-provider code
    or Godot smoke/CI checks.
-7. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
-8. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
-9. `ASSET_PIPELINE.md` — planned local asset loading model.
-10. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
-11. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-12. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
-13. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-14. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+9. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
+10. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
+11. `ASSET_PIPELINE.md` — planned local asset loading model.
+12. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
+13. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+14. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+15. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
+16. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-15. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
+17. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
     eye height and FOV contract for PR-06 profile preflight.
-16. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
+18. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
     instructions before gameplay/gunplay work.
-17. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+19. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
     effect and lifecycle asset map for CS 1.6-style orchestration.
-18. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
+20. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
     atlas and coverage report fields.
-19. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+21. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-20. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-21. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+22. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+23. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-22. `test_reports/` — persistent reports from user-assisted dev-lab runs.
-23. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+24. `test_reports/` — persistent reports from user-assisted dev-lab runs.
+25. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-24. `KNOWLEDGE_BASE.md` — current project knowledge base.
-25. `TESTING.md` — testing strategy and smoke checks.
+26. `KNOWLEDGE_BASE.md` — current project knowledge base.
+27. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -49,6 +53,11 @@ When code changes behavior, documentation must change in the same PR.
 When a parity fact is uncertain, write `TODO: verify` instead of guessing.
 
 Every implementation PR must update `../CHANGELOG.md` in English.
+
+Before every non-trivial project task, follow `agent_context_hygiene.md`: form
+a compact Task Packet, state explicit Assumptions and prefer current repository
+contracts over stale chat history. When accepted decisions, architecture state
+or immediate next tasks change, update `current_context_contract.md`.
 
 When a GDScript or Godot-specific issue slows implementation down, append the
 pitfall and fix to `GDSCRIPT_AGENT_NOTES.md` in the same PR.

@@ -13,6 +13,12 @@ All notable changes to this project will be documented in this file.  The format
 * Added `src/dev/smoke/local_game_session_smoke.gd` and wired it into shared
   smoke checks so PR-08A runtime state stays independent from dev labs,
   presentation and direct asset loading.
+* Added `docs/agent_context_hygiene.md` as the required Task Packet,
+  Assumptions and handoff workflow for preventing context rot in long agent
+  sessions.
+* Added `docs/current_context_contract.md` as the live compact context file
+  that new agents should read after `AGENTS.md` and before relying on chat
+  history.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -281,6 +287,9 @@ All notable changes to this project will be documented in this file.  The format
 * Inserted PR-08A before the full local game loop and weapon-loop work so
   future gameplay features have a server-authoritative owner instead of
   growing inside BSP/dev-lab scripts.
+* Added a context hygiene rule to `AGENTS.md` and the docs reading order:
+  non-trivial project work starts from a compact Task Packet, explicit
+  Assumptions and the live Current Context Contract.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.
