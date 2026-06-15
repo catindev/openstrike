@@ -129,15 +129,14 @@ func _assign_spawns() -> void:
 
 
 func _select_spawn_for_team(team: String) -> Dictionary:
-	if _map_entity_index == null or not _map_entity_index.has_method("entries"):
+	if _map_entity_index == null or not _map_entity_index.has_method("spawn_descriptors_for_classes"):
 		return {}
 
 	var priority: Array = SPAWN_PRIORITY_BY_TEAM.get(team, SPAWN_PRIORITY_BY_TEAM[PlayerSlotRef.TEAM_UNASSIGNED])
 	var candidates: Array[Dictionary] = []
 	for classname in priority:
-		for entry in _map_entity_index.entries():
-			if str(entry.get("classname", "")) == classname and entry.get("node", null) is Node3D:
-				candidates.append(_spawn_from_entry(entry))
+		var single_class: Array[String] = [str(classname)]
+		candidates = _map_entity_index.spawn_descriptors_for_classes(single_class)
 		if not candidates.is_empty():
 			break
 
@@ -147,31 +146,6 @@ func _select_spawn_for_team(team: String) -> Dictionary:
 	var cursor := int(_spawn_cursor_by_team.get(team, 0))
 	_spawn_cursor_by_team[team] = cursor + 1
 	return candidates[cursor % candidates.size()]
-
-
-func _spawn_from_entry(entry: Dictionary) -> Dictionary:
-	var node := entry.get("node", null) as Node3D
-	var entity: Dictionary = entry.get("entity", {})
-	return {
-		"classname": str(entry.get("classname", "")),
-		"position": _node_position(node),
-		"yaw": _yaw_from_entity_or_node(entity, node),
-	}
-
-
-func _node_position(node: Node3D) -> Vector3:
-	if node == null:
-		return Vector3.ZERO
-	if node.is_inside_tree():
-		return node.global_position
-	return node.transform.origin
-
-
-func _yaw_from_entity_or_node(entity: Dictionary, node: Node3D) -> float:
-	var angles := str(entity.get("angles", "")).split(" ", false)
-	if angles.size() >= 2 and String(angles[1]).is_valid_float():
-		return -deg_to_rad(float(String(angles[1]).to_float()))
-	return node.global_rotation.y if node != null else 0.0
 
 
 func _player_reports() -> Array[Dictionary]:

@@ -454,6 +454,11 @@ following checks:
   known-player command acceptance, unknown-player command rejection,
   deterministic snapshots and team-priority spawn assignment from a synthetic
   `OpenStrikeMapEntityIndex`.
+* **Map entity index smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/map_entity_index_smoke.gd`
+  when changing spawn extraction. It must prove spawn descriptors expose pure
+  `classname`/`position`/`yaw` facts and do not leak scene nodes to game
+  runtime consumers.
 * **Layer boundary:** Confirm `src/game/runtime` does not import
   `src/dev/labs`, `src/presentation` or direct GoldSrc asset paths.
 * **Scope boundary:** Confirm the PR does not add weapon firing, HUD, economy,

@@ -81,6 +81,19 @@ func entries_for_player_collision_disabled() -> Array[Dictionary]:
 	return output
 
 
+func spawn_descriptors_for_classes(preferred_classes: Array[String] = DEFAULT_SPAWN_PRIORITY) -> Array[Dictionary]:
+	var output: Array[Dictionary] = []
+	for classname in preferred_classes:
+		for entry in _entries:
+			if str(entry.get("classname", "")) != classname:
+				continue
+			var node = entry.get("node", null)
+			if not (node is Node3D):
+				continue
+			output.append(_spawn_descriptor_from_entry(entry))
+	return output
+
+
 func select_spawn_node(preferred_classes: Array[String] = DEFAULT_SPAWN_PRIORITY) -> Node3D:
 	for classname in preferred_classes:
 		for entry in _entries:
@@ -150,6 +163,33 @@ func _classification(category: String, role: String, collision_policy: String) -
 		"role": role,
 		"collision_policy": collision_policy,
 	}
+
+
+func _spawn_descriptor_from_entry(entry: Dictionary) -> Dictionary:
+	var node := entry.get("node", null) as Node3D
+	var entity: Dictionary = entry.get("entity", {})
+	return {
+		"classname": str(entry.get("classname", "")),
+		"position": _node_position(node),
+		"yaw": _yaw_from_entity_or_node(entity, node),
+		"origin": str(entity.get("origin", "")),
+		"angles": str(entity.get("angles", "")),
+	}
+
+
+func _node_position(node: Node3D) -> Vector3:
+	if node == null:
+		return Vector3.ZERO
+	if node.is_inside_tree():
+		return node.global_position
+	return node.transform.origin
+
+
+func _yaw_from_entity_or_node(entity: Dictionary, node: Node3D) -> float:
+	var angles := str(entity.get("angles", "")).split(" ", false)
+	if angles.size() >= 2 and String(angles[1]).is_valid_float():
+		return -deg_to_rad(float(String(angles[1]).to_float()))
+	return node.global_rotation.y if node != null else 0.0
 
 
 func _count_category(category: String) -> int:

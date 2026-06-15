@@ -179,6 +179,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Changed local runtime spawn assignment to consume sanitized spawn descriptors
+  from `OpenStrikeMapEntityIndex` instead of reading `Node3D` scene objects
+  from entity entries.
 * Changed the BSP walkable lab to consume `OpenStrikeMapEntityIndex` for spawn
   selection and non-blocking entity collision policy instead of keeping a
   hardcoded class list in the runner.
