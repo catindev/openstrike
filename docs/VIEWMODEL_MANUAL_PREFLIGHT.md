@@ -15,8 +15,8 @@ This preflight checks:
 * model load/build through `GoldSrcMDL.load_mdl()` and `build_model()`;
 * extracted sequence names, fps, frame counts, bodypart count, bone count and
   skin count when the loader API exposes them;
-* visual placement with identity camera-local transform and the shared
-  `data/config/viewmodel_world_profile.json` FOV/scale.
+* visual placement with the shared
+  `data/config/viewmodel_world_profile.json` FOV/scale/basis correction.
 
 It does **not** check weapon gameplay, damage, recoil, ammo, reload authority,
 muzzle sockets, shell sockets or MDL animation events. The current
@@ -124,7 +124,7 @@ This opens a simple Godot window with:
 * the shared profile FOV;
 * `KEEP_HEIGHT`;
 * the real MDL loaded through `GoldSrcMDL`;
-* the MDL as a camera child at `Transform3D.IDENTITY`;
+* the MDL as a camera child using only the shared profile basis correction;
 * no per-weapon scale, offset, FOV or camera transform.
 
 If the model is mirrored, invisible, too far, too close or rotated incorrectly,

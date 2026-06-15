@@ -134,3 +134,17 @@ must keep reporting `extension_missing` rather than faking renderable content.
 The current vendored binary set is macOS-only. Linux CI therefore validates the
 disabled-extension path until Linux binaries are added or the dependency build
 becomes part of CI.
+
+## 0016. Apply one shared viewmodel MDL basis correction
+
+Manual PR-06 visual preflight showed that `goldsrc-godot` runtime MDL geometry
+loads successfully at `scale_factor=0.025`, but the camera-local bounds for
+AK-47, USP and knife sit on positive Z. Godot `Camera3D` looks along negative Z,
+so identity placement puts the model behind the camera and opens a non-empty
+tool window with no visible weapon.
+
+OpenStrike therefore sets `viewmodel_basis_correction=rotate_y_180` in the
+shared viewmodel/world profile and applies it once to the viewmodel root in the
+manual preflight path. The correction is orientation-only: it preserves up,
+handedness and scale, and introduces no position offset. Per-weapon transforms,
+scale tweaks and FOV changes remain forbidden.

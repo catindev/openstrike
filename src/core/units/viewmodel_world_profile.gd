@@ -5,6 +5,8 @@ class_name OpenStrikeViewmodelWorldProfile
 const DEFAULT_PROFILE_PATH := "res://data/config/viewmodel_world_profile.json"
 const KEEP_HEIGHT_NAME := "KEEP_HEIGHT"
 const KEEP_WIDTH_NAME := "KEEP_WIDTH"
+const VIEWMODEL_BASIS_NONE := "none"
+const VIEWMODEL_BASIS_ROTATE_Y_180 := "rotate_y_180"
 
 var source_path: String = ""
 var metadata: Dictionary = {}
@@ -17,6 +19,7 @@ var reference_aspect: float = 4.0 / 3.0
 var view_offset_stand: float = 28.0
 var view_offset_duck: float = 12.0
 var camera_keep_aspect: String = KEEP_HEIGHT_NAME
+var viewmodel_basis_correction: String = VIEWMODEL_BASIS_ROTATE_Y_180
 
 
 func load_from_file(path: String = DEFAULT_PROFILE_PATH) -> void:
@@ -57,6 +60,7 @@ func load_from_dictionary(data: Dictionary, source: String = "") -> void:
 	view_offset_stand = _read_float(data, "view_offset_stand", view_offset_stand)
 	view_offset_duck = _read_float(data, "view_offset_duck", view_offset_duck)
 	camera_keep_aspect = str(data.get("camera_keep_aspect", "")).strip_edges()
+	viewmodel_basis_correction = str(data.get("viewmodel_basis_correction", "")).strip_edges()
 
 	_validate()
 
@@ -110,6 +114,12 @@ func apply_to_camera(camera: Camera3D, use_viewmodel_fov: bool = false) -> void:
 	camera.fov = viewmodel_vertical_fov() if use_viewmodel_fov else world_vertical_fov()
 
 
+func viewmodel_basis_correction_transform() -> Transform3D:
+	if viewmodel_basis_correction == VIEWMODEL_BASIS_ROTATE_Y_180:
+		return Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
+	return Transform3D.IDENTITY
+
+
 func to_dictionary() -> Dictionary:
 	return {
 		"source_path": source_path,
@@ -122,6 +132,7 @@ func to_dictionary() -> Dictionary:
 		"view_offset_stand": view_offset_stand,
 		"view_offset_duck": view_offset_duck,
 		"camera_keep_aspect": camera_keep_aspect,
+		"viewmodel_basis_correction": viewmodel_basis_correction,
 		"world_vertical_fov": world_vertical_fov(),
 		"viewmodel_vertical_fov": viewmodel_vertical_fov(),
 		"diagnostics": diagnostics.duplicate(true),
@@ -139,6 +150,7 @@ func _reset() -> void:
 	view_offset_stand = 28.0
 	view_offset_duck = 12.0
 	camera_keep_aspect = KEEP_HEIGHT_NAME
+	viewmodel_basis_correction = VIEWMODEL_BASIS_ROTATE_Y_180
 
 
 func _read_float(data: Dictionary, key: String, fallback: float) -> float:
@@ -168,6 +180,8 @@ func _validate() -> void:
 		_add_diagnostic("error", "viewmodel_world_profile_aspect_invalid", "Reference aspect must be positive.", {"reference_aspect": reference_aspect})
 	if camera_keep_aspect != KEEP_HEIGHT_NAME:
 		_add_diagnostic("error", "viewmodel_world_profile_keep_aspect_invalid", "CS16 parity profile requires KEEP_HEIGHT.", {"camera_keep_aspect": camera_keep_aspect})
+	if not [VIEWMODEL_BASIS_NONE, VIEWMODEL_BASIS_ROTATE_Y_180].has(viewmodel_basis_correction):
+		_add_diagnostic("error", "viewmodel_world_profile_basis_correction_invalid", "Viewmodel basis correction must be a known shared profile correction.", {"viewmodel_basis_correction": viewmodel_basis_correction})
 
 
 func _add_diagnostic(level: String, code: String, message: String, context: Dictionary = {}) -> void:

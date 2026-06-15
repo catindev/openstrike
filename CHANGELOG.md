@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.  The format
 * Vendored `alanfischer/goldsrc-godot` under `addons/goldsrc/` as the
   project-owned GoldSrc loader dependency for PR-06 viewmodel preflight,
   without committing Valve asset bytes or local generated imports.
+* Added the shared `viewmodel_basis_correction=rotate_y_180` profile setting
+  after visual preflight proved `goldsrc-godot` runtime MDL geometry otherwise
+  sits behind Godot cameras.
 * Added `scripts/bootstrap_gdextensions.sh` to manage local
   `.godot/extension_list.cfg`, enable the GoldSrc GDExtension only when a
   matching native library exists, and clear macOS quarantine attributes from

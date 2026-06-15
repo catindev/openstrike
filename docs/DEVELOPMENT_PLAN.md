@@ -513,9 +513,9 @@ per-weapon scale/position/FOV tuning.
 `src/dev/tools/viewmodel_manual_preflight.gd` with a local licensed install and
 the vendored `alanfischer/goldsrc-godot` dependency enabled by
 `scripts/bootstrap_gdextensions.sh`. The manual visual path must load real pilot
-`v_*.mdl` models at profile scale/FOV with identity camera-local transform. If
-it fails visually, record the symptom and fix the shared profile, adapter or
-one global correction; do not add per-weapon transforms.
+`v_*.mdl` models at profile scale/FOV with only the shared profile basis
+correction. If it fails visually, record the symptom and fix the shared profile,
+adapter or one global correction; do not add per-weapon transforms.
 
 **Includes:**
 

@@ -38,6 +38,8 @@ func _run() -> int:
 		return 1
 	if not _run_fov_checks(profile):
 		return 1
+	if not _run_viewmodel_basis_correction_checks(profile):
+		return 1
 	if not _run_manifest_allowlist_checks():
 		return 1
 	if not _run_denylist_scan():
@@ -115,6 +117,21 @@ func _run_fov_checks(profile) -> bool:
 	world_camera.free()
 	viewmodel_camera.free()
 	return ok
+
+
+func _run_viewmodel_basis_correction_checks(profile) -> bool:
+	var correction: Transform3D = profile.viewmodel_basis_correction_transform()
+	var basis := correction.basis
+	var corrected_forward: Vector3 = basis * Vector3(0.0, 0.0, 1.0)
+	var corrected_up: Vector3 = basis * Vector3.UP
+	var determinant := basis.determinant()
+	return (
+		_assert(str(profile.viewmodel_basis_correction) == ProfileRef.VIEWMODEL_BASIS_ROTATE_Y_180, "viewmodel basis correction should record the shared MDL runtime orientation calibration", profile.to_dictionary())
+		and _assert(corrected_forward.is_equal_approx(Vector3(0.0, 0.0, -1.0)), "viewmodel basis correction should put goldsrc-godot positive Z in front of Godot cameras", {"corrected_forward": corrected_forward})
+		and _assert(corrected_up.is_equal_approx(Vector3.UP), "viewmodel basis correction should preserve up direction", {"corrected_up": corrected_up})
+		and _assert(abs(determinant - 1.0) <= EPSILON, "viewmodel basis correction should preserve handedness and scale", {"determinant": determinant})
+		and _assert(correction.origin.is_equal_approx(Vector3.ZERO), "viewmodel basis correction must not introduce a position offset", {"origin": correction.origin})
+	)
 
 
 func _run_manifest_allowlist_checks() -> bool:

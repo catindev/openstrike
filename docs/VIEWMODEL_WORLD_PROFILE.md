@@ -283,6 +283,7 @@ stored as config truth (this is what keeps `90` and `73.74` from drifting apart)
 | `view_offset_stand` | `28` | parity-locked |
 | `view_offset_duck` | `12` | parity-locked |
 | `camera_keep_aspect` | `KEEP_HEIGHT` | parity-locked |
+| `viewmodel_basis_correction` | `rotate_y_180` | shared MDL runtime orientation calibration |
 
 **Not stored** (derived only): Godot vertical FOV, per-aspect horizontal FOV,
 eye-above-floor heights, scaled unit values. If an `osk_`-style prefix is used,
@@ -336,6 +337,9 @@ never snapshotted from the running camera.
    `.tres`, `.json` for `model_scale`, `model_position`, `viewmodel_offset`,
    `manual_fov`, `weapon_camera_offset`, `weapon_specific_transform`; the only
    permitted occurrences are this document and the smoke denylist itself.
+7. **Shared basis correction:** `viewmodel_basis_correction == rotate_y_180`;
+   the correction maps loader positive Z to Godot camera-forward negative Z,
+   preserves up, has determinant +1 and has zero origin offset.
 
 ---
 
@@ -354,8 +358,18 @@ One shared manual step, **orientation only** — not size or distance.
 3. If a residual fix is needed, express it as that **single shared post-import
    basis correction** (one global node/transform), never per weapon.
 4. Lock the chosen correction (or "none") in `DECISIONS.md`. Every other model
-   then uses the same scale, mapping, eye offset and FOV with **zero** further
-   manual adjustment.
+   then uses the same scale, mapping, eye offset, FOV and shared basis
+   correction with **zero** further manual adjustment.
+
+**2026-06-15 calibration result:** `goldsrc-godot` runtime MDL geometry loaded
+with `scale_factor=0.025` produced camera-local bounds on positive Z for AK-47,
+USP and knife. Godot `Camera3D` looks down negative Z, so identity camera-local
+placement opened a valid visual preflight window but rendered the model behind
+the camera. The MDL runtime API did not expose a documented rotate flag for this
+path. OpenStrike therefore uses one shared post-import basis correction,
+`rotate_y_180`, which moves loader positive Z in front of the camera while
+preserving up direction, scale and handedness. This is not a per-weapon
+position/scale/FOV adjustment.
 
 If step 4 later fails for a specific weapon, diagnose against the contract; do not
 add a per-weapon transform.

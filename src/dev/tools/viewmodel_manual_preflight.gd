@@ -108,12 +108,12 @@ func _setup_visual_scene(renderable: Dictionary, profile, asset_id: StringName) 
 	var model_node = renderable.get("node", null)
 	if model_node is Node3D:
 		camera.add_child(model_node)
-		(model_node as Node3D).transform = Transform3D.IDENTITY
+		(model_node as Node3D).transform = profile.viewmodel_basis_correction_transform()
 
 	var canvas := CanvasLayer.new()
 	window.add_child(canvas)
 	var label := Label.new()
-	label.text = "OpenStrike viewmodel preflight\n%s\nProfile scale/FOV only; no per-weapon transform.\nClose the window when done." % str(asset_id)
+	label.text = "OpenStrike viewmodel preflight\n%s\nProfile scale/FOV/basis correction only; no per-weapon transform.\nClose the window when done." % str(asset_id)
 	label.position = Vector2(16.0, 16.0)
 	canvas.add_child(label)
 
@@ -139,6 +139,7 @@ func _build_output(manager, asset_result, renderable: Dictionary, profile, optio
 			"viewmodel_fov_horizontal_ref": profile.viewmodel_fov_horizontal_ref,
 			"world_vertical_fov": profile.world_vertical_fov(),
 			"camera_keep_aspect": profile.camera_keep_aspect,
+			"viewmodel_basis_correction": profile.viewmodel_basis_correction,
 		},
 		"manager_diagnostics": _sanitize_diagnostics(manager.get_diagnostics()),
 	}

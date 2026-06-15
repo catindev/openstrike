@@ -10,5 +10,6 @@
   "reference_aspect": 1.3333333333333333,
   "view_offset_stand": 28.0,
   "view_offset_duck": 12.0,
-  "camera_keep_aspect": "KEEP_HEIGHT"
+  "camera_keep_aspect": "KEEP_HEIGHT",
+  "viewmodel_basis_correction": "rotate_y_180"
 }
