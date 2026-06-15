@@ -168,3 +168,36 @@ Do not use for:
 
 Current dependency metadata is tracked in
 `docs/THIRD_PARTY_DEPENDENCIES.md`.
+
+## GoldSrc Runtime Spine References
+
+Type: primary format/behavior references for BSP30 collision and future PMove.
+
+Use for:
+
+* BSP30 header/lump, plane, clipnode and model byte-layout contracts;
+* synthetic BSP30 reader and clipnode trace fixtures;
+* clean-room movement/collision terminology and acceptance criteria;
+* deciding which facts require `TODO: verify` before implementation.
+
+Do not use for:
+
+* copying source code from any engine;
+* opening denylisted Xash3D or HLSDK source files while implementing matching
+  OpenStrike modules;
+* replacing the current PR packet with neighboring package scope;
+* treating Godot scene collision as GoldSrc clipnode/hull parity.
+
+Current project documents:
+
+* `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`
+* `docs/COMPACT_PR_TASK_PACKETS.md`
+
+Important neutral/public references recorded by the spec:
+
+* TWHL Wiki BSP page for GoldSrc BSP format facts.
+* Valve Developer Community BSP (GoldSrc) snippets for BSP30/version/lump
+  constants and contents enums where full page access is blocked.
+* Half-Life Physics Reference by jwchong for movement behavior, described in
+  OpenStrike's own words.
+* `docs/VIEWMODEL_WORLD_PROFILE.md` for unit scale and coordinate mapping.

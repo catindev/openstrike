@@ -59,6 +59,11 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   checklists in `docs/TESTING.md`. Keep imported Godot scene collision
   distinct from GoldSrc clipnode/hull trace parity in code, docs and
   telemetry, and route spawn/entity policy through `OpenStrikeMapEntityIndex`.
+* Before changing GoldSrc runtime spine, BSP30 reading, clipnode tracing,
+  `PlayerMoveService` or runtime movement authority, read
+  `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and follow only the current PR
+  packet in `docs/COMPACT_PR_TASK_PACKETS.md`. Do not implement neighboring
+  packets early.
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.
 * When adding, updating or relying on committed third-party code or binary
   dependencies, read and update `docs/THIRD_PARTY_DEPENDENCIES.md`. Do not

@@ -39,6 +39,12 @@ viewmodel/map runtime and eventual gameplay authority.
   skeleton: fixed ticks, player slots, user command acceptance, round-state
   skeleton data, team-aware spawn assignment from sanitized map descriptors and
   deterministic snapshots.
+* PR-08A.1 completes the runtime spawn descriptor cleanup: runtime consumes
+  pure spawn descriptors with `classname`, `position`, `yaw`, `origin`,
+  `angles` and `source`, and does not require `Node3D`.
+* `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
+  `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
+  contracts, denylist and PR order. Follow only the current packet.
 * Non-trivial project work starts with a compact Task Packet and explicit
   Assumptions per `docs/agent_context_hygiene.md`.
 * Every implementation PR updates `CHANGELOG.md`; every user-assisted dev-lab
@@ -59,7 +65,8 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-Current `main` is at PR-08A plus the context hygiene workflow:
+After PR-08A.1, current `main` is at the runtime spawn-descriptor cleanup plus
+the context hygiene workflow:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
@@ -68,7 +75,8 @@ Current `main` is at PR-08A plus the context hygiene workflow:
   deferred.
 * `src/core/maps/map_entity_index.gd` classifies imported BSP entity metadata
   for spawns, buyzones, bomb targets, illusionary brushes, triggers and
-  collision policy.
+  collision policy, and exposes sanitized spawn descriptors for runtime
+  consumers.
 * `src/core/collision/` defines the TraceBackend boundary and current
   `OpenStrikeGodotSceneTraceBackend`.
 * `src/game/movement/` contains current deterministic movement simulation and
@@ -113,7 +121,9 @@ Current `main` is at PR-08A plus the context hygiene workflow:
 * Real map collision currently uses imported Godot scene collision, useful for
   labs but not final CS 1.6 parity.
 * Runtime sessions accept commands and emit snapshots, but player movement
-  state is not yet driven by user commands inside the fixed server tick.
+  state is not yet driven by user commands inside the fixed server tick. Per
+  the current task packets, that waits until BSP30 collision and PMove slices
+  exist.
 * Weapon runtime, HUD, economy, buy menu, bot logic and full local server loop
   are not implemented on `main`.
 * `goldsrc-godot` currently has macOS binaries; Linux CI validates
@@ -124,22 +134,25 @@ Current `main` is at PR-08A plus the context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08B: movement state in server tick`.
+Start `PR-08B: BSP30 collision vertical slice`.
 
 Scope:
 
-* connect `UserCommand -> movement simulation -> PlayerState -> Snapshot`;
-* keep runtime server-authoritative and independent from presentation/dev labs;
-* keep `godot_scene_collision` as temporary non-parity for map trace/collision;
-* do not add weapon firing, HUD, economy, buy menu, bots or networking yet.
+* add the first OpenStrike-owned synthetic BSP30 reader/collision slice from
+  `docs/COMPACT_PR_TASK_PACKETS.md`;
+* implement minimal `BspClipnodeTraceBackend.trace_hull()` for model 0,
+  synthetic buffers, point hull and standing hull;
+* record the hull-extent contract decision before tests depend on it;
+* do not add PMove, PlayerMoveService, LocalGameSession movement, weapons, HUD,
+  real map golden tests or WAD/miptexture parsing.
 
 ## 8. Definition of done for the next task
 
 The next task is done when:
 
-* `OpenStrikeLocalGameSession` advances player movement state from queued
-  commands during fixed ticks;
-* snapshots expose enough player movement state for later presentation;
+* synthetic BSP30 reader/clipnode trace smoke passes the required point,
+  standing-hull, start-solid, free trace and malformed-input cases;
+* `GodotSceneTraceBackend` remains temporary non-parity;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
 * the branch is committed, pushed and opened as a focused PR;
@@ -152,6 +165,8 @@ The next task is done when:
 * `docs/current_context_contract.md`
 * `docs/DECISIONS.md`
 * `docs/DEVELOPMENT_PLAN.md`
+* `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`
+* `docs/COMPACT_PR_TASK_PACKETS.md`
 * `docs/TESTING.md`
 * `docs/ARCHITECTURE.md`
 * `docs/MOVEMENT.md`

@@ -761,6 +761,36 @@ full round rules in the same PR.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-08A.1 Runtime spawn descriptors cleanup
+
+**Goal:** Finish the runtime spawn-descriptor boundary from
+`docs/COMPACT_PR_TASK_PACKETS.md`.
+
+**Includes:**
+
+* `OpenStrikeMapEntityIndex.spawn_descriptors_for_classes()` returns pure
+  `classname`, `position`, `yaw`, `origin`, `angles` and `source` facts.
+* `OpenStrikeLocalGameSession` consumes spawn descriptors only.
+* Runtime smoke uses a descriptor-only index and does not require `Node3D`.
+
+**Excludes:**
+
+* Movement integration, weapon logic, TraceBackend changes and BSP reader work.
+
+**Acceptance criteria:**
+
+* `src/game/runtime` does not read `entry["node"]` or require `Node3D`.
+* CT/T/unassigned spawn priority still works.
+* Existing smoke checks pass.
+
+## Runtime spine packet order
+
+For the GoldSrc runtime spine after PR-08A.1, follow
+`docs/COMPACT_PR_TASK_PACKETS.md`. The next package is `PR-08B BSP30 collision
+vertical slice`, not runtime movement integration. `PR-08B` must stay limited
+to the synthetic BSP30 reader/clipnode trace proof described in
+`docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.
