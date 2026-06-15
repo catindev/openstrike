@@ -81,12 +81,8 @@ All notable changes to this project will be documented in this file.  The format
   and snapshots publish origin, velocity, view angles, duck state, ground state
   and nested movement state.
 * Added local game session smoke coverage proving queued movement commands
-  advance snapshot origin/velocity and update view state.
-* Added BSP walkable lab runtime-snapshot wiring: the lab creates a local game
-  session, queues commands and moves presentation from runtime snapshots instead
-  of owning movement equations.
-* Added a BSP walkable capability smoke source guard to keep the lab on runtime
-  snapshots and out of `CharacterBody3D`/`move_and_slide` movement ownership.
+  advance snapshot origin/velocity, update view state and resolve raw
+  forward/side input relative to command yaw inside the runtime movement layer.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

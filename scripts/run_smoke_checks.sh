@@ -22,7 +22,6 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/viewmodel_world_profile_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/goldsrc_renderable_adapter_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/goldsrc_bsp_runtime_provider_smoke.gd
-"${godot_bin}" --headless --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --capability-smoke
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/trace_backend_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/trace_backend_shared_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/bsp30_clipnode_trace_smoke.gd
@@ -36,3 +35,4 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_service_contact_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_service_step_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/local_game_session_view_relative_smoke.gd

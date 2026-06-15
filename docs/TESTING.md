@@ -654,11 +654,15 @@ For the runtime movement session packet, perform the following checks:
 
 * **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
   local game session smoke that proves queued commands advance snapshot origin,
-  velocity and view state.
+  velocity and view state, plus a view-relative runtime smoke.
 * **Focused runtime smoke:** Run
   `Godot --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd`
   when iterating on `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot` or `OpenStrikeUserCommand`.
+* **View-relative runtime smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/local_game_session_view_relative_smoke.gd`
+  when iterating on yaw-relative movement. Confirm raw forward/side command axes
+  are rotated inside runtime/player movement using `view_yaw`.
 * **Snapshot contract:** Confirm player snapshots include `origin`, `velocity`,
   `view_yaw`, `view_pitch`, `ducked`, `on_ground` and nested
   `movement_state`.
@@ -677,10 +681,13 @@ For the runtime movement session packet, perform the following checks:
 For the BSP walkable lab runtime-snapshot packet, perform the following checks:
 
 * **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
-  BSP walkable capability smoke source guard.
+  BSP walkable capability smoke source guard once PR-09B adds it.
 * **Focused capability smoke:** Run
   `Godot --headless --path . --script res://src/dev/labs/bsp_walkable/bsp_walkable_lab.gd -- --capability-smoke`
   when iterating on the BSP walkable runner.
+* **Collision behavior gate:** Add and run a behavior smoke or manual telemetry
+  gate that spawns near a known blocking collider, queues movement into it and
+  proves final runtime/presentation position does not cross the wall.
 * **Presentation ownership:** Confirm the lab creates
   `OpenStrikeLocalGameSession`, queues `OpenStrikeUserCommand` values and moves
   presentation nodes from runtime snapshots.
@@ -691,6 +698,8 @@ For the BSP walkable lab runtime-snapshot packet, perform the following checks:
 * **Telemetry contract:** Confirm trace summaries and per-tick entries record
   `movement_authority="OpenStrikeLocalGameSession"` and
   `presentation_follows_snapshot=true`.
+* **Non-golden honesty:** Confirm `GodotSceneTraceBackend` is still reported as
+  non-golden/non-parity if it is used by a lab-only runtime collision bridge.
 * **Scope boundary:** Confirm the PR does not add weapons, HUD, real-map contact
   goldens or a final real BSP movement backend.
 * **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.

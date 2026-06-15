@@ -79,9 +79,11 @@ viewmodel/map runtime and eventual gameplay authority.
   convert to PMove-facing commands, fixed ticks apply movement and snapshots
   expose origin, velocity, view angles, duck state, ground state and nested
   movement state.
-* PR-09B makes the BSP walkable lab consume runtime snapshots: the lab creates a
-  local game session, queues commands and moves presentation/camera state from
-  snapshots instead of owning duplicated movement equations.
+* PR-09A commands carry raw forward/side axes plus view angles; the runtime
+  movement layer resolves wish direction relative to command `view_yaw`.
+* PR-09B is not yet implemented. It must not move the BSP walkable lab to
+  runtime snapshots unless wall-blocking behavior is preserved through a
+  lab-only collision bridge or an equivalent behavioral gate.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -105,10 +107,10 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-After PR-09B, current runtime-spine state is the synthetic BSP30 collision
+After PR-09A, current runtime-spine state is the synthetic BSP30 collision
 vertical slice plus synthetic-BSP trace-slide, step and duck-hull behavior in
-the PMove-facing service, with local runtime sessions now applying movement
-commands and the BSP walkable lab following runtime snapshots:
+the PMove-facing service, with local runtime sessions now applying
+view-relative movement commands:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
@@ -137,7 +139,8 @@ commands and the BSP walkable lab following runtime snapshots:
   `OpenStrikePlayerMoveService`. The service can drive backend-independent
   free-volume movement through existing movement contracts and can apply a
   synthetic-BSP trace-slide contact loop with first step-up and duck-hull
-  behavior. It does not yet implement edgefriction or real-map contact goldens.
+  behavior. It resolves command forward/side axes relative to `view_yaw`, but
+  does not yet implement edgefriction or real-map contact goldens.
 * `src/game/runtime/` contains `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot`, `OpenStrikeUserCommand`, `OpenStrikeRoundState` and
   `OpenStrikeGameSnapshot`. Runtime consumes sanitized spawn descriptors from
@@ -146,9 +149,9 @@ commands and the BSP walkable lab following runtime snapshots:
 * `src/presentation/viewmodel/` contains `OpenStrikeGoldSrcRenderableProvider`
   for `goldsrc-godot` viewmodel/sprite loading.
 * `src/dev/labs/bsp_walkable/` contains the manual real-BSP walkable lab with
-  telemetry under `user://telemetry/bsp_walkable/`. The lab is an
-  input/presentation/telemetry adapter for `OpenStrikeLocalGameSession`
-  snapshots, not the owner of gameplay movement equations.
+  telemetry under `user://telemetry/bsp_walkable/`. It still owns the dev-lab
+  character-controller movement path so real BSP wall blocking is not regressed
+  before PR-09B adds a runtime collision-safe replacement.
 * `docs/test_reports/` contains persistent reports for BSP reader inventory,
   de_dust2 skybox/audio manual testing and TraceBackend/MapEntityIndex runner
   verification.
@@ -184,9 +187,9 @@ commands and the BSP walkable lab following runtime snapshots:
   hull-specific clipnode trees, but it is not a contact golden and does not
   decide the final real-map plane-space trace contract.
 * Real map collision currently uses imported Godot scene collision, useful for
-  labs but not final CS 1.6 parity. The BSP walkable lab follows runtime
-  snapshots, but `GodotSceneTraceBackend` remains telemetry-only for PMove
-  contact and real-map contact parity is still future work.
+  labs but not final CS 1.6 parity. `GodotSceneTraceBackend` remains
+  telemetry-only for PMove contact and real-map contact parity is still future
+  work.
 * Weapon runtime, HUD, economy, buy menu, bot logic and full local server loop
   are not implemented on `main`.
 * `goldsrc-godot` currently has macOS binaries; Linux CI validates
@@ -197,24 +200,26 @@ commands and the BSP walkable lab following runtime snapshots:
 
 ## 7. Immediate next task
 
-No active implementation task is selected after PR-09A/PR-09B.
+No active implementation task is selected after PR-09A.
 
 Maintainer instruction:
 
-* Do not start PR-10A or neighboring gameplay packets unless the maintainer
-  explicitly asks for them.
-* PR-10A remains the next packet in `docs/COMPACT_PR_TASK_PACKETS.md` after
-  PR-09 is reviewed.
-* Keep the repository clean after finishing/pushing PR-09.
+* Do not start PR-10A or neighboring gameplay packets before PR-09B is handled
+  or explicitly deferred by the maintainer.
+* PR-09B remains the next packet in `docs/COMPACT_PR_TASK_PACKETS.md`, but it
+  needs an explicit wall-collision behavior gate before migrating the BSP lab to
+  runtime snapshots.
+* Keep the repository clean after finishing/pushing PR-09A.
 
 ## 8. Definition of done for the next task
 
 The current handoff is done when:
 
-* PR-09A/PR-09B implementation and documentation are complete;
+* PR-09A implementation and documentation are complete;
 * smoke checks, forbidden asset scan and whitespace checks pass;
 * the worktree is clean;
-* PR-09A/PR-09B changes are reviewable and no PR-10A work has started.
+* PR-09A changes are reviewable and PR-09B/PR-10A work has not started in this
+  branch.
 
 ## 9. Sources of truth
 

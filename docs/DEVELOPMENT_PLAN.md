@@ -1028,6 +1028,8 @@ BSP fixtures.
 * Player slots own `OpenStrikePlayerState`.
 * `OpenStrikeUserCommand` converts to `OpenStrikePlayerMoveCommand`.
 * Fixed ticks apply movement through `OpenStrikePlayerMoveService`.
+* Raw forward/side command axes are resolved relative to command `view_yaw` in
+  the runtime/player movement layer.
 * Snapshots include player origin, velocity, view angles, duck state, ground
   state and nested movement state.
 
@@ -1039,6 +1041,8 @@ BSP fixtures.
 
 * Queued commands advance player position deterministically in the local game
   session smoke.
+* Yaw-relative movement smoke proves yaw=0 forward, yaw=90 forward and
+  yaw=90 side movement choose the expected axes.
 * Player snapshots contain movement state.
 * Runtime code does not import dev labs or presentation.
 
@@ -1053,6 +1057,8 @@ not the owner of gameplay movement.
 * Lab input queues `OpenStrikeUserCommand` values.
 * Lab camera/presentation follows runtime snapshot position and view state.
 * Existing telemetry remains available and records runtime authority.
+* A lab-only runtime collision bridge or equivalent behavior gate preserves
+  wall-blocking movement before removing the existing dev-lab controller path.
 
 **Excludes:**
 
@@ -1063,6 +1069,8 @@ not the owner of gameplay movement.
 
 * BSP lab capability smoke verifies the runner uses `OpenStrikeLocalGameSession`
   and queues commands.
+* A blocking-collider smoke or manual telemetry gate proves the lab does not
+  become free-volume movement through real BSP walls.
 * Runtime owns player state and presentation follows snapshots.
 * The lab does not contain duplicated movement equations.
 

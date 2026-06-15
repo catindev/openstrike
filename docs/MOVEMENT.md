@@ -64,7 +64,8 @@ now owns one `OpenStrikePlayerState` per player slot, converts
 `OpenStrikeUserCommand` values into `OpenStrikePlayerMoveCommand` values during
 the fixed tick, applies `OpenStrikePlayerMoveService` and publishes origin,
 velocity, view angles, duck state, ground state and the nested movement state in
-snapshots.
+snapshots. Commands carry raw forward/side axes plus view angles; the movement
+service resolves the wish direction relative to `view_yaw`.
 
 The service still does not implement edgefriction, real-map contact parity or
 Godot character-controller movement. It uses contact movement only when a
@@ -72,10 +73,10 @@ backend reports synthetic BSP clipnode hull-trace support; `GodotSceneTraceBacke
 remains telemetry-only and non-golden for PMove contact. Step-up and duck-hull
 assertions are synthetic fixture coverage, not real-map goldens.
 
-The BSP walkable lab is now an input/presentation/telemetry adapter for runtime
-snapshots. It creates a local game session, queues commands and moves its camera
-holder to the snapshot origin; the lab must not own duplicated movement
-equations.
+The BSP walkable lab still uses its existing dev-lab character controller path
+for wall-blocking movement. It must not be migrated to runtime snapshots until a
+runtime collision bridge preserves that blocking behavior or the PR explicitly
+splits the lab migration behind a behavioral collision gate.
 
 `src/game/movement` contains the earlier cvar-backed movement simulator:
 

@@ -289,12 +289,15 @@ func _to_movement_state(player_state, active_settings):
 
 
 func _to_movement_input(move_command):
-	return MovementInputRef.new(
+	var sim_input = MovementInputRef.new(
 		_command_float(move_command, "forward_move"),
 		_command_float(move_command, "side_move"),
 		_command_bool(move_command, "wants_jump"),
 		_command_bool(move_command, "wants_duck")
 	)
+	var yaw_basis := Basis(Vector3.UP, _command_float(move_command, "view_yaw"))
+	sim_input.configure_axes(yaw_basis * Vector3.BACK, yaw_basis * Vector3.RIGHT)
+	return sim_input
 
 
 func _trace_summary(sim_state, active_settings, active_backend, contact_summary: Dictionary = {}) -> Dictionary:
