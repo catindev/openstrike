@@ -4,6 +4,7 @@ class_name OpenStrikeBspWalkableRunner
 
 const AssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
 const BspProviderRef = preload("res://src/core/maps/goldsrc_bsp_runtime_provider.gd")
+const MovementMathRef = preload("res://src/game/movement/cs_movement_math.gd")
 const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
 const TraceLoggerRef = preload("res://src/dev/labs/bsp_walkable/bsp_walkable_trace_logger.gd")
 const ViewmodelWorldProfileRef = preload("res://src/core/units/viewmodel_world_profile.gd")
@@ -668,16 +669,34 @@ func _step_lab_movement(delta: float, input: Dictionary) -> void:
 	_update_duck_shape(ducked)
 
 	if on_floor:
-		_apply_friction(delta)
+		_velocity_ups = MovementMathRef.apply_friction(
+			_velocity_ups,
+			_settings.stop_speed,
+			_settings.friction,
+			delta
+		)
 
-	var wish_direction := _wish_direction(float(input.get("forward", 0.0)), float(input.get("side", 0.0)))
+	var wish_direction := _world_wish_direction(float(input.get("forward", 0.0)), float(input.get("side", 0.0)))
 	var has_wish := wish_direction.length_squared() > 0.0
 	if has_wish:
 		var wish_speed: float = minf(_settings.max_speed, LAB_WALK_MAX_SPEED_UNITS)
 		if on_floor:
-			_accelerate(wish_direction, wish_speed, _settings.ground_accelerate, delta)
+			_velocity_ups = MovementMathRef.accelerate(
+				_velocity_ups,
+				wish_direction,
+				wish_speed,
+				_settings.ground_accelerate,
+				delta
+			)
 		else:
-			_accelerate(wish_direction, minf(wish_speed, _settings.air_max_wishspeed), _settings.air_accelerate, delta)
+			_velocity_ups = MovementMathRef.air_accelerate(
+				_velocity_ups,
+				wish_direction,
+				wish_speed,
+				_settings.air_max_wishspeed,
+				_settings.air_accelerate,
+				delta
+			)
 
 	if on_floor and bool(input.get("jump_pressed", false)):
 		_velocity_ups.y = _settings.jump_velocity
@@ -689,7 +708,7 @@ func _step_lab_movement(delta: float, input: Dictionary) -> void:
 	elif _velocity_ups.y < 0.0:
 		_velocity_ups.y = -2.0
 
-	_velocity_ups = _clamp_velocity_components(_velocity_ups)
+	_velocity_ups = MovementMathRef.check_velocity_components(_velocity_ups, _settings.max_velocity)
 	var previous_position := _body.global_position
 	var horizontal_velocity_godot: Vector3 = Vector3(_velocity_ups.x, 0.0, _velocity_ups.z) * _profile.goldsrc_unit_scale
 	var was_on_floor := _body.is_on_floor()
@@ -706,50 +725,11 @@ func _step_lab_movement(delta: float, input: Dictionary) -> void:
 	_update_movement_audio(input, started_on_floor, _body.is_on_floor(), ducked, jumped)
 
 
-func _apply_friction(delta: float) -> void:
-	var horizontal := Vector3(_velocity_ups.x, 0.0, _velocity_ups.z)
-	var speed: float = horizontal.length()
-	if speed <= 0.001:
-		_velocity_ups.x = 0.0
-		_velocity_ups.z = 0.0
-		return
-
-	var control: float = maxf(speed, _settings.stop_speed)
-	var drop: float = control * _settings.friction * delta
-	var new_speed: float = maxf(speed - drop, 0.0)
-	var ratio: float = new_speed / speed
-	_velocity_ups.x *= ratio
-	_velocity_ups.z *= ratio
-
-
-func _accelerate(wish_direction: Vector3, wish_speed: float, acceleration: float, delta: float) -> void:
-	var current_speed := _velocity_ups.dot(wish_direction)
-	var add_speed := wish_speed - current_speed
-	if add_speed <= 0.0:
-		return
-	var accel_speed := acceleration * delta * wish_speed
-	if accel_speed > add_speed:
-		accel_speed = add_speed
-	_velocity_ups += wish_direction * accel_speed
-
-
-func _wish_direction(forward: float, side: float) -> Vector3:
+func _world_wish_direction(forward: float, side: float) -> Vector3:
 	var yaw_basis := Basis(Vector3.UP, _yaw)
 	var forward_axis := yaw_basis * Vector3.FORWARD
 	var right_axis := yaw_basis * Vector3.RIGHT
-	var wish := forward_axis * forward + right_axis * side
-	wish.y = 0.0
-	if wish.length_squared() <= 0.0:
-		return Vector3.ZERO
-	return wish.normalized()
-
-
-func _clamp_velocity_components(value: Vector3) -> Vector3:
-	return Vector3(
-		clampf(value.x, -_settings.max_velocity, _settings.max_velocity),
-		clampf(value.y, -_settings.max_velocity, _settings.max_velocity),
-		clampf(value.z, -_settings.max_velocity, _settings.max_velocity)
-	)
+	return MovementMathRef.wish_direction_from_axes(forward, side, forward_axis, right_axis)
 
 
 func _update_duck_shape(ducked: bool) -> void:

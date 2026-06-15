@@ -384,6 +384,33 @@ checks:
 * **Changelog coverage:** Confirm that `CHANGELOG.md` explains why the next
   manual test moved to a real BSP map before more greybox/gunplay tuning.
 
+## PR-07.1 runtime spine cleanup checklist
+
+For cleanup work immediately after the walkable BSP lab, perform the following
+checks:
+
+* **Taint scope:** Run `scripts/check_taint_scope.sh`. It must pass when
+  `addons/goldsrc/` is present and documented in `docs/TAINT_LEDGER.md`, and
+  production paths must not import `src/dev/tainted`.
+* **BSP reader inventory:** Confirm that
+  `docs/test_reports/2026-06-15_bsp_reader_inventory.md` reflects the current
+  repository state for `addons/hl_core`, `bsp_reader.gd`, `bsp_clipnode.gd`,
+  `trace_hull`, `point_contents` and OpenStrike-owned BSP reader presence.
+* **Movement ownership:** Confirm that
+  `src/dev/labs/bsp_walkable/bsp_walkable_runner.gd` does not define local
+  authoritative acceleration, friction or maxvelocity equations. It should
+  consume production-owned movement math from `src/game/movement`.
+* **Air acceleration:** Run the movement smoke through
+  `scripts/run_smoke_checks.sh` and verify that PR-04A air acceleration remains
+  green. Air acceleration must use full wishspeed for acceleration amount while
+  capping only the add-speed target.
+* **Collision honesty:** Keep `godot_scene_collision` documented as temporary
+  non-parity. Do not add contact movement golden tests on the Godot collision
+  backend.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

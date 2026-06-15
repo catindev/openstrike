@@ -40,6 +40,10 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
   Edit only `gen/coverage_status_matrix.json` by hand for status vocabulary
   changes, then regenerate the schema/document artifacts with `gen/generate.py`.
 * Before accepting a subjective feel claim, read `docs/DEV_LABS_METHODOLOGY.md` and map the claim to telemetry, a smoke test, a debug overlay or a planned dev lab.
+* Before adding dirty experiments, unreviewed third-party code or dev-only
+  comparison code, read `docs/TAINTED_LABS_POLICY.md`,
+  `docs/TAINT_LEDGER.md` and `docs/PUBLIC_OPEN_SOURCE_EXIT_PLAN.md`. Tainted
+  code may not be imported by `src/core`, `src/game` or `src/presentation`.
 * After every user-assisted run in a test scene, inspect the trace/log
   artifacts and write a short test report with observations, telemetry facts,
   conclusions and next actions before moving on.
@@ -50,7 +54,8 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
 * When adding or using external research, update `docs/SOURCE_CATALOG.md` with source weight and use/do-not-use rules.
 * When adding, updating or relying on committed third-party code or binary
   dependencies, read and update `docs/THIRD_PARTY_DEPENDENCIES.md`. Do not
-  confuse dependency code with proprietary game assets.
+  confuse dependency code with proprietary game assets, and do not treat a
+  missing license file as permission to redistribute.
 * Before editing GDScript, read `docs/GDSCRIPT_AGENT_NOTES.md`.  When a Godot/GDScript parser, type-system, runtime or tooling issue slows work down, append a dated finding with the pitfall and fix there in the same PR; preserve previous agents' notes.
 * Maintain separation of concerns: `src/core` contains generic engine utilities; `src/game` holds game‑rule logic; `src/presentation` covers UI and visual representation.  Do not mix these layers.
 * Do not implement gameplay features in the bootstrap PR.  Focus on establishing the skeleton and documentation.

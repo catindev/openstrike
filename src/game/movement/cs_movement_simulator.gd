@@ -3,8 +3,7 @@ extends RefCounted
 class_name CSMovementSimulator
 
 const SettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
-
-const STOP_EPSILON := 0.01
+const MovementMathRef = preload("res://src/game/movement/cs_movement_math.gd")
 
 var settings
 
@@ -21,8 +20,24 @@ func step(state, input, delta: float, telemetry = null) -> void:
 	if state.on_ground:
 		state.position.y = max(state.position.y, state.ground_height)
 		state.velocity.y = 0.0
-		_apply_friction(state, frame_delta)
-		_accelerate(state, input, settings.max_speed, settings.ground_accelerate, frame_delta)
+		state.velocity = MovementMathRef.apply_friction(
+			state.velocity,
+			settings.stop_speed,
+			settings.friction,
+			frame_delta
+		)
+		var ground_wish := MovementMathRef.wish_direction_and_speed(
+			input.forward_move,
+			input.side_move,
+			settings.max_speed
+		)
+		state.velocity = MovementMathRef.accelerate(
+			state.velocity,
+			ground_wish["direction"],
+			float(ground_wish["speed"]),
+			settings.ground_accelerate,
+			frame_delta
+		)
 
 		if input.jump:
 			state.velocity.y = settings.jump_velocity
@@ -30,7 +45,19 @@ func step(state, input, delta: float, telemetry = null) -> void:
 		_check_velocity(state)
 
 	if not state.on_ground:
-		_air_accelerate(state, input, frame_delta)
+		var air_wish := MovementMathRef.wish_direction_and_speed(
+			input.forward_move,
+			input.side_move,
+			settings.max_speed
+		)
+		state.velocity = MovementMathRef.air_accelerate(
+			state.velocity,
+			air_wish["direction"],
+			float(air_wish["speed"]),
+			settings.air_max_wishspeed,
+			settings.air_accelerate,
+			frame_delta
+		)
 		_apply_half_gravity(state, frame_delta)
 		_check_velocity(state)
 
@@ -64,97 +91,13 @@ func _apply_duck(state, wants_duck: bool) -> void:
 	state.body_height = settings.duck_height if state.ducked else settings.stand_height
 
 
-func _apply_friction(state, delta: float) -> void:
-	var speed: float = state.horizontal_speed()
-	if speed < STOP_EPSILON:
-		state.velocity.x = 0.0
-		state.velocity.z = 0.0
-		return
-
-	var control: float = max(speed, settings.stop_speed)
-	var drop: float = control * settings.friction * delta
-	var new_speed: float = max(speed - drop, 0.0)
-	var scale: float = new_speed / speed
-	state.velocity.x *= scale
-	state.velocity.z *= scale
-
-
-func _air_accelerate(state, input, delta: float) -> void:
-	var wish := _wish_direction_and_speed(input, settings.max_speed)
-	_air_accelerate_along(state, wish["direction"], float(wish["speed"]), settings.air_accelerate, delta)
-
-
 func _apply_half_gravity(state, delta: float) -> void:
 	state.velocity.y -= settings.gravity * delta * 0.5
 
 
 func _check_velocity(state) -> void:
 	var max_velocity: float = max(settings.max_velocity, 0.0)
-	if max_velocity <= 0.0:
-		return
-
-	state.velocity.x = _checked_velocity_component(state.velocity.x, max_velocity)
-	state.velocity.y = _checked_velocity_component(state.velocity.y, max_velocity)
-	state.velocity.z = _checked_velocity_component(state.velocity.z, max_velocity)
-
-
-func _checked_velocity_component(value: float, max_velocity: float) -> float:
-	if value != value:
-		return 0.0
-	if value > max_velocity:
-		return max_velocity
-	if value < -max_velocity:
-		return -max_velocity
-	return value
-
-
-func _accelerate(state, input, max_wishspeed: float, acceleration: float, delta: float) -> void:
-	var wish := _wish_direction_and_speed(input, max_wishspeed)
-	_accelerate_along(state, wish["direction"], float(wish["speed"]), acceleration, delta)
-
-
-func _air_accelerate_along(state, wish_direction: Vector3, full_wish_speed: float, acceleration: float, delta: float) -> void:
-	if full_wish_speed <= 0.0 or wish_direction == Vector3.ZERO:
-		return
-
-	var capped_wish_speed: float = min(full_wish_speed, settings.air_max_wishspeed)
-	var current_speed: float = state.horizontal_velocity().dot(wish_direction)
-	var add_speed: float = capped_wish_speed - current_speed
-	if add_speed <= 0.0:
-		return
-
-	var accel_speed: float = min(acceleration * full_wish_speed * delta, add_speed)
-	state.velocity.x += accel_speed * wish_direction.x
-	state.velocity.z += accel_speed * wish_direction.z
-
-
-func _accelerate_along(state, wish_direction: Vector3, wish_speed: float, acceleration: float, delta: float) -> void:
-	if wish_speed <= 0.0 or wish_direction == Vector3.ZERO:
-		return
-
-	var current_speed: float = state.horizontal_velocity().dot(wish_direction)
-	var add_speed: float = wish_speed - current_speed
-	if add_speed <= 0.0:
-		return
-
-	var accel_speed: float = min(acceleration * wish_speed * delta, add_speed)
-	state.velocity.x += accel_speed * wish_direction.x
-	state.velocity.z += accel_speed * wish_direction.z
-
-
-func _wish_direction_and_speed(input, max_wishspeed: float) -> Dictionary:
-	var wish_vector := Vector3(input.side_move, 0.0, input.forward_move)
-	var input_length: float = min(wish_vector.length(), 1.0)
-	if input_length <= 0.0:
-		return {
-			"direction": Vector3.ZERO,
-			"speed": 0.0,
-		}
-
-	return {
-		"direction": wish_vector.normalized(),
-		"speed": max_wishspeed * input_length,
-	}
+	state.velocity = MovementMathRef.check_velocity_components(state.velocity, max_velocity)
 
 
 func _resolve_ground(state) -> void:

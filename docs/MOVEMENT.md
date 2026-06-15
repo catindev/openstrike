@@ -42,6 +42,9 @@ collision-integrated step handling.
 * `CSMovementInput` stores normalized forward/side movement plus jump and duck.
 * `CSMovementState` stores position, velocity, ground state, hull height and
   ground height.
+* `CSMovementMath` owns reusable acceleration, air acceleration, friction, wish
+  direction and component-wise maxvelocity helpers. Dev labs may consume these
+  helpers but must not copy the equations locally.
 * `CSMovementSimulator` advances movement state for one frame.
 * `CSMovementTelemetry` records per-frame state/input/settings snapshots.
 

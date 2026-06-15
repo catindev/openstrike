@@ -10,6 +10,7 @@ else
 fi
 
 ./scripts/bootstrap_gdextensions.sh
+./scripts/check_taint_scope.sh
 
 "${godot_bin}" --headless --path . --quit
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/asset_vfs_smoke.gd

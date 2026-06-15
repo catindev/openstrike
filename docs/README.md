@@ -6,38 +6,41 @@ This directory is the operational memory of the project. Every AI/coding agent m
 
 1. `../AGENTS.md` — mandatory agent rules.
 2. `LEGAL_ORIGINALITY.md` — legal and originality boundaries.
-3. `DECISIONS.md` — binding implementation decisions and project boundaries.
-4. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
-5. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
+3. `TAINTED_LABS_POLICY.md`, `TAINT_LEDGER.md` and
+   `PUBLIC_OPEN_SOURCE_EXIT_PLAN.md` — dirty lab boundaries, accepted
+   pre-release risks and release gates.
+4. `DECISIONS.md` — binding implementation decisions and project boundaries.
+5. `ARCHITECTURE.md` — target Godot architecture and layer boundaries.
+6. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
    Godot code, GDScript, scenes, resources, presentation, asset-provider code
    or Godot smoke/CI checks.
-6. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
-7. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
-8. `ASSET_PIPELINE.md` — planned local asset loading model.
-9. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
-10. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-11. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
-12. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-13. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+7. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
+8. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
+9. `ASSET_PIPELINE.md` — planned local asset loading model.
+10. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
+11. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+12. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+13. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
+14. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-14. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
+15. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
     eye height and FOV contract for PR-06 profile preflight.
-15. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
+16. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
     instructions before gameplay/gunplay work.
-16. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+17. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
     effect and lifecycle asset map for CS 1.6-style orchestration.
-17. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
+18. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
     atlas and coverage report fields.
-18. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+19. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-19. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-20. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+20. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+21. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-21. `test_reports/` — persistent reports from user-assisted dev-lab runs.
-22. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+22. `test_reports/` — persistent reports from user-assisted dev-lab runs.
+23. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-23. `KNOWLEDGE_BASE.md` — current project knowledge base.
-24. `TESTING.md` — testing strategy and smoke checks.
+24. `KNOWLEDGE_BASE.md` — current project knowledge base.
+25. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -55,6 +58,11 @@ or Godot smoke/CI checks, read `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md`.
 
 Before adding, updating or using committed third-party code or binary
 dependencies, read `THIRD_PARTY_DEPENDENCIES.md` and update it in the same PR.
+
+Before adding dirty labs, unreviewed dependency code or external comparison
+experiments, read `TAINTED_LABS_POLICY.md`, `TAINT_LEDGER.md` and
+`PUBLIC_OPEN_SOURCE_EXIT_PLAN.md`. Do not import tainted dev code from
+production paths.
 
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked

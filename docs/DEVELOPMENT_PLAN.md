@@ -641,6 +641,42 @@ before weapons are judged in a non-CS space.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-07.1 Runtime spine cleanup
+
+**Goal:** Close the architecture and release-risk gaps opened by the useful
+PR-07 BSP lab without adding gameplay features.
+
+**Includes:**
+
+* Dirty/tainted lab policy, taint ledger and public open-source exit gate docs.
+* A BSP reader inventory report proving whether `addons/hl_core`,
+  `bsp_reader.gd`, `bsp_clipnode.gd`, `trace_hull` or `point_contents` exist
+  in the current repository.
+* Shared production-owned movement math helper used by both
+  `CSMovementSimulator` and the BSP walkable lab, so the lab no longer owns
+  duplicate acceleration/friction/maxvelocity equations.
+* Documentation that `goldsrc-godot` is an accepted pre-release risk with no
+  license file in the vendored snapshot, and that `godot_scene_collision`
+  remains a temporary non-parity backend.
+* A taint scope smoke gate.
+
+**Excludes:**
+
+* TraceBackend, ClipnodeTraceBackend, box trace or BSP reader implementation.
+* Weapon loop, HUD, economy, buy menu, LocalGameServer, bots or round logic.
+* A large PlayerMoveService migration.
+
+**Acceptance criteria:**
+
+* BSP lab still runs and writes telemetry.
+* Movement equations are no longer duplicated in the BSP lab runner.
+* PR-04A air acceleration behavior remains covered by movement smoke.
+* `addons/hl_core` / OpenStrike-owned BSP reader absence or presence is
+  recorded in `docs/test_reports/`.
+* `godot_scene_collision` is documented as temporary non-parity.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.
