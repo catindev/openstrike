@@ -251,8 +251,10 @@ prove standing-hull contact at center `x=16` and `fraction=0.25` for
 `x=32 -> x=-32` without claiming that all real BSP30 clipnode trees use
 point-space planes.
 
-The real-map hull-space question remains a later verification task. Future
-real-BSP collision work must not apply runtime offsets on top of already
-pre-expanded hull-space planes. Denylisted Xash3D/HLSDK source files were not
-opened for this implementation; the implementation follows the in-repo
-runtime-spine spec and synthetic byte-layout tests.
+Contract A is therefore not final real-map truth. It remains subject to
+verification on a real BSP30 map before the backend is promoted beyond
+synthetic fixtures. Future real-BSP collision work must not apply runtime
+offsets on top of already pre-expanded hull-space planes. Denylisted
+Xash3D/HLSDK source files were not opened for this implementation; the
+implementation follows the in-repo runtime-spine spec and synthetic byte-layout
+tests.

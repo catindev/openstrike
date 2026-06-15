@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file.  The format
   smoke checks to prove point-hull hit, standing-hull hit, start-solid
   detection, free trace, malformed clipnode diagnostics, empty clipnodes as
   non-solid and Source-style 48-byte model rejection without Valve assets.
+* Added top-level BSP trace `contents_code` reporting and synthetic collision
+  normal assertions so future slide/PMove work can rely on the trace contract.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

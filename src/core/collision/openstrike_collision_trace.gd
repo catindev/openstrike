@@ -19,6 +19,7 @@ var fraction := 1.0
 var start_solid := false
 var all_solid := false
 var contents := ""
+var contents_code := 0
 var model_index := -1
 var collider_class := ""
 var collider_name := ""
@@ -39,6 +40,7 @@ func setup(start: Vector3, end: Vector3, trace_source: String, trace_confidence:
 	start_solid = false
 	all_solid = false
 	contents = ""
+	contents_code = 0
 	model_index = -1
 	collider_class = ""
 	collider_name = ""
@@ -54,6 +56,7 @@ func mark_unsupported(reason: String, capability: String = "") -> void:
 	start_solid = false
 	all_solid = false
 	contents = ""
+	contents_code = 0
 	model_index = -1
 	metadata["reason"] = reason
 	if capability != "":
@@ -89,6 +92,7 @@ func to_dictionary() -> Dictionary:
 		"start_solid": start_solid,
 		"all_solid": all_solid,
 		"contents": contents,
+		"contents_code": contents_code,
 		"model_index": model_index,
 		"collider_class": collider_class,
 		"collider_name": collider_name,

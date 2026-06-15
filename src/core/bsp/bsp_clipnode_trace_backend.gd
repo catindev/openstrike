@@ -80,6 +80,7 @@ func trace_hull(start: Vector3, end: Vector3, hull, collision_mask: int = 0xFFFF
 		trace.start_solid = true
 		trace.all_solid = _is_blocking_contents(end_contents)
 		trace.contents = _contents_name(start_contents)
+		trace.contents_code = start_contents
 		trace.model_index = MODEL_INDEX_WORLD
 		trace.metadata["contents_code"] = start_contents
 		if not diagnostics.is_empty():
@@ -97,9 +98,11 @@ func trace_hull(start: Vector3, end: Vector3, hull, collision_mask: int = 0xFFFF
 		trace.fraction = fraction
 		trace.hit_position = start.lerp(end, fraction)
 		trace.normal = result.get("normal", Vector3.ZERO)
-		trace.contents = _contents_name(int(result.get("contents", CollisionLumpsRef.CONTENTS_SOLID)))
+		var contents_code := int(result.get("contents", CollisionLumpsRef.CONTENTS_SOLID))
+		trace.contents = _contents_name(contents_code)
+		trace.contents_code = contents_code
 		trace.model_index = MODEL_INDEX_WORLD
-		trace.metadata["contents_code"] = int(result.get("contents", CollisionLumpsRef.CONTENTS_SOLID))
+		trace.metadata["contents_code"] = contents_code
 	return trace
 
 

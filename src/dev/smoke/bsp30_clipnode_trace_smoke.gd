@@ -66,6 +66,8 @@ func _run_point_hull_trace() -> bool:
 		and _assert(abs(float(report.get("fraction", 0.0)) - 0.5) <= 0.001, "Point hull trace should hit halfway through x=10 -> x=-10", report)
 		and _assert(abs(float(report.get("hit_position", [])[0])) <= 0.001, "Point hull hit position should be on x=0", report)
 		and _assert(str(report.get("contents", "")) == "solid", "Point hull should report solid contents on impact", report)
+		and _assert(int(report.get("contents_code", 0)) == CollisionLumpsRef.CONTENTS_SOLID, "Point hull should expose top-level solid contents code", report)
+		and _assert(_vec3_close(report.get("normal", []), [1.0, 0.0, 0.0]), "Point hull should report the crossed plane normal", report)
 	)
 
 
@@ -79,6 +81,7 @@ func _run_standing_hull_trace() -> bool:
 		_assert(bool(report.get("hit", false)), "Standing hull should hit the runtime-offset synthetic plane", report)
 		and _assert(abs(float(report.get("fraction", 0.0)) - 0.25) <= 0.001, "Standing hull center should contact at x=16 over x=32 -> x=-32", report)
 		and _assert(abs(float(report.get("hit_position", [])[0]) - 16.0) <= 0.001, "Standing hull center contact should be x=16", report)
+		and _assert(_vec3_close(report.get("normal", []), [1.0, 0.0, 0.0]), "Standing hull should report the crossed plane normal", report)
 	)
 
 
@@ -296,6 +299,17 @@ func _diagnostics_contain(diagnostics: Array, code: String) -> bool:
 		if str(diagnostic.get("code", "")) == code:
 			return true
 	return false
+
+
+func _vec3_close(value, expected: Array, epsilon: float = 0.001) -> bool:
+	var actual: Array = value
+	if actual.size() != 3 or expected.size() != 3:
+		return false
+	return (
+		abs(float(actual[0]) - float(expected[0])) <= epsilon
+		and abs(float(actual[1]) - float(expected[1])) <= epsilon
+		and abs(float(actual[2]) - float(expected[2])) <= epsilon
+	)
 
 
 func _assert(condition: bool, message: String, context = null) -> bool:
