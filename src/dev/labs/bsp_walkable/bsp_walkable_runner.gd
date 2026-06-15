@@ -4,6 +4,8 @@ class_name OpenStrikeBspWalkableRunner
 
 const AssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
 const BspProviderRef = preload("res://src/core/maps/goldsrc_bsp_runtime_provider.gd")
+const MapEntityIndexRef = preload("res://src/core/maps/map_entity_index.gd")
+const TraceBackendRef = preload("res://src/core/collision/godot_scene_trace_backend.gd")
 const MovementMathRef = preload("res://src/game/movement/cs_movement_math.gd")
 const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
 const TraceLoggerRef = preload("res://src/dev/labs/bsp_walkable/bsp_walkable_trace_logger.gd")
@@ -41,15 +43,6 @@ const MOVEMENT_SOUND_PATHS = {
 		"sound/player/pl_jumpland2.wav",
 	],
 }
-const NON_BLOCKING_ENTITY_CLASSES: Array[String] = [
-	"func_bomb_target",
-	"func_buyzone",
-	"func_illusionary",
-	"info_target",
-	"light",
-	"light_environment",
-	"trigger_camera",
-]
 
 var config_path := "user://local_goldsrc.json"
 var map_path := DEFAULT_MAP_PATH
@@ -62,6 +55,8 @@ var _asset_manager
 var _profile
 var _settings
 var _provider
+var _entity_index
+var _trace_backend
 var _logger
 var _map_node: Node = null
 var _body: CharacterBody3D = null
@@ -86,6 +81,8 @@ var _started := false
 var _finished := false
 var _spawn_report := {}
 var _map_metadata := {}
+var _map_entity_index_report := {}
+var _trace_backend_report := {}
 var _non_blocking_collision_report := {}
 var _skybox_report := {}
 var _imported_sky_surface_report := {}
@@ -200,6 +197,8 @@ func _start_lab() -> void:
 	_map_node = load_result["node"]
 	_map_metadata = load_result.get("metadata", {})
 	add_child(_map_node)
+	_setup_entity_index()
+	_setup_trace_backend()
 	_non_blocking_collision_report = _disable_non_blocking_entity_collision()
 	_imported_sky_surface_report = _hide_imported_sky_surface_meshes()
 
@@ -218,8 +217,20 @@ func _start_lab() -> void:
 	_started = true
 	print("OpenStrike BSP walkable lab started.")
 	print("Map: %s" % map_path)
-	print("Collision source: %s" % BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)
+	print("Trace backend: %s" % str(_trace_backend_report.get("source", BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)))
 	print("Trace summary: %s" % _logger.get_paths().get("summary_path", ""))
+
+
+func _setup_entity_index() -> void:
+	_entity_index = MapEntityIndexRef.new()
+	_entity_index.build_from_scene(_map_node)
+	_map_entity_index_report = _entity_index.to_report()
+
+
+func _setup_trace_backend() -> void:
+	_trace_backend = TraceBackendRef.new()
+	_trace_backend.setup(get_world_3d())
+	_trace_backend_report = _trace_backend.capabilities()
 
 
 func _setup_world_lighting() -> void:
@@ -307,14 +318,18 @@ func _setup_trace_logger(load_result: Dictionary) -> void:
 	_logger.start({
 		"map_path": map_path,
 		"config_path_kind": _config_path_kind(config_path),
-		"collision_source": BspProviderRef.COLLISION_SOURCE_GODOT_SCENE,
+		"collision_source": str(_trace_backend_report.get("source", BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)),
+		"collision_confidence": str(_trace_backend_report.get("confidence", "")),
 		"goldsrc_parity_collision_source": BspProviderRef.COLLISION_SOURCE_GOLDSRC_HULL_TRACE,
+		"goldsrc_parity_collision": bool(_trace_backend_report.get("goldsrc_parity", false)),
+		"trace_backend": _trace_backend_report,
 		"scale_factor": _profile.goldsrc_unit_scale,
 		"profile": _profile.to_dictionary(),
 		"movement_settings": _settings.to_dictionary(),
 		"lab_max_speed_ups": LAB_WALK_MAX_SPEED_UNITS,
 		"spawn": _spawn_report,
 		"map_metadata": _map_metadata,
+		"map_entity_index": _map_entity_index_report,
 		"non_blocking_entity_collision": _non_blocking_collision_report,
 		"skybox": _skybox_report,
 		"imported_sky_surfaces": _imported_sky_surface_report,
@@ -774,26 +789,9 @@ func _apply_camera_rotation() -> void:
 
 
 func _find_spawn_node() -> Node3D:
-	var fallback: Node3D = null
-	var stack: Array[Node] = []
-	if _map_node != null:
-		stack.append(_map_node)
-
-	while not stack.is_empty():
-		var current: Node = stack.pop_back()
-		if current.has_meta("entity") and current is Node3D:
-			var entity = current.get_meta("entity")
-			if entity is Dictionary:
-				var classname := str(entity.get("classname", ""))
-				if classname == "info_player_deathmatch":
-					return current as Node3D
-				if classname == "info_player_start" and fallback == null:
-					fallback = current as Node3D
-		for child in current.get_children():
-			if child is Node:
-				stack.append(child)
-
-	return fallback
+	if _entity_index == null:
+		return null
+	return _entity_index.select_spawn_node()
 
 
 func _disable_non_blocking_entity_collision() -> Dictionary:
@@ -802,28 +800,23 @@ func _disable_non_blocking_entity_collision() -> Dictionary:
 		"disabled_collision_object_count": 0,
 		"disabled_collision_shape_count": 0,
 		"classes": {},
+		"source": "map_entity_index_collision_policy",
 	}
-	var stack: Array[Node] = []
-	if _map_node != null:
-		stack.append(_map_node)
+	if _entity_index == null:
+		return report
 
-	while not stack.is_empty():
-		var current: Node = stack.pop_back()
-		if current.has_meta("entity"):
-			var entity = current.get_meta("entity")
-			if entity is Dictionary:
-				var classname := str(entity.get("classname", ""))
-				if NON_BLOCKING_ENTITY_CLASSES.has(classname):
-					var disabled := _disable_collision_tree(current)
-					report["disabled_entity_count"] = int(report["disabled_entity_count"]) + 1
-					report["disabled_collision_object_count"] = int(report["disabled_collision_object_count"]) + int(disabled.get("collision_objects", 0))
-					report["disabled_collision_shape_count"] = int(report["disabled_collision_shape_count"]) + int(disabled.get("collision_shapes", 0))
-					var classes: Dictionary = report["classes"]
-					classes[classname] = int(classes.get(classname, 0)) + 1
-					report["classes"] = classes
-		for child in current.get_children():
-			if child is Node:
-				stack.append(child)
+	for entry in _entity_index.entries_for_player_collision_disabled():
+		var current = entry.get("node", null)
+		if not current is Node:
+			continue
+		var disabled := _disable_collision_tree(current)
+		report["disabled_entity_count"] = int(report["disabled_entity_count"]) + 1
+		report["disabled_collision_object_count"] = int(report["disabled_collision_object_count"]) + int(disabled.get("collision_objects", 0))
+		report["disabled_collision_shape_count"] = int(report["disabled_collision_shape_count"]) + int(disabled.get("collision_shapes", 0))
+		var classname := str(entry.get("classname", ""))
+		var classes: Dictionary = report["classes"]
+		classes[classname] = int(classes.get(classname, 0)) + 1
+		report["classes"] = classes
 
 	return report
 
@@ -893,7 +886,9 @@ func _trace_entry(delta: float, input: Dictionary, before: Dictionary, after: Di
 		"time_sec": _elapsed,
 		"delta": delta,
 		"map_path": map_path,
-		"collision_source": BspProviderRef.COLLISION_SOURCE_GODOT_SCENE,
+		"collision_source": str(_trace_backend_report.get("source", BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)),
+		"collision_confidence": str(_trace_backend_report.get("confidence", "")),
+		"goldsrc_parity_collision": bool(_trace_backend_report.get("goldsrc_parity", false)),
 		"input": input,
 		"before": before,
 		"after": after,
@@ -936,13 +931,14 @@ func _update_overlay() -> void:
 		return
 	var paths: Dictionary = _logger.get_paths()
 	_overlay.text = (
-		"OpenStrike BSP walkable lab | %s | collision=%s | sky=%s:%s\n"
+		"OpenStrike BSP walkable lab | %s | collision=%s:%s | sky=%s:%s\n"
 		+ "WASD move  Mouse look  Space jump  Ctrl/C duck  F2 release mouse  Cmd+Q/window close quit\n"
 		+ "pos=%s vel_ups=%s speed=%.1f hspeed=%.1f floor=%s slides=%d\n"
 		+ "trace=%s"
 	) % [
 		map_path,
-		BspProviderRef.COLLISION_SOURCE_GODOT_SCENE,
+		str(_trace_backend_report.get("source", BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)),
+		str(_trace_backend_report.get("confidence", "")),
 		str(_skybox_report.get("skyname", "")),
 		str(_skybox_report.get("status", "")),
 		str(_body.global_position.snapped(Vector3(0.001, 0.001, 0.001))),

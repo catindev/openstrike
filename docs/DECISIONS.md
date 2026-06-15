@@ -173,3 +173,20 @@ The walkable lab filters known non-blocking/trigger-like entities such as
 `func_buyzone`, `func_bomb_target` and `func_illusionary` out of player
 collision. This is still not a final GoldSrc contents/solid implementation; it
 only prevents the first manual lab from treating trigger brushes as walls.
+
+## 0018. Add TraceBackend and MapEntityIndex before gameplay consumes BSP maps
+
+After PR-07 and PR-07.1, the project has a useful walkable BSP lab but no
+OpenStrike-owned BSP reader, clipnode traversal, `trace_hull` or
+`point_contents`. OpenStrike therefore introduces a small `TraceBackend`
+boundary before gameplay systems consume map collision. The current
+`OpenStrikeGodotSceneTraceBackend` reports `godot_scene_collision`,
+`godot_collision_unverified` and `goldsrc_parity=false`; it must not fake
+GoldSrc hull trace or contents queries through Godot scene physics.
+
+Imported entity semantics are indexed through `OpenStrikeMapEntityIndex`.
+Spawn selection, buyzones, bomb targets, illusionary brushes and trigger-like
+collision policy belong to that core map index rather than to a dev lab runner.
+This keeps the walkable lab useful while making the next replacement point
+clear: a future OpenStrike BSP reader/clipnode backend can replace the trace
+backend without rewriting manual-test input, camera, audio or telemetry code.

@@ -411,6 +411,36 @@ checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-07.2 TraceBackend and MapEntityIndex checklist
+
+For the trace boundary and entity-index cleanup, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  trace backend and map entity index smoke checks after BSP provider smoke.
+* **Trace backend smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/trace_backend_smoke.gd`
+  when iterating on `src/core/collision`. It must prove
+  `OpenStrikeGodotSceneTraceBackend` reports `godot_scene_collision`,
+  unverified confidence, `goldsrc_parity=false`, and no fake `trace_hull` or
+  `point_contents` support.
+* **Map entity index smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/map_entity_index_smoke.gd`
+  when iterating on imported entity classification. It must prove spawn
+  priority and player-collision-disable policy for buyzones, bomb targets,
+  illusionary and trigger-like entities.
+* **BSP lab ownership:** Confirm
+  `src/dev/labs/bsp_walkable/bsp_walkable_runner.gd` consumes
+  `OpenStrikeMapEntityIndex` and no longer owns a hardcoded
+  non-blocking-entity class list.
+* **Telemetry contract:** Confirm the BSP lab summary and trace entries include
+  backend source, confidence and `goldsrc_parity_collision=false`.
+* **Collision honesty:** Do not add contact movement golden tests on
+  `godot_scene_collision`; GoldSrc hull trace remains blocked on an
+  OpenStrike-owned BSP reader.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

@@ -677,6 +677,55 @@ PR-07 BSP lab without adding gameplay features.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-07.2 TraceBackend and MapEntityIndex
+
+**Goal:** Put a narrow collision/query boundary and map-entity semantic index
+between the PR-07 walkable lab and later gameplay work, without implementing a
+new BSP reader or weapon loop.
+
+**Why before PR-08:** The walkable lab already proved that real BSP maps are
+useful, but its first version still knew entity collision policy directly and
+reported imported scene collision as a single string. Before server/gameplay
+systems consume map state, OpenStrike needs an explicit backend contract that
+can be replaced by a GoldSrc clipnode implementation later, plus an entity
+index that owns spawn, buyzone, bomb target, illusionary and trigger-like
+classification.
+
+**Includes:**
+
+* Minimal `OpenStrikeTraceBackend` contract with `trace_ray`, `trace_hull`,
+  `point_contents` and capability reporting.
+* `OpenStrikeGodotSceneTraceBackend` as a temporary non-parity backend for
+  imported Godot scene collision. It supports ray queries only when a `World3D`
+  is provided and keeps `trace_hull` / `point_contents` marked as requiring an
+  OpenStrike BSP reader.
+* `OpenStrikeMapEntityIndex` for imported scene entity metadata, spawn
+  selection, buyzone/bomb target/illusionary/trigger classification and
+  player-collision policy.
+* BSP walkable lab telemetry that records backend source, confidence and
+  `goldsrc_parity=false`, and consumes `MapEntityIndex` instead of hardcoding
+  entity collision truth in the runner.
+* Smoke checks for the trace backend contract and entity-index classification.
+
+**Excludes:**
+
+* OpenStrike-owned BSP reader, clipnode traversal, `ClipnodeTraceBackend`,
+  box trace or GoldSrc hull-trace parity.
+* Weapon loop, HUD, economy, buy menu, LocalGameServer, bots or round logic.
+* Contact movement golden tests on `godot_scene_collision`.
+
+**Acceptance criteria:**
+
+* `godot_scene_collision` remains explicitly marked as temporary non-parity
+  with unverified confidence.
+* `trace_hull` and `point_contents` exist as API boundaries but do not fake
+  support before a BSP reader exists.
+* The BSP lab runner no longer owns the list of non-blocking entity classes.
+* Trace summaries include backend source/confidence and map entity index
+  reports for later manual-test analysis.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.
