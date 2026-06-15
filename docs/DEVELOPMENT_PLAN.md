@@ -898,6 +898,34 @@ model-0 headnode facts without committing map bytes or local paths.
 **Next:** Continue with PR-08E player state and command model before any
 movement algorithm, runtime movement integration or gameplay features.
 
+## PR-08E Player state and command model
+
+**Goal:** Add pure player movement state, command and result data types for
+future PMove work.
+
+**Includes:**
+
+* `OpenStrikePlayerState` with origin, velocity, view angles, duck/ground state,
+  flags and last trace summary.
+* `OpenStrikePlayerMoveCommand` with forward/side movement, jump/duck intent,
+  view angles and frametime.
+* `OpenStrikePlayerMoveResult` with resulting state, source command, trace
+  summary and diagnostics.
+* Smoke coverage for defaults, dictionary roundtrips and no `CharacterBody3D`
+  dependency.
+
+**Excludes:**
+
+* Movement algorithms, `PlayerMoveService`, trace-slide contact movement,
+  LocalGameSession integration, weapons, HUD, economy, bots and real-map
+  contact goldens.
+
+**Acceptance criteria:**
+
+* The new types serialize to dictionaries and roundtrip through dictionaries.
+* The smoke test proves defaults and keeps the new data layer free of Godot
+  character-controller dependencies.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

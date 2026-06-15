@@ -552,6 +552,27 @@ checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08E player state and command model checklist
+
+For the pure player movement DTO packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  player move types smoke before local game session smoke.
+* **Player move types smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/player_move_types_smoke.gd`
+  when iterating on `src/game/player` data objects.
+* **Serialization contract:** Confirm `OpenStrikePlayerState`,
+  `OpenStrikePlayerMoveCommand` and `OpenStrikePlayerMoveResult` serialize to
+  dictionaries and roundtrip through dictionaries.
+* **Scope boundary:** Confirm the PR does not add movement algorithms,
+  `PlayerMoveService`, `LocalGameSession` movement, trace-slide contact
+  movement, weapons, HUD, economy, bots or real-map contact goldens.
+* **Godot controller boundary:** Confirm the new player data objects do not
+  depend on `CharacterBody3D` or scene nodes.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

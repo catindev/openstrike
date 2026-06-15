@@ -30,4 +30,5 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --capability-smoke
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/cvar_config_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/movement_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_types_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd

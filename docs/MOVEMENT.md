@@ -44,6 +44,22 @@ collision-integrated step handling.
 
 ## Runtime classes
 
+`src/game/player` contains the PMove-facing data types that future runtime
+movement packets will consume:
+
+* `OpenStrikePlayerState` stores origin, velocity, view angles, duck/ground
+  state, flags and the last trace summary.
+* `OpenStrikePlayerMoveCommand` stores forward/side movement, jump/duck intent,
+  view angles and command frametime.
+* `OpenStrikePlayerMoveResult` stores the resulting state, source command,
+  trace summary and diagnostics.
+
+These are pure serializable `RefCounted` objects. They do not implement
+movement, do not use `CharacterBody3D` and are not wired into
+`OpenStrikeLocalGameSession` yet.
+
+`src/game/movement` contains the earlier cvar-backed movement simulator:
+
 * `CSMovementSettings` reads movement cvars from `OpenStrikeCvarRegistry`.
 * `CSMovementInput` stores normalized forward/side movement plus jump and duck.
 * `CSMovementState` stores position, velocity, ground state, hull height and

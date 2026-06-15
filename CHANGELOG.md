@@ -50,6 +50,12 @@ All notable changes to this project will be documented in this file.  The format
 * Added shared trace backend smoke coverage that verifies both selectable
   backends expose the same trace-result fields while preserving Godot
   non-parity and synthetic-only BSP support.
+* Added pure `src/game/player` movement data types for future PMove:
+  `OpenStrikePlayerState`, `OpenStrikePlayerMoveCommand` and
+  `OpenStrikePlayerMoveResult`.
+* Added `src/dev/smoke/player_move_types_smoke.gd` and wired it into shared
+  smoke checks to verify defaults, dictionary roundtrips and the absence of
+  `CharacterBody3D` dependencies in the new player movement DTOs.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

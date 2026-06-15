@@ -57,6 +57,10 @@ viewmodel/map runtime and eventual gameplay authority.
 * PR-08D reconciliation confirms the original local BSP typed-load inspection
   acceptance criteria were satisfied by PR-08B.1. No additional PR-08D
   implementation packet remains unless a new typed-load diagnostic is scoped.
+* PR-08E adds pure `src/game/player` data types:
+  `OpenStrikePlayerState`, `OpenStrikePlayerMoveCommand` and
+  `OpenStrikePlayerMoveResult`, with dictionary roundtrip smoke coverage and no
+  `CharacterBody3D` dependency.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -106,6 +110,8 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
   `OpenStrikeGodotSceneTraceBackend`.
 * `src/game/movement/` contains current deterministic movement simulation and
   smoke-tested math helpers.
+* `src/game/player/` contains PMove-facing state/command/result DTOs only. It
+  does not yet contain `PlayerMoveService` or contact movement.
 * `src/game/runtime/` contains `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot`, `OpenStrikeUserCommand`, `OpenStrikeRoundState` and
   `OpenStrikeGameSnapshot`. Runtime consumes sanitized spawn descriptors from
@@ -164,15 +170,17 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08E: Player state and command model`.
+Start `PR-08F: PlayerMoveService free-volume movement`.
 
 Scope:
 
-* add pure player movement state/command/result data types for future PMove;
-* serialize these types to dictionaries and cover defaults/roundtrip in smoke;
-* do not add the movement algorithm, PlayerMoveService, LocalGameSession
-  movement, weapons, HUD, real map contact golden tests or WAD/miptexture
-  parsing;
+* create `src/game/player/player_move_service.gd`;
+* drive backend-independent free-volume movement through existing
+  `CSMovementMath` / current movement contracts;
+* use `TraceBackend` only as a dependency placeholder and do not add contact
+  movement yet;
+* do not add step-slide, ramps, edgefriction, LocalGameSession movement,
+  weapons, HUD, real map contact golden tests or WAD/miptexture parsing;
 * keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
   limited/synthetic unless a later packet changes that contract.
 
@@ -180,7 +188,9 @@ Scope:
 
 The next task is done when:
 
-* PR-08E types serialize to dictionaries and smoke verifies defaults/roundtrip;
+* existing movement smoke can be driven through `PlayerMoveService`;
+* air-strafe regression remains guarded;
+* no `move_and_slide` or duplicate movement equations are introduced;
 * the selected packet is completed without neighboring scope;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
