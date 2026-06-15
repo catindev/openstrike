@@ -10,11 +10,13 @@ const SOURCE_GOLDSRC_HULL_TRACE := "goldsrc_hull_trace"
 
 const CONFIDENCE_UNAVAILABLE := "unavailable"
 const CONFIDENCE_GODOT_COLLISION_UNVERIFIED := "godot_collision_unverified"
+const CONFIDENCE_SYNTHETIC_VERIFIED := "synthetic_verified"
 
 const CAP_DEFERRED := "deferred"
 const CAP_REQUIRES_WORLD_3D := "requires_world_3d"
 const CAP_REQUIRES_OPENSTRIKE_BSP_READER := "requires_openstrike_bsp_reader"
 const CAP_SUPPORTED_BY_GODOT_SPACE_STATE := "supported_by_godot_space_state"
+const CAP_SUPPORTED_BY_SYNTHETIC_BSP_FIXTURE := "supported_by_synthetic_bsp_fixture"
 
 
 func capabilities() -> Dictionary:

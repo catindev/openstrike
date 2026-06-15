@@ -233,3 +233,28 @@ current package and must not pull neighboring package scope forward.
 The runtime-spine spec also records the clean-room source trail and denylist
 for BSP30/collision/PMove work. Denylisted engine source files must not be
 opened while implementing matching OpenStrike modules.
+
+## 0022. PR-08B uses runtime-offset hull extents for synthetic BSP30 clipnodes
+
+PR-08B implements the first OpenStrike-owned BSP30 collision vertical slice
+only for synthetic buffers. The synthetic fixture declares its clipnode plane
+as point-space (`x=0`) and `OpenStrikeBspClipnodeTraceBackend` applies
+runtime hull extents over that point-space plane:
+
+```text
+offset = abs(normal.x) * ext.x + abs(normal.y) * ext.y + abs(normal.z) * ext.z
+```
+
+This is Contract A from `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`. The choice
+is intentionally scoped to the PR-08B synthetic fixture so the smoke test can
+prove standing-hull contact at center `x=16` and `fraction=0.25` for
+`x=32 -> x=-32` without claiming that all real BSP30 clipnode trees use
+point-space planes.
+
+Contract A is therefore not final real-map truth. It remains subject to
+verification on a real BSP30 map before the backend is promoted beyond
+synthetic fixtures. Future real-BSP collision work must not apply runtime
+offsets on top of already pre-expanded hull-space planes. Denylisted
+Xash3D/HLSDK source files were not opened for this implementation; the
+implementation follows the in-repo runtime-spine spec and synthetic byte-layout
+tests.

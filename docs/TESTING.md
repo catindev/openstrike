@@ -467,6 +467,38 @@ following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08B BSP30 collision vertical slice checklist
+
+For the first OpenStrike-owned BSP30 collision reader proof, perform the
+following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  synthetic BSP30 clipnode trace smoke after the trace-backend smoke.
+* **BSP30 clipnode trace smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/bsp30_clipnode_trace_smoke.gd`
+  when iterating on `src/core/bsp`. It must build synthetic BSP30 bytes in
+  memory and prove point-hull hit, standing-hull hit, start-solid detection,
+  free trace, malformed planenum/child diagnostics, empty clipnodes as
+  non-solid and Source-style 48-byte model rejection.
+* **Synthetic fixture only:** Confirm the PR commits no Valve `.bsp` files,
+  extracted lumps or real-map golden traces. CI must not require a licensed
+  local installation.
+* **Scope boundary:** Confirm the PR does not add PMove, `PlayerMoveService`,
+  `LocalGameSession` movement, weapon loop, HUD, economy, bots, fence texture
+  pass-through, moving brush support, WAD/miptexture parsing or real-map
+  contact goldens.
+* **Trace boundary:** Confirm no duplicate `TraceBackend` or trace DTO classes
+  are created. The BSP backend must use the existing
+  `OpenStrikeTraceBackend` / `OpenStrikeCollisionTrace` contract.
+* **Collision honesty:** Confirm `OpenStrikeGodotSceneTraceBackend` still
+  reports `godot_scene_collision`, unverified confidence and
+  `goldsrc_parity=false`.
+* **Clean-room boundary:** Confirm no denylisted Xash3D/HLSDK source files were
+  opened or copied while implementing matching BSP/collision modules.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

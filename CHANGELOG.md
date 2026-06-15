@@ -24,6 +24,16 @@ All notable changes to this project will be documented in this file.  The format
   and acceptance criteria.
 * Added `docs/COMPACT_PR_TASK_PACKETS.md` as the execution order for the
   GoldSrc runtime-spine PR sequence.
+* Added the first synthetic OpenStrike-owned BSP30 collision slice under
+  `src/core/bsp`: typed header/lump parsing, collision lump parsing for
+  planes, clipnodes and GoldSrc 64-byte models, and a limited
+  `OpenStrikeBspClipnodeTraceBackend` for model-0 synthetic hull traces.
+* Added `src/dev/smoke/bsp30_clipnode_trace_smoke.gd` and wired it into shared
+  smoke checks to prove point-hull hit, standing-hull hit, start-solid
+  detection, free trace, malformed clipnode diagnostics, empty clipnodes as
+  non-solid and Source-style 48-byte model rejection without Valve assets.
+* Added top-level BSP trace `contents_code` reporting and synthetic collision
+  normal assertions so future slide/PMove work can rely on the trace contract.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -193,6 +203,10 @@ All notable changes to this project will be documented in this file.  The format
 * Changed local runtime spawn assignment to consume sanitized spawn descriptors
   from `OpenStrikeMapEntityIndex` instead of reading `Node3D` scene objects
   from entity entries.
+* Extended `OpenStrikeCollisionTrace` with `hit`, `start_solid`, `all_solid`,
+  `contents` and `model_index` report fields so synthetic BSP clipnode traces
+  can use the existing TraceBackend result contract instead of creating a
+  duplicate trace DTO.
 * Extended sanitized spawn descriptors with a `source` field and changed the
   local runtime smoke to use a descriptor-only index with no `Node3D`
   dependency.
@@ -301,6 +315,9 @@ All notable changes to this project will be documented in this file.  The format
 * Adopted the compact runtime-spine task packets: the next package after
   PR-08A.1 is `PR-08B BSP30 collision vertical slice`, while runtime movement
   integration is deferred to a later package.
+* Recorded the PR-08B synthetic hull-extent decision: the smoke fixture uses
+  runtime plane offsets over point-space planes, scoped to synthetic BSP30
+  clipnodes and not asserted as the final real-map hull-space contract.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.

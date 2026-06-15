@@ -16,6 +16,11 @@ var end_position := Vector3.ZERO
 var hit_position := Vector3.ZERO
 var normal := Vector3.ZERO
 var fraction := 1.0
+var start_solid := false
+var all_solid := false
+var contents := ""
+var contents_code := 0
+var model_index := -1
 var collider_class := ""
 var collider_name := ""
 var metadata := {}
@@ -32,6 +37,11 @@ func setup(start: Vector3, end: Vector3, trace_source: String, trace_confidence:
 	hit_position = end
 	normal = Vector3.ZERO
 	fraction = 1.0
+	start_solid = false
+	all_solid = false
+	contents = ""
+	contents_code = 0
+	model_index = -1
 	collider_class = ""
 	collider_name = ""
 	metadata = {}
@@ -43,6 +53,11 @@ func mark_unsupported(reason: String, capability: String = "") -> void:
 	hit_position = end_position
 	normal = Vector3.ZERO
 	fraction = 1.0
+	start_solid = false
+	all_solid = false
+	contents = ""
+	contents_code = 0
+	model_index = -1
 	metadata["reason"] = reason
 	if capability != "":
 		metadata["capability"] = capability
@@ -54,6 +69,8 @@ func mark_hit(ray_result: Dictionary) -> void:
 	hit_position = ray_result.get("position", end_position)
 	normal = ray_result.get("normal", Vector3.ZERO)
 	fraction = _calculate_fraction(start_position, end_position, hit_position)
+	start_solid = false
+	all_solid = false
 	var collider = ray_result.get("collider", null)
 	collider_class = collider.get_class() if collider != null else ""
 	collider_name = str(collider.name) if collider is Node else ""
@@ -71,6 +88,12 @@ func to_dictionary() -> Dictionary:
 		"hit_position": _vector_to_array(hit_position),
 		"normal": _vector_to_array(normal),
 		"fraction": fraction,
+		"hit": status == STATUS_HIT,
+		"start_solid": start_solid,
+		"all_solid": all_solid,
+		"contents": contents,
+		"contents_code": contents_code,
+		"model_index": model_index,
 		"collider_class": collider_class,
 		"collider_name": collider_name,
 		"metadata": metadata.duplicate(true),

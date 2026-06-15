@@ -23,6 +23,7 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/goldsrc_renderable_adapter_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/goldsrc_bsp_runtime_provider_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/trace_backend_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/bsp30_clipnode_trace_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/map_entity_index_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/tools/viewmodel_manual_preflight.gd -- --capability-smoke
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/cvar_config_smoke.gd
