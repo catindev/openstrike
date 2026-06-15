@@ -190,3 +190,17 @@ collision policy belong to that core map index rather than to a dev lab runner.
 This keeps the walkable lab useful while making the next replacement point
 clear: a future OpenStrike BSP reader/clipnode backend can replace the trace
 backend without rewriting manual-test input, camera, audio or telemetry code.
+
+## 0019. Introduce local game runtime skeleton before weapon loop
+
+OpenStrike should not add weapon firing, HUD, economy or round logic directly
+to dev labs. After the BSP map and trace/entity boundaries exist, the next
+step is a small `src/game/runtime` session skeleton that owns fixed server
+ticks, player slots, user commands, spawn assignment, round-state skeleton data
+and snapshots.
+
+This is intentionally not a full game server yet. PR-08A does not implement
+weapon state, damage, objective rules, networking, bots, buy menu or HUD. It
+creates the authoritative owner that later PRs can extend, preserving the
+project architecture rule that even offline play flows through game-layer
+authority rather than presentation or lab state.

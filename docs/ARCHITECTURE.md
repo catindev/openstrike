@@ -37,6 +37,12 @@ The game layer implements the actual game rules and authoritative simulation.  T
 
 Even single‑player or offline modes should go through a server‑authoritative simulation to ensure correctness and consistency with potential multiplayer modes.
 
+The first local runtime path is `OpenStrikeLocalGameSession`. It is a pure
+game-layer service that owns fixed ticks, player slots, user command acceptance,
+round-state skeleton data, spawn assignment and snapshots. It may consume
+sanitized map/entity facts such as `OpenStrikeMapEntityIndex`, but it must not
+load maps, GoldSrc assets, presentation nodes or dev-lab scripts directly.
+
 ### `src/presentation/`
 
 Presentation code handles everything related to displaying the game state to the player: UI, HUD, viewmodels, particle effects, sounds and input handling.  It reads data from the game layer to render the appropriate visuals but does not drive gameplay logic itself.  This separation ensures that core mechanics remain deterministic and testable without a rendering context.

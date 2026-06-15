@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added the first `src/game/runtime` local authoritative session skeleton:
+  player slots, user commands, round-state skeleton data, fixed-tick stepping,
+  team-aware spawn assignment from `OpenStrikeMapEntityIndex` and deterministic
+  snapshots.
+* Added `src/dev/smoke/local_game_session_smoke.gd` and wired it into shared
+  smoke checks so PR-08A runtime state stays independent from dev labs,
+  presentation and direct asset loading.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -268,6 +275,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-08A before the full local game loop and weapon-loop work so
+  future gameplay features have a server-authoritative owner instead of
+  growing inside BSP/dev-lab scripts.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.
