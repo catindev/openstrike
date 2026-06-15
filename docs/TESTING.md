@@ -452,13 +452,13 @@ following checks:
   `Godot --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd`
   when iterating on `src/game/runtime`. It must prove fixed-tick stepping,
   known-player command acceptance, unknown-player command rejection,
-  deterministic snapshots and team-priority spawn assignment from a synthetic
-  `OpenStrikeMapEntityIndex`.
+  deterministic snapshots and team-priority spawn assignment from a
+  descriptor-only spawn index with no `Node3D` dependency.
 * **Map entity index smoke:** Run
   `Godot --headless --path . --script res://src/dev/smoke/map_entity_index_smoke.gd`
   when changing spawn extraction. It must prove spawn descriptors expose pure
-  `classname`/`position`/`yaw` facts and do not leak scene nodes to game
-  runtime consumers.
+  `classname`/`position`/`yaw`/`origin`/`angles`/`source` facts and do not leak
+  scene nodes to game runtime consumers.
 * **Layer boundary:** Confirm `src/game/runtime` does not import
   `src/dev/labs`, `src/presentation` or direct GoldSrc asset paths.
 * **Scope boundary:** Confirm the PR does not add weapon firing, HUD, economy,

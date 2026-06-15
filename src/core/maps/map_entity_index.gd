@@ -174,6 +174,7 @@ func _spawn_descriptor_from_entry(entry: Dictionary) -> Dictionary:
 		"yaw": _yaw_from_entity_or_node(entity, node),
 		"origin": str(entity.get("origin", "")),
 		"angles": str(entity.get("angles", "")),
+		"source": "imported_scene_entity_metadata",
 	}
 
 

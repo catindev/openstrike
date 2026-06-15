@@ -18,33 +18,37 @@ This directory is the operational memory of the project. Every AI/coding agent m
 8. `AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` — required before changing
    Godot code, GDScript, scenes, resources, presentation, asset-provider code
    or Godot smoke/CI checks.
-9. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
-10. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
-11. `ASSET_PIPELINE.md` — planned local asset loading model.
-12. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
-13. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
-14. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
-15. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
-16. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
+9. `CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` — runtime-spine contracts for BSP30
+   reader, clipnode trace, PMove, denylist and acceptance criteria.
+10. `COMPACT_PR_TASK_PACKETS.md` — execution order for runtime-spine PRs. Use
+    only the current packet; do not implement neighboring packets early.
+11. `ROADMAP.md` — milestone path for the GoldSrc reimplementation.
+12. `DEVELOPMENT_PLAN.md` — planned PR sequence and acceptance criteria.
+13. `ASSET_PIPELINE.md` — planned local asset loading model.
+14. `THIRD_PARTY_DEPENDENCIES.md` — committed third-party dependency inventory.
+15. `LOCAL_GOLDSRC_CONFIG.md` — local asset configuration and VFS path rules.
+16. `CVARS_AND_CONFIG.md` — cvar registry, config and bind rules.
+17. `MOVEMENT.md` — cvar-backed movement simulation scope and telemetry.
+18. `CS_1_6_FEEL.md` — research baseline for movement, weapons, prediction,
     presentation and map feel.
-17. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
+19. `VIEWMODEL_WORLD_PROFILE.md` — world/viewmodel scale, coordinate mapping,
     eye height and FOV contract for PR-06 profile preflight.
-18. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
+20. `VIEWMODEL_MANUAL_PREFLIGHT.md` — local real-asset viewmodel preflight
     instructions before gameplay/gunplay work.
-19. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
+21. `CS16_ASSET_ORCHESTRATION_ATLAS.md` — weapon, model, animation, audio,
     effect and lifecycle asset map for CS 1.6-style orchestration.
-20. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
+22. `COVERAGE_STATUS_CONTRACT.md` — status vocabulary for scanner, generated
     atlas and coverage report fields.
-21. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
+23. `3KLIKSPHILIP_RESEARCH_NOTES.md` — community-engineering research notes
     about experiment design, labs, latency, hitboxes, mapping and performance.
-22. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
-23. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
+24. `SOURCE_CATALOG.md` — external source weighting and use/do-not-use rules.
+25. `DEV_LABS_METHODOLOGY.md` — lab contract for turning feel claims into
     telemetry, debug overlays and acceptance criteria.
-24. `test_reports/` — persistent reports from user-assisted dev-lab runs.
-25. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
+26. `test_reports/` — persistent reports from user-assisted dev-lab runs.
+27. `GDSCRIPT_AGENT_NOTES.md` — GDScript/Godot parser, runtime and tooling
     pitfalls discovered during implementation.
-26. `KNOWLEDGE_BASE.md` — current project knowledge base.
-27. `TESTING.md` — testing strategy and smoke checks.
+28. `KNOWLEDGE_BASE.md` — current project knowledge base.
+29. `TESTING.md` — testing strategy and smoke checks.
 
 ## Documentation rule
 
@@ -76,6 +80,11 @@ production paths.
 Before changing movement, weapon feel, prediction, BSP collision, viewmodels,
 HUD or feedback timing, read `CS_1_6_FEEL.md` and update it or the linked
 feature docs when new facts are accepted.
+
+Before changing the GoldSrc runtime spine, BSP30 reader, clipnode trace,
+`PlayerMoveService` or runtime movement authority, read
+`CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and follow only the current package in
+`COMPACT_PR_TASK_PACKETS.md`.
 
 Before changing world/viewmodel scale, coordinate mapping, camera FOV, eye
 height or first-person model placement, read `VIEWMODEL_WORLD_PROFILE.md` and

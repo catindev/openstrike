@@ -59,6 +59,9 @@ func _run() -> int:
 	if not _assert(str(first_spawn.get("origin", "")) != "" and str(first_spawn.get("angles", "")) == "0 90 0", "Spawn descriptor should retain source origin and angles strings", first_spawn):
 		root.free()
 		return 1
+	if not _assert(str(first_spawn.get("source", "")) == "imported_scene_entity_metadata", "Spawn descriptor should expose its temporary metadata source", first_spawn):
+		root.free()
+		return 1
 
 	var disabled_classes: Dictionary = report.get("disabled_player_collision_classes", {})
 	for classname in ["func_buyzone", "func_bomb_target", "info_bomb_target", "func_illusionary", "trigger_camera"]:

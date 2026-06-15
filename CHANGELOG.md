@@ -19,6 +19,11 @@ All notable changes to this project will be documented in this file.  The format
 * Added `docs/current_context_contract.md` as the live compact context file
   that new agents should read after `AGENTS.md` and before relying on chat
   history.
+* Added `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` as the runtime-spine
+  reference spec for BSP30 reader, clipnode trace, PMove contracts, denylist
+  and acceptance criteria.
+* Added `docs/COMPACT_PR_TASK_PACKETS.md` as the execution order for the
+  GoldSrc runtime-spine PR sequence.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -188,6 +193,9 @@ All notable changes to this project will be documented in this file.  The format
 * Changed local runtime spawn assignment to consume sanitized spawn descriptors
   from `OpenStrikeMapEntityIndex` instead of reading `Node3D` scene objects
   from entity entries.
+* Extended sanitized spawn descriptors with a `source` field and changed the
+  local runtime smoke to use a descriptor-only index with no `Node3D`
+  dependency.
 * Changed the BSP walkable lab to consume `OpenStrikeMapEntityIndex` for spawn
   selection and non-blocking entity collision policy instead of keeping a
   hardcoded class list in the runner.
@@ -290,6 +298,9 @@ All notable changes to this project will be documented in this file.  The format
 * Added a context hygiene rule to `AGENTS.md` and the docs reading order:
   non-trivial project work starts from a compact Task Packet, explicit
   Assumptions and the live Current Context Contract.
+* Adopted the compact runtime-spine task packets: the next package after
+  PR-08A.1 is `PR-08B BSP30 collision vertical slice`, while runtime movement
+  integration is deferred to a later package.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.
