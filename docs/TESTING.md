@@ -596,6 +596,32 @@ For the free-volume movement service packet, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08G PlayerMoveService synthetic contact checklist
+
+For the minimal synthetic contact packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  free-volume player move smoke and the synthetic contact smoke.
+* **Synthetic contact smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/player_move_service_contact_smoke.gd`
+  when iterating on the contact loop.
+* **Synthetic-only backend:** Confirm contact movement activates only for a
+  backend whose capabilities report `goldsrc_hull_trace`,
+  `synthetic_verified` and `supported_by_synthetic_bsp_fixture`.
+* **Contact behavior:** Confirm the synthetic wall blocks player movement,
+  synthetic open space moves freely, and contact summaries include trace
+  iterations and plane normals.
+* **Godot backend boundary:** Confirm `GodotSceneTraceBackend` remains
+  telemetry-only for PMove contact and is not used for contact golden tests.
+* **Scope boundary:** Confirm the PR does not add step-up, edgefriction,
+  real-map contact goldens, Godot backend contact goldens,
+  `LocalGameSession` movement integration, weapons, HUD, economy or bots.
+* **Godot controller boundary:** Confirm the service does not use
+  `CharacterBody3D` or `move_and_slide`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

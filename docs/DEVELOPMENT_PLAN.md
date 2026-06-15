@@ -958,6 +958,36 @@ backend-independent movement before contact solving.
   existing movement core.
 * No authoritative Godot character controller or contact trace is introduced.
 
+## PR-08G PlayerMoveService contact loop on synthetic backend
+
+**Goal:** Add a minimal trace-slide contact loop through the synthetic BSP
+clipnode backend.
+
+**Includes:**
+
+* Synthetic-BSP-only contact movement in
+  `src/game/player/player_move_service.gd`.
+* Up to four `trace_hull` iterations per move when the selected backend reports
+  `goldsrc_hull_trace` with synthetic fixture support.
+* Stop on clear trace fraction and slide velocity by the hit plane normal when
+  blocked.
+* Contact summaries in `OpenStrikePlayerMoveResult.trace_summary`.
+* Smoke coverage for synthetic wall blocking, clear-space movement and Godot
+  scene collision remaining telemetry-only for contact movement.
+
+**Excludes:**
+
+* Step-up, edgefriction, real-map contact goldens, Godot backend contact
+  goldens, `LocalGameSession` movement integration, weapons, HUD, economy and
+  bots.
+
+**Acceptance criteria:**
+
+* A synthetic wall stops player movement through the BSP clipnode backend.
+* Synthetic open space moves freely.
+* Contact golden checks use the BSP backend only.
+* Godot contact remains telemetry-only/non-golden.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

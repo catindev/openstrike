@@ -66,6 +66,10 @@ viewmodel/map runtime and eventual gameplay authority.
   cvar-backed movement simulator/math and keeps trace backend data as metadata
   only; it does not add contact movement, step-up or runtime session movement
   integration.
+* PR-08G adds a minimal synthetic-BSP-only trace-slide contact loop to
+  `OpenStrikePlayerMoveService`: up to four hull traces, stop on clear
+  fraction, slide velocity by plane normal and record contact summaries. Godot
+  scene collision remains telemetry-only/non-golden for PMove contact.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -89,9 +93,9 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-After PR-08F, current `main` is at the synthetic BSP30 collision vertical
-slice plus the first free-volume PMove-facing service and context hygiene
-workflow:
+After PR-08G, current `main` is at the synthetic BSP30 collision vertical
+slice plus the first synthetic-BSP contact loop in the PMove-facing service and
+context hygiene workflow:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
@@ -118,8 +122,9 @@ workflow:
   smoke-tested math helpers.
 * `src/game/player/` contains PMove-facing state/command/result DTOs plus
   `OpenStrikePlayerMoveService`. The service can drive backend-independent
-  free-volume movement through existing movement contracts, but it does not yet
-  perform trace-slide contact movement.
+  free-volume movement through existing movement contracts and can apply a
+  minimal synthetic-BSP trace-slide contact loop. It does not yet implement
+  step-up, edgefriction, real-map contact goldens or runtime session movement.
 * `src/game/runtime/` contains `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot`, `OpenStrikeUserCommand`, `OpenStrikeRoundState` and
   `OpenStrikeGameSnapshot`. Runtime consumes sanitized spawn descriptors from
@@ -178,29 +183,29 @@ workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08G: PlayerMoveService contact loop on synthetic backend`.
+Start `PR-08H: Step-up and duck hull on synthetic backend`.
 
 Scope:
 
-* add minimal trace-slide contact movement through the synthetic
-  `OpenStrikeBspClipnodeTraceBackend`;
-* trace up to four iterations, stop on a clear fraction and slide velocity by
-  plane normal on contact;
-* report contact summary data through `OpenStrikePlayerMoveResult`;
-* keep contact goldens synthetic-BSP-only;
-* do not add step-up, edgefriction, real-map contact goldens, Godot backend
-  contact goldens, `LocalGameSession` movement, weapons, HUD, economy or bots.
+* add standing-hull vs duck-hull contact selection against synthetic BSP
+  fixtures;
+* add a simple step-up attempt: move up by `sv_stepsize`, trace movement, trace
+  down and choose the farther valid path;
+* add a synthetic stair fixture;
+* do not add real-map goldens, moving platforms, ladders, water, surf,
+  edgefriction, `LocalGameSession` movement, weapons, HUD, economy or bots.
 
 ## 8. Definition of done for the next task
 
 The next task is done when:
 
-* a synthetic wall stops the player through the BSP clipnode backend;
-* synthetic open space moves freely;
-* contact tests use the BSP backend only;
-* Godot contact remains telemetry-only/non-golden;
-* no step-up, edgefriction, real-map golden or runtime session movement is
-  introduced;
+* the standing hull is blocked where the duck hull can pass in a synthetic
+  fixture;
+* step-up succeeds on a synthetic 18-unit step;
+* step-up fails on a too-high step;
+* backend Contract A numbers are not promoted to real-map goldens;
+* no real-map golden, moving platform, ladder, water, surf, edgefriction or
+  runtime session movement is introduced;
 * the selected packet is completed without neighboring scope;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;

@@ -63,6 +63,12 @@ All notable changes to this project will be documented in this file.  The format
   smoke checks to verify service-driven ground acceleration, air-strafe gain,
   jump/duck metadata and the absence of contact trace or Godot character-body
   dependencies.
+* Added a synthetic-BSP-only trace-slide contact loop to
+  `OpenStrikePlayerMoveService`, with up to four hull traces, plane-normal
+  velocity clipping and contact summaries in `OpenStrikePlayerMoveResult`.
+* Added `src/dev/smoke/player_move_service_contact_smoke.gd` and wired it into
+  shared smoke checks to verify synthetic wall blocking, clear-space movement
+  and Godot scene collision remaining telemetry-only for PMove contact.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
