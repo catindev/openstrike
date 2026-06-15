@@ -303,6 +303,12 @@ Initial Contract A inspection was pulled forward into PR-08B.1. Keep PR-08D
 only for broader local typed-load diagnostics beyond that scoped hull-extent
 question.
 
+Status after PR-08D reconciliation: no additional implementation packet remains
+for the original PR-08D acceptance criteria. PR-08B.1 added the local VFS-backed
+diagnostic and synthetic smoke, and the local `de_dust2` report confirms model
+0 headnodes. Continue with PR-08E unless a new, separately scoped typed-load
+diagnostic is requested.
+
 ### Goal
 
 Load a real local BSP into `BspMapResource` as opt-in developer smoke, without committing assets and without contact golden tests.

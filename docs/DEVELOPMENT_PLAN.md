@@ -883,6 +883,21 @@ for player movement.
 * The BSP clipnode backend reports limited synthetic support and does not use
   the real-BSP Contract A diagnostic to claim map collision authority.
 
+## PR-08D Local BSP typed-load inspection reconciliation
+
+**Goal:** Close the original local typed-load inspection packet after PR-08B.1
+pulled its necessary implementation forward for the Contract A diagnostic.
+
+**Result:** No additional code packet remains for the original PR-08D
+acceptance criteria. `src/dev/tools/bsp30_real_map_contract_a_inspect.gd`
+already loads a licensed BSP through the GoldSrc VFS into
+`OpenStrikeBspMapResource`, reports version/lump counts/model-0 headnodes and
+has CI-safe synthetic smoke coverage. The local `de_dust2` report records the
+model-0 headnode facts without committing map bytes or local paths.
+
+**Next:** Continue with PR-08E player state and command model before any
+movement algorithm, runtime movement integration or gameplay features.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

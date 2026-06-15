@@ -340,6 +340,10 @@ All notable changes to this project will be documented in this file.  The format
 * Inserted a narrow real-BSP Contract A diagnostic step after PR-08B so local
   typed-load evidence can keep synthetic hull-offset behavior separate from
   future real-map collision authority before PMove or gameplay integration.
+* Reconciled the original PR-08D local BSP typed-load inspection packet after
+  PR-08B.1 satisfied its VFS-backed load, headnode reporting, sanitized report
+  and synthetic smoke requirements; the next actionable runtime-spine packet is
+  PR-08E.
 * Inserted PR-07.2 as a boundary cleanup before LocalGameServer or weapon-loop
   work, so BSP map tests expose TraceBackend and MapEntityIndex contracts
   without pretending a GoldSrc BSP reader already exists.

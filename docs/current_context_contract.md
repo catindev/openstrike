@@ -54,6 +54,9 @@ viewmodel/map runtime and eventual gameplay authority.
   scene backend and the synthetic BSP clipnode backend, plus shared trace-result
   smoke coverage. It does not connect movement, runtime sessions or
   presentation to the BSP backend.
+* PR-08D reconciliation confirms the original local BSP typed-load inspection
+  acceptance criteria were satisfied by PR-08B.1. No additional PR-08D
+  implementation packet remains unless a new typed-load diagnostic is scoped.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -161,16 +164,15 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start the next runtime-spine packet after `PR-08C`. Per
-`docs/COMPACT_PR_TASK_PACKETS.md`, reassess whether the remaining `PR-08D`
-broader typed-load inspection still has scope after PR-08B.1 before moving to
-`PR-08E`.
+Start `PR-08E: Player state and command model`.
 
 Scope:
 
-* do not add PMove, PlayerMoveService, LocalGameSession movement, weapons, HUD,
-  real map contact golden tests or WAD/miptexture parsing until the relevant
-  packet explicitly allows it;
+* add pure player movement state/command/result data types for future PMove;
+* serialize these types to dictionaries and cover defaults/roundtrip in smoke;
+* do not add the movement algorithm, PlayerMoveService, LocalGameSession
+  movement, weapons, HUD, real map contact golden tests or WAD/miptexture
+  parsing;
 * keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
   limited/synthetic unless a later packet changes that contract.
 
@@ -178,6 +180,7 @@ Scope:
 
 The next task is done when:
 
+* PR-08E types serialize to dictionaries and smoke verifies defaults/roundtrip;
 * the selected packet is completed without neighboring scope;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
