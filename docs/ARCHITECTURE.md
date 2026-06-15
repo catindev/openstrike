@@ -26,10 +26,13 @@ Map runtime contracts also live in `core`. `OpenStrikeTraceBackend` defines the
 query boundary for `trace_ray`, `trace_hull`, `point_contents` and capability
 reporting; `OpenStrikeGodotSceneTraceBackend` is only the current walkable-lab
 bridge to imported Godot scene collision and is not GoldSrc hull/clipnode
-parity. `OpenStrikeMapEntityIndex` owns imported BSP entity classification such
-as spawns, buyzones, bomb targets, illusionary brushes and trigger-like
-volumes, so dev labs and future game systems do not duplicate entity-policy
-lists.
+parity. `src/core/bsp` owns the first BSP30 typed collision slice: synthetic
+header/lump parsing for planes, clipnodes and GoldSrc 64-byte models, plus a
+limited `OpenStrikeBspClipnodeTraceBackend` for synthetic model-0 hull traces.
+That backend is not yet a real-map gameplay collision authority.
+`OpenStrikeMapEntityIndex` owns imported BSP entity classification such as
+spawns, buyzones, bomb targets, illusionary brushes and trigger-like volumes,
+so dev labs and future game systems do not duplicate entity-policy lists.
 
 ### `src/game/`
 

@@ -785,11 +785,41 @@ full round rules in the same PR.
 
 ## Runtime spine packet order
 
-For the GoldSrc runtime spine after PR-08A.1, follow
-`docs/COMPACT_PR_TASK_PACKETS.md`. The next package is `PR-08B BSP30 collision
-vertical slice`, not runtime movement integration. `PR-08B` must stay limited
-to the synthetic BSP30 reader/clipnode trace proof described in
-`docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`.
+For the GoldSrc runtime spine, follow `docs/COMPACT_PR_TASK_PACKETS.md` in
+order and do not pull neighboring packet scope forward. PR-08B is the
+synthetic BSP30 reader/clipnode trace proof described in
+`docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`; after that, continue with PR-08C
+backend capability integration, not runtime movement integration.
+
+## PR-08B BSP30 collision vertical slice
+
+**Goal:** Add the first OpenStrike-owned BSP30 collision reader proof with a
+minimal synthetic clipnode hull trace.
+
+**Includes:**
+
+* Typed BSP30 header/lump parsing for 15 lump entries.
+* Collision-relevant lump parsing for planes, clipnodes and GoldSrc 64-byte
+  models with `headnode[4]`.
+* `OpenStrikeBspClipnodeTraceBackend.trace_hull()` for model 0 synthetic
+  point and standing hull fixtures.
+* Synthetic smoke coverage for point hull, standing hull, start solid, free
+  trace, invalid planenum, invalid child, empty clipnodes and Source-style
+  48-byte model rejection.
+
+**Excludes:**
+
+* PMove, `PlayerMoveService`, `LocalGameSession` movement, weapons, HUD,
+  economy, bots, real-map golden tests, fence texture pass-through, moving
+  brush models and WAD/miptexture parsing.
+
+**Acceptance criteria:**
+
+* `bsp30_clipnode_trace_smoke.gd` passes and is part of
+  `scripts/run_smoke_checks.sh`.
+* No Valve assets or real `.bsp` files are committed.
+* `OpenStrikeGodotSceneTraceBackend` remains temporary non-parity.
+* The hull-extent contract decision is recorded in `docs/DECISIONS.md`.
 
 ## PR-08 Server-authoritative local game loop
 

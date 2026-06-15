@@ -42,6 +42,9 @@ viewmodel/map runtime and eventual gameplay authority.
 * PR-08A.1 completes the runtime spawn descriptor cleanup: runtime consumes
   pure spawn descriptors with `classname`, `position`, `yaw`, `origin`,
   `angles` and `source`, and does not require `Node3D`.
+* PR-08B adds the first synthetic OpenStrike-owned BSP30 collision vertical
+  slice: typed header/lump parsing for planes, clipnodes and GoldSrc 64-byte
+  models, plus a limited synthetic `OpenStrikeBspClipnodeTraceBackend`.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -65,14 +68,17 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-After PR-08A.1, current `main` is at the runtime spawn-descriptor cleanup plus
-the context hygiene workflow:
+After PR-08B, current `main` is at the synthetic BSP30 collision vertical
+slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
 * `src/core/maps/goldsrc_bsp_runtime_provider.gd` loads local BSP maps through
   `goldsrc-godot`, reports capabilities and keeps hull trace/clipnodes
   deferred.
+* `src/core/bsp/` contains the synthetic BSP30 collision reader slice and
+  limited clipnode trace backend. It is a clean OpenStrike-owned proof for
+  synthetic buffers, not yet a real-map gameplay collision authority.
 * `src/core/maps/map_entity_index.gd` classifies imported BSP entity metadata
   for spawns, buyzones, bomb targets, illusionary brushes, triggers and
   collision policy, and exposes sanitized spawn descriptors for runtime
@@ -116,8 +122,9 @@ the context hygiene workflow:
 
 * `goldsrc-godot` license is absent in the vendored snapshot; public
   redistribution remains blocked until resolved.
-* No OpenStrike-owned BSP reader or GoldSrc clipnode/hull trace backend exists
-  yet.
+* The OpenStrike-owned BSP reader/clipnode backend is currently synthetic-only.
+  Real local BSP typed-load inspection and real-map collision authority are
+  still future tasks.
 * Real map collision currently uses imported Godot scene collision, useful for
   labs but not final CS 1.6 parity.
 * Runtime sessions accept commands and emit snapshots, but player movement
@@ -134,15 +141,15 @@ the context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08B: BSP30 collision vertical slice`.
+Start `PR-08C: Clipnode backend capability integration`.
 
 Scope:
 
-* add the first OpenStrike-owned synthetic BSP30 reader/collision slice from
-  `docs/COMPACT_PR_TASK_PACKETS.md`;
-* implement minimal `BspClipnodeTraceBackend.trace_hull()` for model 0,
-  synthetic buffers, point hull and standing hull;
-* record the hull-extent contract decision before tests depend on it;
+* make `OpenStrikeBspClipnodeTraceBackend` selectable behind the existing
+  `OpenStrikeTraceBackend` boundary for dev/smoke use;
+* finalize shared trace result fields needed by both backends;
+* keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
+  limited/synthetic;
 * do not add PMove, PlayerMoveService, LocalGameSession movement, weapons, HUD,
   real map golden tests or WAD/miptexture parsing.
 
@@ -150,9 +157,9 @@ Scope:
 
 The next task is done when:
 
-* synthetic BSP30 reader/clipnode trace smoke passes the required point,
-  standing-hull, start-solid, free trace and malformed-input cases;
-* `GodotSceneTraceBackend` remains temporary non-parity;
+* both trace backends satisfy the same interface/capability contract;
+* shared trace-result smoke covers the Godot scene backend and synthetic BSP
+  backend without promoting Godot contact values to goldens;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
 * the branch is committed, pushed and opened as a focused PR;
