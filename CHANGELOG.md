@@ -69,6 +69,13 @@ All notable changes to this project will be documented in this file.  The format
 * Added `src/dev/smoke/player_move_service_contact_smoke.gd` and wired it into
   shared smoke checks to verify synthetic wall blocking, clear-space movement
   and Godot scene collision remaining telemetry-only for PMove contact.
+* Added synthetic-only step and duck-hull contact behavior to
+  `OpenStrikePlayerMoveService`: standing/duck hull selection, simple
+  `sv_stepsize` step attempts and selected-step ground-height metadata.
+* Added `src/dev/smoke/player_move_service_step_smoke.gd` and wired it into
+  shared smoke checks to verify low-ceiling duck passage, a synthetic 18-unit
+  step success and a too-high step failure without promoting backend Contract A
+  numbers to real-map goldens.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene

@@ -56,14 +56,16 @@ movement packets will consume:
 * `OpenStrikePlayerMoveService` drives free-volume movement through the
   existing `CSMovementSimulator`/`CSMovementMath` contracts, then can apply a
   minimal synthetic-BSP-only trace-slide contact loop through
-  `OpenStrikeTraceBackend`.
+  `OpenStrikeTraceBackend`, including first synthetic-only step-up and
+  duck-hull contact checks.
 
 These are pure serializable `RefCounted` objects. They do not implement
-step-up, edgefriction, real-map contact parity or Godot character-controller
-movement, and they are not wired into `OpenStrikeLocalGameSession` yet. The
-service uses contact movement only when a backend reports synthetic BSP
-clipnode hull-trace support; `GodotSceneTraceBackend` remains telemetry-only
-and non-golden for PMove contact.
+edgefriction, real-map contact parity or Godot character-controller movement,
+and they are not wired into `OpenStrikeLocalGameSession` yet. The service uses
+contact movement only when a backend reports synthetic BSP clipnode hull-trace
+support; `GodotSceneTraceBackend` remains telemetry-only and non-golden for
+PMove contact. Step-up and duck-hull assertions are synthetic fixture coverage,
+not real-map goldens.
 
 `src/game/movement` contains the earlier cvar-backed movement simulator:
 

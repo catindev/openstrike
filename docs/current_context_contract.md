@@ -70,6 +70,13 @@ viewmodel/map runtime and eventual gameplay authority.
   `OpenStrikePlayerMoveService`: up to four hull traces, stop on clear
   fraction, slide velocity by plane normal and record contact summaries. Godot
   scene collision remains telemetry-only/non-golden for PMove contact.
+* PR-08H adds first synthetic-only step and duck-hull contact behavior to
+  `OpenStrikePlayerMoveService`: standing/duck hull selection, simple
+  `sv_stepsize` step attempts and synthetic low-ceiling/stair smoke coverage.
+  These checks do not promote backend Contract A numbers to real-map goldens.
+* PR-09A is next in the packet sequence, but the maintainer explicitly deferred
+  it on 2026-06-15. Do not start PR-09A until a new maintainer instruction asks
+  for it.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -93,9 +100,9 @@ viewmodel/map runtime and eventual gameplay authority.
 
 ## 4. Current architecture / state
 
-After PR-08G, current `main` is at the synthetic BSP30 collision vertical
-slice plus the first synthetic-BSP contact loop in the PMove-facing service and
-context hygiene workflow:
+After PR-08H, current `main` is at the synthetic BSP30 collision vertical
+slice plus synthetic-BSP trace-slide, step and duck-hull behavior in the
+PMove-facing service and context hygiene workflow:
 
 * `src/core/assets/` contains local GoldSrc config, VFS, semantic asset
   manifests/provider contracts and diagnostics.
@@ -123,8 +130,9 @@ context hygiene workflow:
 * `src/game/player/` contains PMove-facing state/command/result DTOs plus
   `OpenStrikePlayerMoveService`. The service can drive backend-independent
   free-volume movement through existing movement contracts and can apply a
-  minimal synthetic-BSP trace-slide contact loop. It does not yet implement
-  step-up, edgefriction, real-map contact goldens or runtime session movement.
+  synthetic-BSP trace-slide contact loop with first step-up and duck-hull
+  behavior. It does not yet implement edgefriction, real-map contact goldens or
+  runtime session movement.
 * `src/game/runtime/` contains `OpenStrikeLocalGameSession`,
   `OpenStrikePlayerSlot`, `OpenStrikeUserCommand`, `OpenStrikeRoundState` and
   `OpenStrikeGameSnapshot`. Runtime consumes sanitized spawn descriptors from
@@ -183,35 +191,23 @@ context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08H: Step-up and duck hull on synthetic backend`.
+No active implementation task is selected after PR-08H.
 
-Scope:
+Maintainer instruction:
 
-* add standing-hull vs duck-hull contact selection against synthetic BSP
-  fixtures;
-* add a simple step-up attempt: move up by `sv_stepsize`, trace movement, trace
-  down and choose the farther valid path;
-* add a synthetic stair fixture;
-* do not add real-map goldens, moving platforms, ladders, water, surf,
-  edgefriction, `LocalGameSession` movement, weapons, HUD, economy or bots.
+* Do not start PR-09A yet.
+* PR-09A remains the next packet in `docs/COMPACT_PR_TASK_PACKETS.md`, but it is
+  deferred until explicit maintainer instruction.
+* Keep the repository clean after merging/pushing PR-08H.
 
 ## 8. Definition of done for the next task
 
-The next task is done when:
+The current handoff is done when:
 
-* the standing hull is blocked where the duck hull can pass in a synthetic
-  fixture;
-* step-up succeeds on a synthetic 18-unit step;
-* step-up fails on a too-high step;
-* backend Contract A numbers are not promoted to real-map goldens;
-* no real-map golden, moving platform, ladder, water, surf, edgefriction or
-  runtime session movement is introduced;
-* the selected packet is completed without neighboring scope;
-* changes are documented in `CHANGELOG.md` and relevant docs;
+* PR-08H is committed, fast-forward merged to `main` and pushed;
 * smoke checks, forbidden asset scan and whitespace checks pass;
-* the branch is committed and then merged/pushed or opened as a focused PR
-  according to the current maintainer instruction;
-* this context contract is updated if accepted project state changes.
+* the worktree is clean;
+* PR-09A has not been started.
 
 ## 9. Sources of truth
 

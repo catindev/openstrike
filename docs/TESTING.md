@@ -622,6 +622,32 @@ For the minimal synthetic contact packet, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08H PlayerMoveService synthetic step/duck checklist
+
+For the synthetic step and duck-hull packet, perform the following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  free-volume, contact and step/duck player move smokes.
+* **Synthetic step smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/player_move_service_step_smoke.gd`
+  when iterating on the step or duck-hull contact logic.
+* **Duck-hull behavior:** Confirm a synthetic low-ceiling fixture blocks the
+  standing hull while a duck command selects the duck hull and passes.
+* **Step behavior:** Confirm a synthetic 18-unit step is selected over a
+  blocked flat move, while a too-high synthetic step is rejected.
+* **Contract honesty:** Confirm backend Contract A numbers remain
+  synthetic-only and are not promoted to real-map collision goldens.
+* **Scope boundary:** Confirm the PR does not add real-map contact goldens,
+  moving platforms, ladders, water, surf, edgefriction,
+  `LocalGameSession` movement integration, weapons, HUD, economy or bots.
+* **PR sequence boundary:** Confirm PR-09A is not started unless explicitly
+  requested by the maintainer.
+* **Godot controller boundary:** Confirm the service does not use
+  `CharacterBody3D` or `move_and_slide`.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

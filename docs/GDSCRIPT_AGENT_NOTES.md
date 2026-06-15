@@ -279,3 +279,32 @@ summary["skybox_face"] = {
 
 Do not add `resolved_path`, `root` or VFS `tried` arrays to manual test
 reports unless the user explicitly asks for local debugging details.
+
+## 2026-06-15: Annotate Vector3 results that multiply `max()` output
+
+### Symptom
+
+`PlayerMoveService` failed to compile after adding the synthetic step attempt:
+
+```text
+Cannot infer the type of "step_vector" variable because the value doesn't have a set type.
+```
+
+The failing local used `:=` with `Vector3.UP * max(step_size, 0.0)`.
+
+### Cause
+
+GDScript treats the result of `max()` as insufficiently specific for this
+operator chain, so dependent smoke scripts report cascading `new()` failures
+after the preload fails to compile.
+
+### Fix
+
+Add the explicit `Vector3` annotation on the local:
+
+```gdscript
+var step_vector: Vector3 = Vector3.UP * max(step_size, 0.0)
+```
+
+Prefer this style for vector math that combines typed vectors with generic
+numeric helpers.

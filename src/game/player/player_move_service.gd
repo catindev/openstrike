@@ -54,6 +54,9 @@ func move(player_state, move_command, move_settings = null, backend = null):
 	if bool(contact_summary.get("used", false)):
 		sim_state.position = contact_summary.get("position", sim_state.position)
 		sim_state.velocity = contact_summary.get("velocity", sim_state.velocity)
+		if contact_summary.has("ground_height"):
+			sim_state.ground_height = float(contact_summary.get("ground_height", sim_state.ground_height))
+			sim_state.on_ground = true
 
 	var next_state = PlayerStateRef.new()
 	var trace_summary := _trace_summary(sim_state, active_settings, active_backend, contact_summary)
@@ -86,19 +89,52 @@ func _apply_contact_movement(
 	if not _should_use_contact_backend(active_backend):
 		return summary
 
+	var hull = _collision_hull(sim_state, active_settings)
+	summary = _trace_slide_contact(start_position, target_position, velocity, hull, active_backend, frame_delta)
+	if bool(summary.get("blocked", false)) and _should_attempt_step_contact(sim_state, active_settings, summary):
+		var step_summary := _attempt_step_contact(
+			start_position,
+			target_position,
+			velocity,
+			hull,
+			active_backend,
+			frame_delta,
+			active_settings.step_size
+		)
+		summary["step"] = _step_summary_for_report(step_summary)
+		if bool(step_summary.get("valid", false)):
+			var flat_progress := _path_progress(start_position, target_position, summary.get("position", start_position))
+			var step_progress := _path_progress(start_position, target_position, step_summary.get("position", start_position))
+			if step_progress > flat_progress + CONTACT_EPSILON:
+				summary["position"] = step_summary.get("position", summary.get("position", start_position))
+				summary["velocity"] = step_summary.get("velocity", summary.get("velocity", velocity))
+				summary["blocked"] = bool(step_summary.get("blocked", false))
+				summary["ground_height"] = _vector_from_value(summary.get("position", start_position)).y
+				summary["step"]["selected"] = true
+				summary["step"]["flat_progress"] = flat_progress
+				summary["step"]["step_progress"] = step_progress
+	return summary
+
+
+func _trace_slide_contact(
+	start_position: Vector3,
+	target_position: Vector3,
+	velocity: Vector3,
+	hull,
+	active_backend,
+	frame_delta: float
+) -> Dictionary:
+	var summary := _empty_contact_summary(start_position, target_position, velocity)
 	summary["used"] = true
 	summary["mode"] = TRACE_MODE_SYNTHETIC_CONTACT
-	var hull = _collision_hull(sim_state, active_settings)
 	var current_position := start_position
 	var current_velocity := velocity
 	var current_target := target_position
-
 	for iteration in range(CONTACT_TRACE_ITERATIONS):
 		if current_position.distance_to(current_target) <= CONTACT_EPSILON:
 			break
 
-		var trace = active_backend.call("trace_hull", current_position, current_target, hull)
-		var report: Dictionary = trace.call("to_dictionary") if trace != null and trace.has_method("to_dictionary") else {}
+		var report := _trace_hull_report(active_backend, current_position, current_target, hull)
 		summary["iterations"] = int(summary.get("iterations", 0)) + 1
 		summary["traces"].append(report)
 
@@ -151,6 +187,71 @@ func _apply_contact_movement(
 	return summary
 
 
+func _attempt_step_contact(
+	start_position: Vector3,
+	target_position: Vector3,
+	velocity: Vector3,
+	hull,
+	active_backend,
+	frame_delta: float,
+	step_size: float
+) -> Dictionary:
+	var step_vector: Vector3 = Vector3.UP * max(step_size, 0.0)
+	var result := {
+		"attempted": true,
+		"selected": false,
+		"valid": false,
+		"blocked": true,
+		"reason": "",
+		"position": start_position,
+		"velocity": velocity,
+		"up_trace": {},
+		"move": {},
+		"down_trace": {},
+	}
+	if step_vector.length_squared() <= 0.0:
+		result["reason"] = "step_size_not_positive"
+		return result
+
+	var up_trace := _trace_hull_report(active_backend, start_position, start_position + step_vector, hull)
+	result["up_trace"] = up_trace
+	if not bool(up_trace.get("supported", false)) or bool(up_trace.get("start_solid", false)) or bool(up_trace.get("hit", false)):
+		result["reason"] = "step_up_blocked"
+		return result
+
+	var move_summary := _trace_slide_contact(
+		start_position + step_vector,
+		target_position + step_vector,
+		velocity,
+		hull,
+		active_backend,
+		frame_delta
+	)
+	result["move"] = _contact_summary_for_report(move_summary)
+	if bool(move_summary.get("start_solid", false)) or bool(move_summary.get("blocked", false)):
+		result["reason"] = "step_move_blocked"
+		result["position"] = move_summary.get("position", start_position)
+		result["velocity"] = move_summary.get("velocity", velocity)
+		return result
+
+	var down_start: Vector3 = move_summary.get("position", start_position + step_vector)
+	var down_trace := _trace_hull_report(active_backend, down_start, down_start - step_vector, hull)
+	result["down_trace"] = down_trace
+	if not bool(down_trace.get("supported", false)) or bool(down_trace.get("start_solid", false)):
+		result["reason"] = "step_down_invalid"
+		return result
+	if not bool(down_trace.get("hit", false)) or _vector_from_value(down_trace.get("normal", Vector3.ZERO)).dot(Vector3.UP) <= 0.5:
+		result["reason"] = "step_down_found_no_floor"
+		return result
+
+	result["valid"] = true
+	result["blocked"] = false
+	result["reason"] = "step_path_valid"
+	result["position"] = _vector_from_value(down_trace.get("hit_position", down_start))
+	result["velocity"] = move_summary.get("velocity", velocity)
+	return result
+
+
 func _empty_contact_summary(start_position: Vector3, target_position: Vector3, velocity: Vector3) -> Dictionary:
 	return {
 		"used": false,
@@ -165,6 +266,10 @@ func _empty_contact_summary(start_position: Vector3, target_position: Vector3, v
 		"contacts": [],
 		"traces": [],
 		"diagnostics": [],
+		"step": {
+			"attempted": false,
+			"selected": false,
+		},
 	}
 
 
@@ -222,6 +327,7 @@ func _contact_summary_for_report(contact_summary: Dictionary) -> Dictionary:
 		"velocity": _vector_to_array(contact_summary.get("velocity", Vector3.ZERO)),
 		"contacts": contact_summary.get("contacts", []).duplicate(true),
 		"traces": contact_summary.get("traces", []).duplicate(true),
+		"step": contact_summary.get("step", {}).duplicate(true),
 	}
 
 
@@ -242,10 +348,49 @@ func _collision_hull(sim_state, active_settings):
 	var kind := CollisionHullRef.KIND_PLAYER_DUCKING if sim_state.ducked else CollisionHullRef.KIND_PLAYER_STANDING
 	hull.configure(
 		kind,
-		Vector3(-PLAYER_HALF_WIDTH, -PLAYER_HALF_WIDTH, -half_height),
-		Vector3(PLAYER_HALF_WIDTH, PLAYER_HALF_WIDTH, half_height)
+		Vector3(-PLAYER_HALF_WIDTH, -half_height, -PLAYER_HALF_WIDTH),
+		Vector3(PLAYER_HALF_WIDTH, half_height, PLAYER_HALF_WIDTH)
 	)
 	return hull
+
+
+func _should_attempt_step_contact(sim_state, active_settings, contact_summary: Dictionary) -> bool:
+	return (
+		bool(contact_summary.get("used", false))
+		and bool(contact_summary.get("blocked", false))
+		and bool(sim_state.on_ground)
+		and not bool(sim_state.ducked)
+		and active_settings.step_size > 0.0
+	)
+
+
+func _trace_hull_report(active_backend, start_position: Vector3, target_position: Vector3, hull) -> Dictionary:
+	var trace = active_backend.call("trace_hull", start_position, target_position, hull)
+	return trace.call("to_dictionary") if trace != null and trace.has_method("to_dictionary") else {}
+
+
+func _step_summary_for_report(step_summary: Dictionary) -> Dictionary:
+	return {
+		"attempted": bool(step_summary.get("attempted", false)),
+		"selected": bool(step_summary.get("selected", false)),
+		"valid": bool(step_summary.get("valid", false)),
+		"blocked": bool(step_summary.get("blocked", true)),
+		"reason": str(step_summary.get("reason", "")),
+		"position": _vector_to_array(step_summary.get("position", Vector3.ZERO)),
+		"velocity": _vector_to_array(step_summary.get("velocity", Vector3.ZERO)),
+		"up_trace": step_summary.get("up_trace", {}).duplicate(true),
+		"move": step_summary.get("move", {}).duplicate(true),
+		"down_trace": step_summary.get("down_trace", {}).duplicate(true),
+	}
+
+
+func _path_progress(start_position: Vector3, target_position: Vector3, position: Vector3) -> float:
+	var path := Vector3(target_position.x - start_position.x, 0.0, target_position.z - start_position.z)
+	var path_length := path.length()
+	if path_length <= CONTACT_EPSILON:
+		return 0.0
+	var moved := Vector3(position.x - start_position.x, 0.0, position.z - start_position.z)
+	return moved.dot(path / path_length) / path_length
 
 
 func _slide_velocity(velocity: Vector3, normal: Vector3) -> Vector3:

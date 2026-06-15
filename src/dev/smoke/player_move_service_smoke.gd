@@ -102,7 +102,6 @@ func _run_no_contact_solver_guard() -> bool:
 	return (
 		_assert(not source.contains("move_and_slide"), "PlayerMoveService must not use Godot move_and_slide", {})
 		and _assert(not source.contains("CharacterBody3D"), "PlayerMoveService must not depend on CharacterBody3D", {})
-		and _assert(not source.contains("try_step_up"), "PR-08G PlayerMoveService must not add step-up yet", {})
 	)
 
 

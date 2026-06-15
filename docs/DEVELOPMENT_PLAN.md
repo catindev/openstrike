@@ -988,6 +988,39 @@ clipnode backend.
 * Contact golden checks use the BSP backend only.
 * Godot contact remains telemetry-only/non-golden.
 
+## PR-08H Step-up and duck hull on synthetic backend
+
+**Goal:** Add first step and duck-hull contact behavior only against synthetic
+BSP fixtures.
+
+**Includes:**
+
+* Standing-hull and duck-hull selection in
+  `src/game/player/player_move_service.gd`.
+* A simple step-up attempt for grounded standing movement: trace up by
+  `sv_stepsize`, trace the move, trace down and choose the farther valid path.
+* Synthetic low-ceiling and stair fixtures in smoke coverage.
+* Smoke coverage proving a duck hull can pass a synthetic low ceiling where the
+  standing hull is blocked, a synthetic 18-unit step succeeds and a too-high
+  step fails.
+
+**Excludes:**
+
+* Real-map contact goldens, moving platforms, ladders, water, surf,
+  edgefriction, `LocalGameSession` movement integration, weapons, HUD, economy
+  and bots.
+
+**Acceptance criteria:**
+
+* Standing hull is blocked where duck hull can pass in a synthetic fixture.
+* Step-up succeeds on a synthetic 18-unit step.
+* Step-up fails on a too-high synthetic step.
+* Backend Contract A numbers remain synthetic-only and are not promoted to
+  real-map goldens.
+
+**Maintainer note:** PR-09A is the next packet in the runtime-spine sequence,
+but it is explicitly deferred after PR-08H until the maintainer asks for it.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

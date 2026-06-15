@@ -33,4 +33,5 @@ fi
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_types_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_service_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_service_contact_smoke.gd
+"${godot_bin}" --headless --path . --script res://src/dev/smoke/player_move_service_step_smoke.gd
 "${godot_bin}" --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd
