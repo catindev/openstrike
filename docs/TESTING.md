@@ -441,6 +441,32 @@ For the trace boundary and entity-index cleanup, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08A local game runtime skeleton checklist
+
+For the first server-authoritative local runtime skeleton, perform the
+following checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  local game session smoke after movement smoke.
+* **Local game session smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/local_game_session_smoke.gd`
+  when iterating on `src/game/runtime`. It must prove fixed-tick stepping,
+  known-player command acceptance, unknown-player command rejection,
+  deterministic snapshots and team-priority spawn assignment from a synthetic
+  `OpenStrikeMapEntityIndex`.
+* **Map entity index smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/map_entity_index_smoke.gd`
+  when changing spawn extraction. It must prove spawn descriptors expose pure
+  `classname`/`position`/`yaw` facts and do not leak scene nodes to game
+  runtime consumers.
+* **Layer boundary:** Confirm `src/game/runtime` does not import
+  `src/dev/labs`, `src/presentation` or direct GoldSrc asset paths.
+* **Scope boundary:** Confirm the PR does not add weapon firing, HUD, economy,
+  buy menu, bots, networking or full round win conditions.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

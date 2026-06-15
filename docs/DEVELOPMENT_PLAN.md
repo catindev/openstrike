@@ -726,6 +726,41 @@ classification.
 * `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
   `git diff --check` pass.
 
+## PR-08A Local game runtime skeleton
+
+**Goal:** Add the first server-authoritative local runtime owner before weapon
+or HUD work starts using dev-lab state directly.
+
+**Why before full PR-08:** PR-07 through PR-07.2 made real BSP maps testable
+and exposed spawn/entity/collision boundaries. The next step should create a
+small game-layer session/tick/snapshot contract so future weapon and round
+work has an authoritative owner, but without implementing combat, economy or
+full round rules in the same PR.
+
+**Includes:**
+
+* Pure `src/game/runtime` data/service objects for local session, player slot,
+  user command, round state and snapshot.
+* Fixed-tick local session stepping independent from render framerate.
+* Command queue acceptance/rejection for known player IDs.
+* Team-aware spawn assignment from `OpenStrikeMapEntityIndex` snapshots.
+* Smoke coverage with synthetic entity metadata.
+
+**Excludes:**
+
+* Weapon state, firing, damage, HUD, economy, buy menu, bots and networking.
+* Full round win conditions, freeze-time timers or map objective logic.
+* Direct map loading or dev-lab dependencies from `src/game/runtime`.
+
+**Acceptance criteria:**
+
+* A local session can add players, start a round, assign team-priority spawns,
+  step fixed ticks and emit a deterministic snapshot.
+* Runtime code remains in `src/game` and does not load GoldSrc assets, scenes
+  or dev-lab scripts directly.
+* `scripts/run_smoke_checks.sh`, `scripts/check_no_forbidden_assets.sh` and
+  `git diff --check` pass.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

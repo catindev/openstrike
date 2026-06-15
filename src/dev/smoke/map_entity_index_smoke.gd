@@ -36,6 +36,30 @@ func _run() -> int:
 		root.free()
 		return 1
 
+	var spawn_descriptors := index.spawn_descriptors_for_classes([
+		"info_player_deathmatch",
+		"info_player_start",
+	])
+	if not _assert(spawn_descriptors.size() == 2, "Entity index should expose sanitized spawn descriptors in requested class order", spawn_descriptors):
+		root.free()
+		return 1
+	var first_spawn: Dictionary = spawn_descriptors[0]
+	if not _assert(not first_spawn.has("node"), "Spawn descriptors must not expose scene nodes to game runtime", first_spawn):
+		root.free()
+		return 1
+	if not _assert(str(first_spawn.get("classname", "")) == "info_player_deathmatch", "First spawn descriptor should follow preferred class order", first_spawn):
+		root.free()
+		return 1
+	if not _assert(first_spawn.get("position", Vector3.ZERO) == Vector3(4.0, 5.0, 6.0), "Spawn descriptor should include a pure position value", first_spawn):
+		root.free()
+		return 1
+	if not _assert(is_equal_approx(float(first_spawn.get("yaw", 0.0)), -PI * 0.5), "Spawn descriptor should derive yaw from GoldSrc angles", first_spawn):
+		root.free()
+		return 1
+	if not _assert(str(first_spawn.get("origin", "")) != "" and str(first_spawn.get("angles", "")) == "0 90 0", "Spawn descriptor should retain source origin and angles strings", first_spawn):
+		root.free()
+		return 1
+
 	var disabled_classes: Dictionary = report.get("disabled_player_collision_classes", {})
 	for classname in ["func_buyzone", "func_bomb_target", "info_bomb_target", "func_illusionary", "trigger_camera"]:
 		if not _assert(int(disabled_classes.get(classname, 0)) == 1, "Entity index should mark non-blocking semantic/trigger entities for collision disable", {"classname": classname, "report": report}):
