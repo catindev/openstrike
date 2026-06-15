@@ -17,6 +17,13 @@ OpenStrike is a **Godot‑based reimplementation** of *Counter‑Strike 1.6* th
 ## Development rules
 
 * Follow **GitHub Flow**: every task or feature is developed on a fresh branch and submitted as a pull request.  One PR should accomplish a single conceptual step.
+* Before starting any non-trivial task, follow
+  `docs/agent_context_hygiene.md`. Every project task must begin with a compact
+  Task Packet and explicit Assumptions. When asked for a handoff/new chat
+  summary, produce a Current Context Contract.
+* Before relying on conversation history, read
+  `docs/current_context_contract.md` and verify it against current repository
+  and GitHub state.
 * Read the documentation in `docs/` before coding.  Understand the architecture, roadmap and legal constraints.
 * Before changing Godot code, GDScript, scenes, resources, dev smoke checks,
   HUD, viewmodels, effects, asset-provider code or Godot project structure,

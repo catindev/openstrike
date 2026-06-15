@@ -204,3 +204,15 @@ weapon state, damage, objective rules, networking, bots, buy menu or HUD. It
 creates the authoritative owner that later PRs can extend, preserving the
 project architecture rule that even offline play flows through game-layer
 authority rather than presentation or lab state.
+
+## 0020. Require context hygiene before non-trivial agent work
+
+Long OpenStrike sessions are vulnerable to context rot: old discussions,
+superseded experiments and current decisions can blend together. Agents must
+therefore normalize non-trivial tasks into a compact Task Packet and explicit
+Assumptions before acting.
+
+`docs/agent_context_hygiene.md` is the normative workflow for that process.
+`docs/current_context_contract.md` is the live handoff document for new chats
+and agents. It must be updated when accepted decisions, architecture state,
+active risks or immediate next tasks materially change.
