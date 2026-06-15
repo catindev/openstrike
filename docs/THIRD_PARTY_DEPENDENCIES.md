@@ -37,9 +37,15 @@ License status:
 
 * No `LICENSE`, `COPYING` or `NOTICE` file is present in the vendored snapshot
   inspected for this PR.
-* Project direction from the maintainer is to proceed with the dependency until
-  an upstream license file appears; if license terms are added later, reread
-  them and update this decision before further redistribution-sensitive work.
+* Absence of a license does not grant reuse or redistribution rights.
+* The maintainer accepts this as a pre-release development risk so OpenStrike
+  can keep validating local GoldSrc asset loading.
+* The OpenStrike MIT license does not cover this vendored dependency.
+* If license terms are added later, reread them and update this decision before
+  further redistribution-sensitive work.
+* Public release/package distribution must revisit, replace, exclude or
+  explicitly approve this dependency. Track that status in
+  `docs/TAINT_LEDGER.md` and `docs/PUBLIC_OPEN_SOURCE_EXIT_PLAN.md`.
 
 Operational notes:
 

@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added `docs/TAINTED_LABS_POLICY.md`, `docs/TAINT_LEDGER.md` and
+  `docs/PUBLIC_OPEN_SOURCE_EXIT_PLAN.md` so dirty labs, unlicensed dependency
+  risk and public release gates are explicit before more runtime work builds on
+  PR-07.
+* Added `docs/test_reports/2026-06-15_bsp_reader_inventory.md` to record that
+  the current repository has no `addons/hl_core`, OpenStrike-owned BSP reader,
+  `trace_hull` or `point_contents` implementation.
+* Added `scripts/check_taint_scope.sh` and wired it into shared smoke checks to
+  keep accepted pre-release risk entries documented and block production imports
+  from future `src/dev/tainted` paths.
+* Added `CSMovementMath` as the production-owned shared movement math helper for
+  acceleration, air acceleration, friction, wish direction and GoldSrc-style
+  component maxvelocity checks.
 * Added `OpenStrikeGoldSrcBspRuntimeProvider` to load local GoldSrc BSP maps
   through the existing VFS and vendored `alanfischer/goldsrc-godot`, reporting
   BSP/WAD/PVS/entity/imported-collision capabilities without claiming GoldSrc
@@ -146,6 +159,14 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Changed
 
+* Changed the BSP walkable lab to consume shared movement math instead of
+  owning duplicate friction, acceleration and maxvelocity equations. Its air
+  branch now preserves the PR-04A rule that full wishspeed drives acceleration
+  amount while the air cap limits only add-speed.
+* Clarified `alanfischer/goldsrc-godot` as an accepted pre-release risk: the
+  vendored snapshot has no license file, absence of a license does not grant
+  redistribution rights and the OpenStrike MIT license does not cover the
+  vendored dependency.
 * Updated the near-term plan so the next manual validation point is a walkable
   real BSP map with trace logging, not further greybox or weapon tuning.
 * Adjusted the walkable BSP lab after the first manual run: no-weapon movement
@@ -227,6 +248,9 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Inserted PR-07.1 as a cleanup-only runtime spine step before TraceBackend,
+  weapons or LocalGameServer work, so PR-07 remains a dev lab and does not
+  become production architecture by accident.
 * Inserted PR-07 as a map-first walkable BSP lab after review and manual-test
   feedback showed that greybox-only tuning risks moving OpenStrike away from
   CS 1.6 map scale, lighting, collision and spawn constraints.
