@@ -43,6 +43,13 @@ All notable changes to this project will be documented in this file.  The format
 * Added `docs/test_reports/2026-06-15_real_bsp_contract_a_de_dust2.md` with
   sanitized local `de_dust2` inspection results for the PR-08B hull-extent
   contract question.
+* Added a dev-only trace backend selector for smoke checks so
+  `godot_scene_collision` and the synthetic BSP clipnode backend can be chosen
+  behind the same `OpenStrikeTraceBackend` boundary without touching
+  production runtime.
+* Added shared trace backend smoke coverage that verifies both selectable
+  backends expose the same trace-result fields while preserving Godot
+  non-parity and synthetic-only BSP support.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -216,6 +223,9 @@ All notable changes to this project will be documented in this file.  The format
   `contents` and `model_index` report fields so synthetic BSP clipnode traces
   can use the existing TraceBackend result contract instead of creating a
   duplicate trace DTO.
+* Changed `OpenStrikeBspClipnodeTraceBackend.point_contents()` to report a
+  synthetic BSP backend source and deferred capability instead of falling back
+  to the base unavailable backend report.
 * Extended sanitized spawn descriptors with a `source` field and changed the
   local runtime smoke to use a descriptor-only index with no `Node3D`
   dependency.

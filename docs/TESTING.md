@@ -525,6 +525,33 @@ For the local real-BSP hull-extent diagnostic, perform the following checks:
 * **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
   before pushing.
 
+## PR-08C Clipnode backend capability integration checklist
+
+For the selectable trace-backend capability integration, perform the following
+checks:
+
+* **Godot smoke checks:** Run `scripts/run_smoke_checks.sh`. This includes the
+  shared trace backend smoke after the original Godot backend smoke.
+* **Shared trace backend smoke:** Run
+  `Godot --headless --path . --script res://src/dev/smoke/trace_backend_shared_smoke.gd`
+  when iterating on backend capabilities or trace-result fields.
+* **Selector scope:** Confirm the backend selector lives only in dev/smoke or
+  dev-lab paths and is not imported by `src/game`, production runtime or
+  presentation.
+* **Collision honesty:** Confirm `OpenStrikeGodotSceneTraceBackend` still
+  reports `godot_scene_collision`, `godot_collision_unverified` and
+  `goldsrc_parity=false`.
+* **BSP scope:** Confirm `OpenStrikeBspClipnodeTraceBackend` still reports
+  synthetic-only support and does not promote real-map Contact A behavior.
+* **Point contents:** Confirm `point_contents()` remains unsupported/deferred
+  for the BSP backend while preserving the API shape.
+* **Scope boundary:** Confirm the PR does not add PMove,
+  `PlayerMoveService`, `LocalGameSession` movement, weapon loop, HUD, economy,
+  bots, WAD/miptexture parsing or a production backend switch.
+* **Forbidden asset scan:** Run `scripts/check_no_forbidden_assets.sh`.
+* **Whitespace check:** Run `git diff --check` and `git diff --cached --check`
+  before pushing.
+
 ## Future plans
 
 As the project matures, automated testing will become essential.  Planned areas include:

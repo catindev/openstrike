@@ -854,6 +854,35 @@ authority.
 * Contract A is not promoted beyond PR-08B synthetic fixtures unless
   contact-level real-map evidence proves that plane-space contract.
 
+## PR-08C Clipnode backend capability integration
+
+**Goal:** Make the synthetic BSP clipnode backend selectable behind the
+existing `OpenStrikeTraceBackend` boundary for dev/smoke use, without using it
+for player movement.
+
+**Includes:**
+
+* Dev-only backend selector for `godot_scene_collision` and the synthetic BSP
+  clipnode backend.
+* Shared trace-result smoke coverage for both selectable backends.
+* Capability checks that preserve Godot scene collision as temporary
+  non-parity and the BSP backend as synthetic-only.
+* BSP `point_contents()` unsupported/deferred reporting that keeps the API
+  shape and backend identity clear.
+
+**Excludes:**
+
+* PMove, `PlayerMoveService`, `LocalGameSession` movement, weapon loop, HUD,
+  economy, bots, WAD/miptexture parsing, real-map contact goldens and a
+  production backend switch.
+
+**Acceptance criteria:**
+
+* Both selectable backends expose the same trace-result fields.
+* Godot scene collision reports `godot_collision_unverified`.
+* The BSP clipnode backend reports limited synthetic support and does not use
+  the real-BSP Contract A diagnostic to claim map collision authority.
+
 ## PR-08 Server-authoritative local game loop
 
 **Goal:** Run offline gameplay through a server-style game layer.

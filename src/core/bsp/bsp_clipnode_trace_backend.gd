@@ -106,6 +106,21 @@ func trace_hull(start: Vector3, end: Vector3, hull, collision_mask: int = 0xFFFF
 	return trace
 
 
+func point_contents(position: Vector3, collision_mask: int = 0xFFFFFFFF) -> Dictionary:
+	return {
+		"supported": false,
+		"source": SOURCE_GOLDSRC_HULL_TRACE,
+		"confidence": CONFIDENCE_SYNTHETIC_VERIFIED,
+		"goldsrc_parity": false,
+		"status": "unsupported",
+		"contents": "unknown",
+		"position": _vector_to_array(position),
+		"capability": CAP_DEFERRED,
+		"reason": "BSP clipnode point_contents remains deferred; PR-08C only exposes synthetic trace_hull selection.",
+		"goldsrc_parity_scope": "synthetic_clipnode_fixture_only",
+	}
+
+
 func _trace_node(
 	node_index: int,
 	p1: Vector3,

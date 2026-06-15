@@ -50,6 +50,10 @@ viewmodel/map runtime and eventual gameplay authority.
   clipnode headnodes with non-empty reachable trees, so PR-08B runtime
   plane-offset Contract A remains synthetic-only and must not be promoted to
   real-map clipnodes without a later contact-level diagnostic.
+* PR-08C adds dev/smoke-only trace backend selection for the temporary Godot
+  scene backend and the synthetic BSP clipnode backend, plus shared trace-result
+  smoke coverage. It does not connect movement, runtime sessions or
+  presentation to the BSP backend.
 * `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md` and
   `docs/COMPACT_PR_TASK_PACKETS.md` define the accepted runtime-spine
   contracts, denylist and PR order. Follow only the current packet.
@@ -87,6 +91,10 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 * `src/dev/tools/bsp30_real_map_contract_a_inspect.gd` provides an opt-in
   local typed-load diagnostic for licensed BSP30 maps. It reports sanitized
   reader/headnode/clipnode-tree facts and has a CI-safe synthetic smoke mode.
+* `src/dev/smoke/trace_backend_dev_selector.gd` is a dev-only selector for
+  backend smoke checks. It can create `godot_scene_collision` or a synthetic
+  BSP clipnode backend behind the same trace boundary, but production runtime
+  must not import it.
 * `src/core/maps/map_entity_index.gd` classifies imported BSP entity metadata
   for spawns, buyzones, bomb targets, illusionary brushes, triggers and
   collision policy, and exposes sanitized spawn descriptors for runtime
@@ -153,28 +161,28 @@ slice plus the runtime spawn-descriptor cleanup and context hygiene workflow:
 
 ## 7. Immediate next task
 
-Start `PR-08C: Clipnode backend capability integration`.
+Start the next runtime-spine packet after `PR-08C`. Per
+`docs/COMPACT_PR_TASK_PACKETS.md`, reassess whether the remaining `PR-08D`
+broader typed-load inspection still has scope after PR-08B.1 before moving to
+`PR-08E`.
 
 Scope:
 
-* make `OpenStrikeBspClipnodeTraceBackend` selectable behind the existing
-  `OpenStrikeTraceBackend` boundary for dev/smoke use;
-* finalize shared trace result fields needed by both backends;
-* keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
-  limited/synthetic and not promoted by the real-BSP Contract A diagnostic;
 * do not add PMove, PlayerMoveService, LocalGameSession movement, weapons, HUD,
-  real map contact golden tests or WAD/miptexture parsing.
+  real map contact golden tests or WAD/miptexture parsing until the relevant
+  packet explicitly allows it;
+* keep `GodotSceneTraceBackend` temporary non-parity and the BSP backend
+  limited/synthetic unless a later packet changes that contract.
 
 ## 8. Definition of done for the next task
 
 The next task is done when:
 
-* both trace backends satisfy the same interface/capability contract;
-* shared trace-result smoke covers the Godot scene backend and synthetic BSP
-  backend without promoting Godot contact values to goldens;
+* the selected packet is completed without neighboring scope;
 * changes are documented in `CHANGELOG.md` and relevant docs;
 * smoke checks, forbidden asset scan and whitespace checks pass;
-* the branch is committed, pushed and opened as a focused PR;
+* the branch is committed and then merged/pushed or opened as a focused PR
+  according to the current maintainer instruction;
 * this context contract is updated if accepted project state changes.
 
 ## 9. Sources of truth
