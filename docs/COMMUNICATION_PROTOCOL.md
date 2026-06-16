@@ -1,510 +1,532 @@
-# OpenStrike Communication Protocol
+# Регламент коммуникации OpenStrike
 
-Status: normative for issue/PR communication between the project owner, analyst, tech lead, PM and implementation agents.
+Статус: нормативный документ для общения в GitHub Issues и Pull Requests между заказчиком, аналитиком, тимлидом, PM и разработчиком.
 
-This document defines the shared communication protocol for OpenStrike planning. When a human says **"отвечай по регламенту"** / **"answer by the protocol"**, the agent must follow this file.
+Когда заказчик пишет нейронке: **«отвечай по регламенту»**, агент должен прочитать этот документ и отвечать в описанном формате.
 
-This protocol does not replace `AGENTS.md`, `docs/DECISIONS.md`, legal rules, clean-room rules or task-packet scope rules. It defines how people and agents communicate in GitHub Issues and Pull Requests so decisions are traceable and do not rot across chats.
+Регламент не заменяет `AGENTS.md`, `docs/DECISIONS.md`, юридические ограничения, clean-room правила и task packets. Он описывает только порядок общения и принятия решений, чтобы проект не зависел от пересказов между чатами.
 
 ---
 
-## 1. Working model
+## 1. Главный принцип
 
-OpenStrike uses GitHub Issues as the shared planning space.
+OpenStrike использует GitHub Issues как общее рабочее пространство.
 
 ```text
-GitHub Issue = discussion, role inputs, questions, PM synthesis and decision
-Pull Request = implementation and code review
-Project docs = accepted long-lived contracts and source of truth
+GitHub Issue = обсуждение, вводы ролей, вопросы, синтез PM, решение
+Pull Request = реализация и код-ревью
+Документы в docs/ = долгоживущие принятые контракты
 ```
 
-Do not rely on Telegram, private chat history or a ChatGPT conversation as source of truth. If a decision matters, it must be captured in a GitHub Issue comment, PR description/comment, `docs/DECISIONS.md`, or the relevant task packet.
+Telegram, личные чаты и история ChatGPT не являются источником правды. Если решение влияет на проект, оно должно быть зафиксировано в GitHub Issue, PR, `docs/DECISIONS.md` или соответствующем task packet.
 
 ---
 
-## 2. Roles
+## 2. Язык общения
 
-### Project owner
+В GitHub Issues проекта OpenStrike по умолчанию общаемся **на русском языке**.
 
-The project owner defines goals, constraints and priorities. The owner may request analysis, ask for planning or approve a direction.
+Исключения допустимы только для:
 
-### Analyst
+- имён файлов, классов, методов, cvar, labels, branch names и технических идентификаторов;
+- цитат из англоязычных источников;
+- PR body, если тимлид или заказчик явно попросил английский.
 
-The analyst reviews architecture, contradictions, known CS 1.6 behavior, clean-room boundaries and whether current implementation preserves the intended internal structure.
-
-The analyst should not directly assign Codex implementation work unless the project owner explicitly asks.
-
-### Tech lead
-
-The tech lead turns accepted goals and analyst findings into implementable technical direction. The tech lead may ask questions, challenge the analyst, narrow scope, split tasks and propose implementation strategy.
-
-### PM / product-project manager
-
-The PM plans the next step only after reading the issue, analyst input and tech-lead input. The PM resolves sequencing, demo value, acceptance criteria and what must not be done in the next PR.
-
-The PM must not make final implementation decisions from only one role's input unless the owner explicitly overrides the protocol.
-
-### Codex / implementation agent
-
-Codex implements the approved issue/PR scope. Codex must follow `AGENTS.md`, the task packet, acceptance criteria and all out-of-scope boundaries.
+Если агент случайно написал issue/comment на английском, он должен исправить текст на русский.
 
 ---
 
-## 3. Source-of-truth order
+## 3. Роли
 
-When sources disagree, use this order:
+### Заказчик
+
+Заказчик определяет цель, ограничения и приоритеты. Заказчик может запросить анализ, попросить тимлида о техническом варианте или попросить PM принять проектное решение.
+
+### Аналитик
+
+Аналитик проверяет архитектуру, противоречия, соответствие публичным знаниям о CS 1.6, clean-room границы и внутреннюю целостность проекта.
+
+Аналитик не выдаёт задачи разработчику. Аналитик даёт ввод для тимлида и PM.
+
+### Тимлид
+
+Тимлид изучает ввод аналитика, задаёт вопросы, уточняет технические ограничения, дробит scope и предлагает путь реализации.
+
+Тимлид — единственная роль, которая формулирует конкретные задачи разработчику/Codex после принятого решения.
+
+### PM / менеджер продукта и проекта
+
+PM читает issue, ввод аналитика и ввод тимлида. После этого PM формулирует план, порядок работ, демо-ценность, критерии приёмки и границы scope.
+
+PM не должен напрямую ставить задачу разработчику в обход тимлида. PM может создать planning/task issue, но финальную формулировку реализации для Codex даёт тимлид.
+
+PM не принимает финальное решение только по одному вводу, если заказчик явно не разрешил принять решение без недостающей роли.
+
+### Разработчик / Codex
+
+Разработчик — исполнительская роль. Он не участвует в споре аналитика, тимлида и PM как источник проектного решения.
+
+Разработчик получает конкретную задачу от тимлида и реализует только утверждённый scope. Разработчик обязан соблюдать `AGENTS.md`, task packet, acceptance criteria и out-of-scope ограничения.
+
+---
+
+## 4. Порядок источников правды
+
+Если источники противоречат друг другу, приоритет такой:
 
 ```text
-1. Current GitHub Issue / PR comments with explicit [DECISION]
+1. Комментарий в текущем GitHub Issue/PR с явным [РЕШЕНИЕ]
 2. docs/DECISIONS.md
 3. docs/COMPACT_PR_TASK_PACKETS.md
-4. AGENTS.md and active docs/README.md routing
-5. Current code on main and merged PR state
-6. Archived docs and chat history, only as context
+4. AGENTS.md и активная карта docs/README.md
+5. Текущий код main и состояние merged PR
+6. Архивные docs и история чатов — только как контекст
 ```
 
-Archived docs are historical unless an active document explicitly re-promotes them.
+`docs/archive/` не является активным источником правды, если активный документ явно не вернул конкретный архивный файл в работу.
 
 ---
 
-## 4. Standard issue flow
+## 5. Стандартный процесс в issue
 
-For a planning issue:
+Обычный поток:
 
 ```text
-1. Owner opens an issue or points to an existing issue.
-2. Analyst posts [ANALYST INPUT].
-3. Tech lead posts [TECHLEAD INPUT], [TECHLEAD QUESTIONS] or [IMPLEMENTATION PROPOSAL].
-4. PM posts [PM SYNTHESIS].
-5. PM or owner posts [DECISION].
-6. Approved implementation is split into task issues or PRs.
-7. Codex implements only the approved task/PR scope.
+1. Заказчик создаёт issue или указывает существующее issue.
+2. Аналитик пишет [ВВОД АНАЛИТИКА].
+3. Тимлид пишет [ВВОД ТИМЛИДА], [ВОПРОСЫ ТИМЛИДА] или [ПРЕДЛОЖЕНИЕ РЕАЛИЗАЦИИ].
+4. PM пишет [СИНТЕЗ PM].
+5. PM или заказчик пишет [РЕШЕНИЕ].
+6. Если решение принято, тимлид формулирует задачу разработчику/Codex.
+7. Разработчик реализует только утверждённую задачу.
 ```
 
-If the tech lead asks questions, the issue remains blocked until the questions are answered or the owner explicitly narrows the decision.
+Если тимлид задал вопросы, issue остаётся заблокированным до ответа или явного сужения задачи заказчиком.
 
 ---
 
-## 5. Comment headings
+## 6. Заголовки комментариев
 
-GitHub labels apply to issues and PRs, not individual comments. To route comments, use exact headings.
+GitHub labels ставятся на issues и PR, а не на отдельные комментарии. Поэтому для маршрутизации комментариев используем явные заголовки.
 
-Allowed headings:
+Разрешённые заголовки:
 
 ```text
-[OWNER CONTEXT]
-[ANALYST INPUT]
-[TECHLEAD INPUT]
-[TECHLEAD QUESTIONS]
-[IMPLEMENTATION PROPOSAL]
-[PM SYNTHESIS]
-[DECISION]
-[ACCEPTANCE]
-[OUT OF SCOPE]
-[BLOCKER]
-[TEST REPORT]
+[КОНТЕКСТ ЗАКАЗЧИКА]
+[ВВОД АНАЛИТИКА]
+[ВВОД ТИМЛИДА]
+[ВОПРОСЫ ТИМЛИДА]
+[ПРЕДЛОЖЕНИЕ РЕАЛИЗАЦИИ]
+[СИНТЕЗ PM]
+[РЕШЕНИЕ]
+[КРИТЕРИИ ПРИЁМКИ]
+[ВНЕ SCOPE]
+[БЛОКЕР]
+[ОТЧЁТ О ПРОВЕРКЕ]
+[ЗАДАЧА ДЛЯ РАЗРАБОТЧИКА]
 ```
 
-A comment may contain several headings if needed, but every substantive role input should start with one of these headings.
+Каждый важный комментарий должен начинаться с одного из этих заголовков.
 
 ---
 
-## 6. Required response format by role
+## 7. Форматы ответов по ролям
 
-### Analyst response
-
-Use this format:
+### Формат аналитика
 
 ```markdown
-[ANALYST INPUT]
+[ВВОД АНАЛИТИКА]
 
-## Verdict
+## Вердикт
 
-## Facts checked
+## Проверенные факты
 
-## What is safe to proceed with
+## Что безопасно делать дальше
 
-## Blockers / risks
+## Блокеры / риски
 
-## Contradictions
+## Противоречия
 
-## Recommended next questions for tech lead
+## Вопросы к тимлиду
 
-## Not a decision
+## Не решение
 
-This is analyst input, not a final PM decision.
+Это ввод аналитика, а не финальное решение PM.
 ```
 
-The analyst must separate facts from recommendations and must say when Godot was not run locally.
+Аналитик обязан отделять факты от рекомендаций и явно писать, если он не запускал Godot/тесты локально.
 
-### Tech-lead response
-
-Use this format:
+### Формат тимлида
 
 ```markdown
-[TECHLEAD INPUT]
+[ВВОД ТИМЛИДА]
 
-## Verdict on analyst input
+## Вердикт по вводу аналитика
 
-## Implementation concerns
+## Технические замечания
 
-## Proposed implementation path
+## Предлагаемый путь реализации
 
-## Scope split
+## Разбиение scope
 
-## Questions / missing information
+## Вопросы / недостающая информация
 
-## Acceptance changes
+## Изменения acceptance criteria
 
-## Out of scope for the next PR
+## Вне scope ближайшего PR
+
+## Нужно ли давать задачу разработчику сейчас
 ```
 
-The tech lead should make implementation scope smaller, not larger, unless the owner explicitly asks for a bigger packet.
+Тимлид должен сужать и дробить scope, а не расширять его без явного запроса заказчика.
 
-### PM response
-
-Use this format:
+### Формат PM
 
 ```markdown
-[PM SYNTHESIS]
+[СИНТЕЗ PM]
 
-## Inputs read
+## Прочитанные вводы
 
-- Analyst: yes/no, link or comment summary
-- Tech lead: yes/no, link or comment summary
-- Repo/PR facts checked: yes/no
+- Аналитик: да/нет, ссылка или краткое содержание
+- Тимлид: да/нет, ссылка или краткое содержание
+- Проверка repo/PR: да/нет
 
-## Agreement
+## Где есть согласие
 
-## Conflict
+## Где есть конфликт
 
-## Product/project decision
+## Проектное решение
 
-## Next issue / PR
+## Следующее issue / PR
 
-## Demo value
+## Демо-ценность
 
-## Acceptance criteria
+## Критерии приёмки
 
-## Out of scope
+## Вне scope
 
-## Label/status changes
+## Изменения labels/status
+
+## Нужна ли задача от тимлида разработчику
 ```
 
-PM decision rule:
+Правило PM:
 
 ```text
-No final PM decision without analyst input and tech-lead input, unless the project owner explicitly says to decide without one of them.
+PM не принимает финальное решение без ввода аналитика и тимлида,
+если заказчик явно не разрешил принять решение без одной из ролей.
 ```
 
-### Codex response
-
-Use this format before implementation:
+### Формат задачи от тимлида разработчику
 
 ```markdown
-[TASK PACKET]
+[ЗАДАЧА ДЛЯ РАЗРАБОТЧИКА]
 
-## Goal
+## Цель
 
-## Includes
+## Что сделать
 
-## Excludes
+## Что не делать
 
-## Files likely touched
+## Файлы / модули
 
-## Acceptance
+## Критерии приёмки
 
-## Tests / checks
+## Проверки / тесты
 
 ## Legal / asset check
 
-## Assumptions
+## Важные допущения
 ```
 
-Codex must not start neighboring packets early.
+Разработчик/Codex не должен начинать соседние task packets раньше времени.
 
 ---
 
-## 7. Labels
+## 8. Labels
 
-Use the following label groups.
+Labels могут быть на английском или русском, но в issue-комментариях объяснения должны быть на русском.
 
-### Role labels
+Текущие смысловые группы labels:
 
-```text
-role: analyst-input-needed
-role: techlead-input-needed
-role: pm-decision-needed
-```
-
-### Status labels
+### Роли
 
 ```text
-status: triage
-status: ready
-status: blocked
-status: in-progress
-status: in-review
-status: accepted
-status: deferred
+role: analyst-input-needed / роль: нужен-аналитик
+role: techlead-input-needed / роль: нужен-тимлид
+role: pm-decision-needed / роль: нужно-решение-pm
 ```
 
-Only one `status:*` label should normally be active on a task issue. Planning umbrella issues may keep `status: blocked` while waiting for role input.
-
-### Phase labels
+### Статусы
 
 ```text
-phase: runtime-spine
-phase: bsp
-phase: movement
-phase: gameplay-loop
-phase: docs
+status: triage / статус: триаж
+status: ready / статус: готово-к-работе
+status: blocked / статус: заблокировано
+status: in-progress / статус: в-работе
+status: in-review / статус: на-ревью
+status: accepted / статус: принято
+status: deferred / статус: отложено
 ```
 
-Multiple `phase:*` labels are allowed when an issue crosses subsystem boundaries.
+Обычно на task issue должен быть только один `status:*` / `статус:*` label.
 
-### Type labels
+### Фазы
 
 ```text
-type: decision
-type: task
-type: risk
-type: demo
+phase: runtime-spine / фаза: runtime-spine
+phase: bsp / фаза: bsp
+phase: movement / фаза: movement
+phase: gameplay-loop / фаза: gameplay-loop
+phase: docs / фаза: docs
 ```
 
-Use only one `type:*` label unless there is a strong reason.
+### Типы
+
+```text
+type: decision / тип: решение
+type: task / тип: задача
+type: risk / тип: риск
+type: demo / тип: демо
+```
 
 ---
 
-## 8. Issue types
+## 9. Типы issue
 
-### Decision issue
+### Decision issue / решение
 
-Use when the team must choose direction.
+Используется, когда нужно выбрать направление.
 
-Required sections:
+Обязательные разделы:
 
 ```markdown
-# Context
-# Analyst input
-# Teamlead input
-# PM synthesis
-# Decision
-# Acceptance criteria
-# Out of scope
+# Контекст
+# Ввод аналитика
+# Ввод тимлида
+# Синтез PM
+# Решение
+# Критерии приёмки
+# Вне scope
 ```
 
-### Task issue
+### Task issue / задача
 
-Use for a specific PR-sized implementation task.
+Используется для PR-sized задачи.
 
-Required sections:
+Обязательные разделы:
 
 ```markdown
-# Goal
-# Current status
-# Analyst input
-# Teamlead input
-# PM synthesis
+# Цель
+# Текущий статус
+# Ввод аналитика
+# Ввод тимлида
+# Синтез PM
 # Scope
-# Acceptance
-# Out of scope
+# Критерии приёмки
+# Вне scope
 ```
 
-### Risk issue
+### Risk issue / риск
 
-Use for a blocker or risk that can invalidate future work.
+Используется для риска или блокера, который может обесценить будущую работу.
 
-Required sections:
+Обязательные разделы:
 
 ```markdown
-# Risk
-# Source
-# Why it matters
-# Mitigation candidates
-# Exit criteria
+# Риск
+# Источник
+# Почему важно
+# Возможные меры
+# Условия закрытия риска
 ```
 
-### Demo issue
+### Demo issue / демо
 
-Use for a customer-visible or owner-visible checkpoint.
+Используется для промежуточного демо заказчику.
 
-Required sections:
+Обязательные разделы:
 
 ```markdown
-# Demo goal
-# Depends on
-# Demo acceptance
-# Out of scope
+# Цель демо
+# Зависимости
+# Критерии демо
+# Вне scope
 ```
 
 ---
 
-## 9. Status transitions
+## 10. Статусы
 
-Typical transitions:
+Типовой переход:
 
 ```text
-triage -> blocked -> ready -> in-progress -> in-review -> accepted
-triage -> deferred
-blocked -> deferred
-accepted -> closed
+триаж -> заблокировано -> готово-к-работе -> в-работе -> на-ревью -> принято
+триаж -> отложено
+заблокировано -> отложено
+принято -> закрыто
 ```
 
-Meaning:
+Смысл:
 
-- `status: triage`: issue exists but role inputs or scope are not organized.
-- `status: blocked`: cannot proceed; missing role input, decision, dependency or evidence.
-- `status: ready`: PM decision exists and Codex/tech lead can start the next action.
-- `status: in-progress`: implementation or active analysis is underway.
-- `status: in-review`: PR or decision is waiting for review.
-- `status: accepted`: decision or task is accepted.
-- `status: deferred`: intentionally postponed; do not start without a new decision.
+- `триаж`: issue создано, но роли/scope ещё не организованы.
+- `заблокировано`: нельзя двигаться; не хватает ввода, решения, зависимости или фактов.
+- `готово-к-работе`: PM-решение есть, тимлид может формулировать задачу разработчику.
+- `в-работе`: идёт анализ или реализация.
+- `на-ревью`: PR или решение ждёт ревью.
+- `принято`: решение/задача приняты.
+- `отложено`: сознательно отложено; не начинать без нового решения.
 
 ---
 
-## 10. Decision rules
+## 11. Правила решения
 
-A decision comment must include:
+Комментарий с решением должен содержать:
 
 ```text
-[DECISION]
-Decision: accepted / rejected / deferred / split / needs more input
-Next action:
-Owner:
-Acceptance:
-Out of scope:
-Links:
+[РЕШЕНИЕ]
+Решение: принято / отклонено / отложено / разделить / нужен дополнительный ввод
+Следующее действие:
+Кто следующий отвечает:
+Критерии приёмки:
+Вне scope:
+Ссылки:
 ```
 
-A decision is not valid if it only says "sounds good" or "do it". It must name the next issue/PR and scope boundaries.
+Фразы «норм», «делай», «звучит хорошо» не считаются решением, если нет следующего issue/PR и границ scope.
 
 ---
 
-## 11. Demo rules
+## 12. Правила демо
 
-Every demo issue must answer:
+Каждое demo issue должно отвечать:
 
 ```text
-What can the owner see?
-What proves it is not fake?
-What telemetry/test/report backs it?
-What is explicitly not claimed yet?
+Что заказчик сможет увидеть?
+Что доказывает, что это не фейк?
+Какая telemetry / test / report это подтверждает?
+Что мы ещё не заявляем?
 ```
 
-For OpenStrike, demos must not overclaim CS 1.6 parity. Use wording like:
+Для OpenStrike нельзя завышать заявления о CS 1.6 parity. Нормальная формулировка:
 
 ```text
-This demo proves the current runtime slice, not full CS 1.6 parity.
+Это демо подтверждает текущий runtime slice, а не полную CS 1.6 parity.
 ```
 
 ---
 
-## 12. What agents must do when told "отвечай по регламенту"
+## 13. Что делать агенту по фразе «отвечай по регламенту»
 
-When the owner says **"отвечай по регламенту"**, the agent must:
+Агент обязан:
 
-1. Identify its role: analyst, tech lead, PM or Codex.
-2. Read the current issue/PR content and comments if a link or issue number is provided.
-3. Use the required heading for its role.
-4. Separate facts, assumptions and recommendations.
-5. Avoid final decisions unless its role is PM and the required inputs are present.
-6. State missing input explicitly instead of pretending it has enough context.
-7. Preserve scope boundaries and out-of-scope items.
-8. End with the next required action.
+1. Определить свою роль: аналитик, тимлид, PM или разработчик.
+2. Если дана ссылка/номер issue или PR — прочитать его тело и комментарии.
+3. Отвечать на русском языке.
+4. Использовать заголовок своей роли.
+5. Разделить факты, допущения и рекомендации.
+6. Не принимать финальное решение, если роль не PM или нет нужных вводов.
+7. Явно написать, какого ввода не хватает.
+8. Сохранить scope и `Вне scope`.
+9. Закончить следующим требуемым действием.
 
-Minimal prompt for agents:
+Минимальный prompt для нейронок:
 
 ```text
 Прочитай docs/COMMUNICATION_PROTOCOL.md и отвечай по регламенту.
-Роль: <аналитик | тимлид | PM | Codex>.
-Issue/PR: <link or number>.
+Роль: <аналитик | тимлид | PM | разработчик>.
+Issue/PR: <ссылка или номер>.
+Пиши на русском.
 ```
 
 ---
 
-## 13. Examples
+## 14. Примеры
 
-### Analyst example
+### Пример аналитика
 
 ```markdown
-[ANALYST INPUT]
+[ВВОД АНАЛИТИКА]
 
-## Verdict
+## Вердикт
 
-Do not start Phase 4 yet.
+Не начинать Phase 4.
 
-## Facts checked
+## Проверенные факты
 
 - PR-09B merged.
-- Runtime snapshots exist.
-- Real-map wall contact is not proven.
+- Runtime snapshots появились.
+- Wall contact на real map не доказан.
 
-## Blockers / risks
+## Блокеры / риски
 
-Real BSP movement may still be free-volume.
+Real BSP movement может оставаться free-volume.
 
-## Not a decision
+## Не решение
 
-This is analyst input, not a final PM decision.
+Это ввод аналитика, а не финальное решение PM.
 ```
 
-### Tech-lead example
+### Пример тимлида
 
 ```markdown
-[TECHLEAD INPUT]
+[ВВОД ТИМЛИДА]
 
-## Verdict on analyst input
+## Вердикт по вводу аналитика
 
-Agree with the blocker, but split docs repair from collision work.
+Согласен с блокером, но docs repair и collision work надо разделить.
 
-## Proposed implementation path
+## Предлагаемый путь реализации
 
 1. Docs source-of-truth repair.
 2. Real-map trace diagnostic.
-3. Runtime backend switch only after diagnostic passes.
+3. Runtime backend switch только после diagnostic.
 
-## Out of scope for the next PR
+## Вне scope ближайшего PR
 
-No weapons, HUD, economy or moving brushes.
+Без оружия, HUD, экономики и moving brushes.
 ```
 
-### PM example
+### Пример PM
 
 ```markdown
-[PM SYNTHESIS]
+[СИНТЕЗ PM]
 
-## Inputs read
+## Прочитанные вводы
 
-- Analyst: yes
-- Tech lead: yes
-- Repo/PR facts checked: yes
+- Аналитик: да
+- Тимлид: да
+- Проверка repo/PR: да
 
-## Product/project decision
+## Проектное решение
 
-Start PR-09C.0 first. PR-10A remains deferred.
+Сначала PR-09C.0. PR-10A остаётся отложенным.
 
-## Next issue / PR
+## Следующее issue / PR
 
 #32
 
-## Acceptance criteria
+## Критерии приёмки
 
-- Active doc paths exist.
-- Current context is not stale.
-- Checks pass.
+- Активные doc paths существуют.
+- Current context не stale.
+- Проверки проходят.
+
+## Нужна ли задача от тимлида разработчику
+
+Да, после подтверждения scope тимлидом.
 ```
 
 ---
 
-## 14. Maintenance
+## 15. Поддержка документа
 
-Update this document when:
+Обновлять этот документ нужно, когда меняется:
 
-- the role workflow changes;
-- new labels are introduced;
-- GitHub Project fields become normative;
-- PM decision rules change;
-- issue templates are formalized.
+- порядок общения ролей;
+- набор labels;
+- правила PM-решения;
+- формат задач для разработчика;
+- issue templates.
 
-Changes to this file should be small and should not redefine architecture or legal policy. Architecture goes to `docs/ARCHITECTURE.md` / `docs/DECISIONS.md`; legal policy goes to `AGENTS.md` and legal docs.
+Этот документ не должен переопределять архитектуру или юридическую политику. Архитектура фиксируется в `docs/ARCHITECTURE.md` / `docs/DECISIONS.md`; юридическая политика — в `AGENTS.md` и legal docs.
