@@ -252,6 +252,9 @@ All notable changes to this project will be documented in this file.  The format
 * Changed local runtime spawn assignment to consume sanitized spawn descriptors
   from `OpenStrikeMapEntityIndex` instead of reading `Node3D` scene objects
   from entity entries.
+* Changed the BSP walkable lab to create `OpenStrikeLocalGameSession`, queue
+  `OpenStrikeUserCommand` input and present player position/velocity from
+  runtime snapshots instead of owning movement through a Godot character body.
 * Extended `OpenStrikeCollisionTrace` with `hit`, `start_solid`, `all_solid`,
   `contents` and `model_index` report fields so synthetic BSP clipnode traces
   can use the existing TraceBackend result contract instead of creating a
