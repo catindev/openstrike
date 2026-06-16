@@ -581,6 +581,52 @@ Make BSP walkable lab a presentation consumer of runtime state, not the owner of
 
 ---
 
+## PR-09C — Real-map clipnode trace (Contract B)
+
+### Goal
+Extend BspClipnodeTraceBackend from synthetic fixture to a real BspMapResource
+(de_dust2), so the walkable lab collides with actual map geometry. Replace the
+GodotSceneTraceBackend stub in the lab with this backend.
+
+### Includes
+- Load real BspMapResource (model 0) into BspClipnodeTraceBackend.
+- trace_hull over real clipnodes under Contract B (compiled hull-space planes):
+  NO runtime plane offset (per DECISIONS 0023; offset would double-count).
+- Wire this backend into bsp_walkable_runner instead of GodotSceneTraceBackend.
+- Spec reference: CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md §5.
+
+### Excludes
+- No weapons, no fence textures, no moving brushes (later).
+- No runtime offset on real clipnodes (Contract A is synthetic-only).
+- Do not commit .bsp / Valve assets / local paths.
+
+### Acceptance
+- On real de_dust2 the player stands on the floor and is blocked by walls
+  (no more sliding on one plane).
+- goldsrc_parity flag reflects real-map trace honestly.
+- Manual run confirms walkable geometry; smoke + forbidden-asset scan pass.
+
+---
+
+## PR-09D — Walkable telemetry invariants
+
+### Goal
+Verify movement on real de_dust2 by numbers, not by eye.
+
+### Includes
+- Manual lab run on real map producing JSONL telemetry.
+- A parser/check asserting: max horizontal speed <= 250 u/s; diagonal not faster
+  than straight; presentation_snapshot_position_delta == 0; jump height in range;
+  air-strafe gains speed.
+
+### Excludes
+- No full CS parity claim (needs reference CS telemetry, out of scope).
+
+### Acceptance
+- Telemetry invariants pass on a real-map run; report committed (no asset bytes).
+
+---
+
 # Phase 4 — First gameplay loop
 
 ## PR-10A — One weapon runtime state
