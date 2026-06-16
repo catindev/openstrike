@@ -312,7 +312,7 @@ changes, perform the following checks:
   artifacts.
 * **Generated artifact check:** Run `python3 gen/generate.py --check` and
   confirm that `data/schemas/coverage_status.schema.json` and the generated
-  sections in `docs/COVERAGE_STATUS_CONTRACT.md` match
+  sections in `docs/future/COVERAGE_STATUS_CONTRACT.md` match
   `gen/coverage_status_matrix.json`.
 * **Single editable source:** Confirm that coverage status changes are made by
   editing only `gen/coverage_status_matrix.json` by hand, then regenerating

@@ -525,6 +525,8 @@ choose farther valid path
 
 ## PR-09A — LocalGameSession applies movement commands
 
+Status: merged in PR #28.
+
 ### Goal
 
 Connect `OpenStrikeLocalGameSession` to `PlayerMoveService`.
@@ -554,6 +556,8 @@ Connect `OpenStrikeLocalGameSession` to `PlayerMoveService`.
 
 ## PR-09B — BSP lab consumes runtime snapshot
 
+Status: merged in PR #28.
+
 ### Goal
 
 Make BSP walkable lab a presentation consumer of runtime state, not the owner of gameplay movement.
@@ -581,7 +585,50 @@ Make BSP walkable lab a presentation consumer of runtime state, not the owner of
 
 ---
 
+## PR-09C.0 — Docs source-of-truth repair
+
+Status: current docs-only packet.
+
+### Goal
+
+Make `AGENTS.md`, `docs/README.md` and `docs/current_context_contract.md`
+agree on the active documentation map after docs consolidation and PR #30.
+Prevent new agents from loading stale archive context or broken paths before
+runtime-spine work continues.
+
+### Includes
+
+* Restore current workflow docs that agents must read to active `docs/` paths.
+* Update `AGENTS.md` links so every active path exists or intentionally points
+  to deferred `docs/future/` material.
+* Update `docs/README.md` to state the current routing:
+  PR-09C.0, then PR-09C, then PR-09D, with Phase 4 closed.
+* Update `docs/current_context_contract.md` for merged PR-09A/09B and PR #30.
+* Record the process/routing repair in `CHANGELOG.md`.
+
+### Excludes
+
+* No runtime code.
+* No movement fixes.
+* No BSP/collision backend changes.
+* No real-map telemetry or trace diagnostics.
+* No weapon, HUD, economy, bots, networking or round logic.
+* No Valve assets, BSP files, local paths or telemetry dumps.
+
+### Acceptance
+
+* A new agent can read `AGENTS.md`, `docs/README.md` and
+  `docs/current_context_contract.md` and get the same current project map.
+* Active docs do not point at missing paths.
+* `docs/archive/` is historical reference only, not active source of truth.
+* Phase 4 / PR-10A is explicitly closed until PR-09C and PR-09D complete.
+* Smoke checks, forbidden-asset scan and whitespace checks pass.
+
+---
+
 ## PR-09C — Real-map clipnode trace (Contract B)
+
+Status: next implementation packet after PR-09C.0.
 
 ### Goal
 Extend BspClipnodeTraceBackend from synthetic fixture to a real BspMapResource

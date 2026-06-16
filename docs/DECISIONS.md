@@ -224,11 +224,12 @@ project owns a verifiable BSP30 collision vertical slice. The accepted runtime
 spine order is now recorded in `docs/COMPACT_PR_TASK_PACKETS.md` and backed by
 the contracts in `docs/CODEX_SPEC_GOLDSRC_RUNTIME_SPINE.md`.
 
-The current cleanup package is `PR-08A.1 Runtime spawn descriptors cleanup`.
-After that, the next implementation package is `PR-08B BSP30 collision vertical
-slice`: a synthetic BSP30 reader/clipnode trace proof, not PMove, player
-movement session integration, weapons or HUD. Agents must implement only the
-current package and must not pull neighboring package scope forward.
+This decision originally inserted `PR-08A.1 Runtime spawn descriptors cleanup`
+before `PR-08B BSP30 collision vertical slice`: a synthetic BSP30
+reader/clipnode trace proof, not PMove, player movement session integration,
+weapons or HUD. The current packet is no longer recorded in this decision;
+agents must use `docs/COMPACT_PR_TASK_PACKETS.md` as the single source for the
+next package and must not pull neighboring package scope forward.
 
 The runtime-spine spec also records the clean-room source trail and denylist
 for BSP30/collision/PMove work. Denylisted engine source files must not be
