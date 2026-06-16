@@ -8,6 +8,11 @@ const PlayerMoveServiceRef = preload("res://src/game/player/player_move_service.
 const RoundStateRef = preload("res://src/game/runtime/openstrike_round_state.gd")
 const SnapshotRef = preload("res://src/game/runtime/openstrike_game_snapshot.gd")
 
+## Keep future-dated commands bounded to a 256 fixed-tick window: 2.56s at the
+## default 100 Hz sim is enough for local jitter/out-of-order delivery without
+## allowing accidentally far-future commands to stay queued forever.
+const FUTURE_COMMAND_RETAIN_TICKS := 256
+
 const SPAWN_PRIORITY_BY_TEAM := {
 	PlayerSlotRef.TEAM_COUNTER_TERRORIST: [
 		"info_player_counterterrorist",
@@ -80,6 +85,7 @@ func queue_command(command) -> bool:
 
 
 func step(delta: float) -> int:
+	_last_applied_commands.clear()
 	_accumulator += max(delta, 0.0)
 	var steps := 0
 	while _accumulator + 0.000001 >= fixed_delta:
@@ -106,10 +112,11 @@ func _step_fixed() -> void:
 
 
 func _apply_queued_commands_for_tick(tick: int) -> void:
-	_last_applied_commands.clear()
 	var remaining: Array = []
 	for command in _command_queue:
 		if command.tick > tick:
+			if command.tick > tick + FUTURE_COMMAND_RETAIN_TICKS:
+				continue
 			remaining.append(command)
 			continue
 		var player = _players.get(command.player_id, null)
