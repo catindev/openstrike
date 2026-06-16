@@ -2,9 +2,16 @@ extends RefCounted
 
 class_name OpenStrikeLocalGameSession
 
+const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
 const PlayerSlotRef = preload("res://src/game/runtime/openstrike_player_slot.gd")
+const PlayerMoveServiceRef = preload("res://src/game/player/player_move_service.gd")
 const RoundStateRef = preload("res://src/game/runtime/openstrike_round_state.gd")
 const SnapshotRef = preload("res://src/game/runtime/openstrike_game_snapshot.gd")
+
+## Keep future-dated commands bounded to a 256 fixed-tick window: 2.56s at the
+## default 100 Hz sim is enough for local jitter/out-of-order delivery without
+## allowing accidentally far-future commands to stay queued forever.
+const FUTURE_COMMAND_RETAIN_TICKS := 256
 
 const SPAWN_PRIORITY_BY_TEAM := {
 	PlayerSlotRef.TEAM_COUNTER_TERRORIST: [
@@ -34,15 +41,21 @@ var round_state = RoundStateRef.new()
 var _players := {}
 var _next_player_id := 1
 var _map_entity_index = null
+var _movement_settings = MovementSettingsRef.new()
+var _trace_backend = null
+var _move_service = PlayerMoveServiceRef.new(_movement_settings)
 var _command_queue: Array = []
 var _last_applied_commands: Array[Dictionary] = []
 var _spawn_cursor_by_team := {}
 var _accumulator := 0.0
 
 
-func configure(sim_delta: float, map_entity_index = null) -> void:
+func configure(sim_delta: float, map_entity_index = null, movement_settings = null, trace_backend = null) -> void:
 	fixed_delta = max(sim_delta, 0.001)
 	_map_entity_index = map_entity_index
+	_movement_settings = movement_settings if movement_settings != null else MovementSettingsRef.new()
+	_trace_backend = trace_backend
+	_move_service.configure(_movement_settings, _trace_backend)
 
 
 func add_player(display_name: String, team: String = PlayerSlotRef.TEAM_UNASSIGNED) -> int:
@@ -72,6 +85,7 @@ func queue_command(command) -> bool:
 
 
 func step(delta: float) -> int:
+	_last_applied_commands.clear()
 	_accumulator += max(delta, 0.0)
 	var steps := 0
 	while _accumulator + 0.000001 >= fixed_delta:
@@ -98,18 +112,31 @@ func _step_fixed() -> void:
 
 
 func _apply_queued_commands_for_tick(tick: int) -> void:
-	_last_applied_commands.clear()
 	var remaining: Array = []
 	for command in _command_queue:
 		if command.tick > tick:
+			if command.tick > tick + FUTURE_COMMAND_RETAIN_TICKS:
+				continue
 			remaining.append(command)
 			continue
 		var player = _players.get(command.player_id, null)
 		if player == null:
 			continue
-		player.mark_command_applied(command.tick)
-		_last_applied_commands.append(command.to_dictionary())
+		_apply_player_command(player, command)
 	_command_queue = remaining
+
+
+func _apply_player_command(player, command) -> void:
+	var move_command = command.to_player_move_command(fixed_delta) if command.has_method("to_player_move_command") else null
+	if move_command == null:
+		return
+	var result = _move_service.move(player.movement_state, move_command, _movement_settings, _trace_backend)
+	if result != null and result.state != null:
+		player.apply_movement_state(result.state)
+	player.mark_command_applied(command.tick)
+	var report: Dictionary = command.to_dictionary()
+	report["movement_result"] = result.to_dictionary() if result != null and result.has_method("to_dictionary") else {}
+	_last_applied_commands.append(report)
 
 
 func _assign_spawns() -> void:

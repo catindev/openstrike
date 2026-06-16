@@ -1018,8 +1018,61 @@ BSP fixtures.
 * Backend Contract A numbers remain synthetic-only and are not promoted to
   real-map goldens.
 
-**Maintainer note:** PR-09A is the next packet in the runtime-spine sequence,
-but it is explicitly deferred after PR-08H until the maintainer asks for it.
+## PR-09A LocalGameSession applies movement commands
+
+**Goal:** Connect `OpenStrikeLocalGameSession` to
+`OpenStrikePlayerMoveService`.
+
+**Includes:**
+
+* Player slots own `OpenStrikePlayerState`.
+* `OpenStrikeUserCommand` converts to `OpenStrikePlayerMoveCommand`.
+* Fixed ticks apply movement through `OpenStrikePlayerMoveService`.
+* Raw forward/side command axes are resolved relative to command `view_yaw` in
+  the runtime/player movement layer.
+* Snapshots include player origin, velocity, view angles, duck state, ground
+  state and nested movement state.
+
+**Excludes:**
+
+* Weapons, HUD, damage, economy, bots and a real BSP default movement backend.
+
+**Acceptance criteria:**
+
+* Queued commands advance player position deterministically in the local game
+  session smoke.
+* Yaw-relative movement smoke proves yaw=0 forward, yaw=90 forward and
+  yaw=90 side movement choose the expected axes.
+* Player snapshots contain movement state.
+* Runtime code does not import dev labs or presentation.
+
+## PR-09B BSP lab consumes runtime snapshot
+
+**Goal:** Make the BSP walkable lab a presentation consumer of runtime state,
+not the owner of gameplay movement.
+
+**Includes:**
+
+* BSP walkable lab creates a local runtime session.
+* Lab input queues `OpenStrikeUserCommand` values.
+* Lab camera/presentation follows runtime snapshot position and view state.
+* Existing telemetry remains available and records runtime authority.
+* A lab-only runtime collision bridge or equivalent behavior gate preserves
+  wall-blocking movement before removing the existing dev-lab controller path.
+
+**Excludes:**
+
+* Weapons, HUD, full replacement of the temporary Godot collision bridge,
+  real-map contact goldens and a final real BSP movement backend.
+
+**Acceptance criteria:**
+
+* BSP lab capability smoke verifies the runner uses `OpenStrikeLocalGameSession`
+  and queues commands.
+* A blocking-collider smoke or manual telemetry gate proves the lab does not
+  become free-volume movement through real BSP walls.
+* Runtime owns player state and presentation follows snapshots.
+* The lab does not contain duplicated movement equations.
 
 ## PR-08 Server-authoritative local game loop
 

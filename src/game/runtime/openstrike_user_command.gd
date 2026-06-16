@@ -2,6 +2,8 @@ extends RefCounted
 
 class_name OpenStrikeUserCommand
 
+const MoveCommandRef = preload("res://src/game/player/player_move_command.gd")
+
 var tick := 0
 var player_id := 0
 var forward_move := 0.0
@@ -43,3 +45,17 @@ func to_dictionary() -> Dictionary:
 		"view_yaw": view_yaw,
 		"view_pitch": view_pitch,
 	}
+
+
+func to_player_move_command(command_frametime: float):
+	var command = MoveCommandRef.new()
+	command.configure(
+		forward_move,
+		side_move,
+		wants_jump,
+		wants_duck,
+		view_yaw,
+		view_pitch,
+		command_frametime
+	)
+	return command

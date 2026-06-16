@@ -76,6 +76,13 @@ All notable changes to this project will be documented in this file.  The format
   shared smoke checks to verify low-ceiling duck passage, a synthetic 18-unit
   step success and a too-high step failure without promoting backend Contract A
   numbers to real-map goldens.
+* Added runtime movement application to `OpenStrikeLocalGameSession`: player
+  slots now own movement state, user commands convert to PMove-facing commands
+  and snapshots publish origin, velocity, view angles, duck state, ground state
+  and nested movement state.
+* Added local game session smoke coverage proving queued movement commands
+  advance snapshot origin/velocity, update view state and resolve raw
+  forward/side input relative to command yaw inside the runtime movement layer.
 * Added `OpenStrikeTraceBackend`, `OpenStrikeCollisionTrace`,
   `OpenStrikeCollisionHull` and `OpenStrikeGodotSceneTraceBackend` as the
   narrow collision/query boundary for BSP runtime work. The current Godot scene
@@ -245,6 +252,9 @@ All notable changes to this project will be documented in this file.  The format
 * Changed local runtime spawn assignment to consume sanitized spawn descriptors
   from `OpenStrikeMapEntityIndex` instead of reading `Node3D` scene objects
   from entity entries.
+* Changed the BSP walkable lab to create `OpenStrikeLocalGameSession`, queue
+  `OpenStrikeUserCommand` input and present player position/velocity from
+  runtime snapshots instead of owning movement through a Godot character body.
 * Extended `OpenStrikeCollisionTrace` with `hit`, `start_solid`, `all_solid`,
   `contents` and `model_index` report fields so synthetic BSP clipnode traces
   can use the existing TraceBackend result contract instead of creating a

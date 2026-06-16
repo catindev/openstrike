@@ -27,6 +27,7 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 		"trace_enabled": true,
 		"start_uncaptured": false,
 		"auto_exit_sec": 0.0,
+		"auto_forward_sec": 0.0,
 		"fullscreen": true,
 		"capability_smoke": false,
 		"load_smoke": false,
@@ -51,6 +52,8 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 			options["map_path"] = arg.trim_prefix("--map=")
 		elif arg.begins_with("--auto-exit-sec="):
 			options["auto_exit_sec"] = float(arg.trim_prefix("--auto-exit-sec=").to_float())
+		elif arg.begins_with("--auto-forward-sec="):
+			options["auto_forward_sec"] = float(arg.trim_prefix("--auto-forward-sec=").to_float())
 
 	return options
 
@@ -65,8 +68,44 @@ func _run_capability_smoke() -> int:
 	if str(capabilities.get("hull_trace", "")) != BspProviderRef.CAP_REQUIRES_OPENSTRIKE_BSP_READER:
 		push_error("BSP lab capability smoke failed: hull_trace must remain requires_openstrike_bsp_reader.")
 		return 1
+	var source_check := _run_runner_source_guard()
+	if not bool(source_check.get("ok", false)):
+		push_error("BSP lab capability smoke failed: %s" % JSON.stringify(source_check))
+		return 1
 	print("BSP walkable lab capability smoke passed.")
 	return 0
+
+
+func _run_runner_source_guard() -> Dictionary:
+	var runner_path := "res://src/dev/labs/bsp_walkable/bsp_walkable_runner.gd"
+	if not FileAccess.file_exists(runner_path):
+		return {"ok": false, "reason": "runner_missing", "path": runner_path}
+	var source := FileAccess.get_file_as_string(runner_path)
+	var required_tokens: Array[String] = [
+		"LocalGameSessionRef",
+		"UserCommandRef",
+		"queue_command",
+		"snapshot()",
+	]
+	var forbidden_tokens: Array[String] = [
+		"MovementMathRef",
+		"CharacterBody3D",
+		"move_and_slide",
+	]
+	var missing: Array[String] = []
+	for token in required_tokens:
+		if not source.contains(token):
+			missing.append(token)
+	var present_forbidden: Array[String] = []
+	for token in forbidden_tokens:
+		if source.contains(token):
+			present_forbidden.append(token)
+	return {
+		"ok": missing.is_empty() and present_forbidden.is_empty(),
+		"missing_required": missing,
+		"present_forbidden": present_forbidden,
+		"path": runner_path,
+	}
 
 
 func _run_load_smoke(options: Dictionary) -> int:

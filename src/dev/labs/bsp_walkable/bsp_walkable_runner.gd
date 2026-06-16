@@ -4,25 +4,27 @@ class_name OpenStrikeBspWalkableRunner
 
 const AssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
 const BspProviderRef = preload("res://src/core/maps/goldsrc_bsp_runtime_provider.gd")
+const LocalGameSessionRef = preload("res://src/game/runtime/openstrike_local_game_session.gd")
 const MapEntityIndexRef = preload("res://src/core/maps/map_entity_index.gd")
-const TraceBackendRef = preload("res://src/core/collision/godot_scene_trace_backend.gd")
-const MovementMathRef = preload("res://src/game/movement/cs_movement_math.gd")
 const MovementSettingsRef = preload("res://src/game/movement/cs_movement_settings.gd")
+const PlayerSlotRef = preload("res://src/game/runtime/openstrike_player_slot.gd")
+const RoundStateRef = preload("res://src/game/runtime/openstrike_round_state.gd")
 const TraceLoggerRef = preload("res://src/dev/labs/bsp_walkable/bsp_walkable_trace_logger.gd")
+const TraceBackendRef = preload("res://src/core/collision/godot_scene_trace_backend.gd")
+const UserCommandRef = preload("res://src/game/runtime/openstrike_user_command.gd")
 const ViewmodelWorldProfileRef = preload("res://src/core/units/viewmodel_world_profile.gd")
 
 const DEFAULT_MAP_PATH := "maps/de_dust2.bsp"
 const MOUSE_SENSITIVITY := 0.0022
 const MIN_PITCH := deg_to_rad(-89.0)
 const MAX_PITCH := deg_to_rad(89.0)
-const PLAYER_WIDTH_UNITS := 32.0
-const SPAWN_LIFT_UNITS := 2.0
 const LAB_WALK_MAX_SPEED_UNITS := 250.0
 const FOOTSTEP_MIN_SPEED_UPS := 80.0
 const FOOTSTEP_SLOW_INTERVAL_SEC := 0.48
 const FOOTSTEP_FAST_INTERVAL_SEC := 0.30
 const MOVEMENT_SOUND_VOLUME_DB := -7.0
 const MOVEMENT_SOUND_PLAYER_COUNT := 4
+const MAX_RUNTIME_STEPS_PER_FRAME := 8
 const SKYBOX_FACE_SUFFIXES: Array[String] = ["ft", "bk", "lf", "rt", "up", "dn"]
 const SKYBOX_EXTENSIONS: Array[String] = ["tga", "bmp"]
 const SKYBOX_ALIAS_BY_SKYNAME = {
@@ -44,11 +46,55 @@ const MOVEMENT_SOUND_PATHS = {
 	],
 }
 
+
+class RuntimeSpawnIndex:
+	var _source_index = null
+	var _unit_scale := 1.0
+
+
+	func _init(source_index = null, unit_scale: float = 1.0) -> void:
+		_source_index = source_index
+		_unit_scale = maxf(unit_scale, 0.000001)
+
+
+	func spawn_descriptors_for_classes(preferred_classes: Array[String]) -> Array[Dictionary]:
+		var output: Array[Dictionary] = []
+		if _source_index == null or not _source_index.has_method("spawn_descriptors_for_classes"):
+			return output
+
+		var source_descriptors: Array = _source_index.spawn_descriptors_for_classes(preferred_classes)
+		for descriptor_variant in source_descriptors:
+			if not descriptor_variant is Dictionary:
+				continue
+			var descriptor: Dictionary = descriptor_variant.duplicate(true)
+			var position_godot: Vector3 = _vector_from_value(descriptor.get("position", Vector3.ZERO))
+			var position_units: Vector3 = position_godot / _unit_scale
+			descriptor["position"] = position_units
+			descriptor["position_godot"] = _vector_to_array(position_godot)
+			descriptor["position_units"] = _vector_to_array(position_units)
+			descriptor["source"] = "%s:scaled_for_local_game_session" % str(descriptor.get("source", ""))
+			output.append(descriptor)
+		return output
+
+
+	func _vector_from_value(value) -> Vector3:
+		if value is Vector3:
+			return value
+		if value is Array and value.size() >= 3:
+			return Vector3(float(value[0]), float(value[1]), float(value[2]))
+		return Vector3.ZERO
+
+
+	func _vector_to_array(value: Vector3) -> Array[float]:
+		return [value.x, value.y, value.z]
+
+
 var config_path := "user://local_goldsrc.json"
 var map_path := DEFAULT_MAP_PATH
 var trace_enabled := true
 var start_uncaptured := false
 var auto_exit_sec := 0.0
+var auto_forward_sec := 0.0
 var fullscreen := true
 
 var _asset_manager
@@ -59,15 +105,19 @@ var _entity_index
 var _trace_backend
 var _logger
 var _map_node: Node = null
-var _body: CharacterBody3D = null
+var _player_root: Node3D = null
 var _camera_pivot: Node3D = null
 var _camera: Camera3D = null
-var _hull_shape: BoxShape3D = null
 var _overlay: Label = null
 var _environment: Environment = null
 var _movement_audio_players: Array[AudioStreamPlayer] = []
+var _runtime_session = null
+var _runtime_player_id := 0
 
-var _velocity_ups := Vector3.ZERO
+var _last_snapshot_velocity_ups := Vector3.ZERO
+var _last_snapshot_report: Dictionary = {}
+var _last_player_snapshot: Dictionary = {}
+var _last_snapshot_slide_reports: Array[Dictionary] = []
 var _accumulator := 0.0
 var _yaw := 0.0
 var _pitch := 0.0
@@ -75,8 +125,8 @@ var _elapsed := 0.0
 var _tick := 0
 var _last_jump_held := false
 var _last_on_floor := false
-var _last_step_up_attempted := false
-var _last_step_up_applied := false
+var _last_snapshot_step_up_attempted := false
+var _last_snapshot_step_up_applied := false
 var _started := false
 var _finished := false
 var _spawn_report := {}
@@ -103,6 +153,7 @@ func configure(options: Dictionary) -> void:
 	trace_enabled = bool(options.get("trace_enabled", trace_enabled))
 	start_uncaptured = bool(options.get("start_uncaptured", start_uncaptured))
 	auto_exit_sec = float(options.get("auto_exit_sec", auto_exit_sec))
+	auto_forward_sec = float(options.get("auto_forward_sec", auto_forward_sec))
 	fullscreen = bool(options.get("fullscreen", fullscreen))
 
 
@@ -143,26 +194,39 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _started or _body == null:
+	if not _started or _runtime_session == null or _player_root == null:
 		return
 
 	_accumulator += minf(delta, 0.25)
 	var fixed_delta: float = _settings.fixed_delta()
 	var steps: int = 0
-	while _accumulator >= fixed_delta and steps < 8:
+	while _accumulator >= fixed_delta and steps < MAX_RUNTIME_STEPS_PER_FRAME:
 		_accumulator -= fixed_delta
 		_elapsed += fixed_delta
-		_tick += 1
 
-		var input := _read_input()
-		var before := _state_snapshot()
-		_step_lab_movement(fixed_delta, input)
-		var after := _state_snapshot()
-		var trace_entry := _trace_entry(fixed_delta, input, before, after)
+		var input: Dictionary = _read_input()
+		var before: Dictionary = _state_snapshot()
+		var command_report: Dictionary = _queue_runtime_command(input)
+		var jumped: bool = bool(command_report.get("wants_jump", false)) and bool(before.get("on_floor", false))
+		var session_steps: int = _runtime_session.step(fixed_delta)
+		if session_steps <= 0:
+			continue
+		_sync_presentation_from_snapshot()
+		_tick = _runtime_session.current_tick
+		var after: Dictionary = _state_snapshot()
+		_update_movement_audio(
+			input,
+			bool(before.get("on_floor", false)),
+			bool(after.get("on_floor", false)),
+			bool(after.get("ducked", false)),
+			jumped,
+			_last_snapshot_velocity_ups
+		)
+		var trace_entry := _trace_entry(fixed_delta, input, command_report, before, after)
 		_logger.record_tick(trace_entry)
 		steps += 1
 
-	if steps >= 8:
+	if steps >= MAX_RUNTIME_STEPS_PER_FRAME:
 		_accumulator = 0.0
 
 
@@ -181,6 +245,7 @@ func _start_lab() -> void:
 		return
 
 	_settings = MovementSettingsRef.new()
+	_settings.max_speed = minf(_settings.max_speed, LAB_WALK_MAX_SPEED_UNITS)
 	_asset_manager = AssetManagerRef.create_from_config_path(config_path)
 	if not _asset_manager.is_available():
 		push_error("GoldSrc asset manager is unavailable: %s" % JSON.stringify(_asset_manager.get_diagnostics()))
@@ -253,27 +318,13 @@ func _setup_world_lighting() -> void:
 
 
 func _setup_player() -> void:
-	_body = CharacterBody3D.new()
-	_body.name = "BspLabPlayer"
-	_body.floor_max_angle = deg_to_rad(46.0)
-	_body.safe_margin = _profile.scaled_units(1.0)
-	_body.motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
-	add_child(_body)
-
-	var collision_shape := CollisionShape3D.new()
-	collision_shape.name = "GoldSrcApproxHull"
-	_hull_shape = BoxShape3D.new()
-	_hull_shape.size = Vector3(
-		_profile.scaled_units(PLAYER_WIDTH_UNITS),
-		_profile.scaled_units(_settings.stand_height),
-		_profile.scaled_units(PLAYER_WIDTH_UNITS)
-	)
-	collision_shape.shape = _hull_shape
-	_body.add_child(collision_shape)
+	_player_root = Node3D.new()
+	_player_root.name = "BspLabSnapshotPlayer"
+	add_child(_player_root)
 
 	_camera_pivot = Node3D.new()
 	_camera_pivot.name = "CameraPitchPivot"
-	_body.add_child(_camera_pivot)
+	_player_root.add_child(_camera_pivot)
 
 	_camera = Camera3D.new()
 	_camera.name = "BspLabCamera"
@@ -281,21 +332,19 @@ func _setup_player() -> void:
 	_camera.current = true
 	_camera_pivot.add_child(_camera)
 
-	var spawn_node := _find_spawn_node()
-	var spawn_position := Vector3(0.0, _profile.scaled_units(_settings.stand_height), 0.0)
-	if spawn_node != null:
-		spawn_position = spawn_node.global_position
-		_spawn_report = _spawn_node_report(spawn_node)
-		_yaw = _yaw_from_spawn(spawn_node)
-	else:
-		_spawn_report = {
-			"classname": "fallback_origin",
-			"position_godot": _vector_to_array(spawn_position),
-		}
-	spawn_position.y += _profile.scaled_units(SPAWN_LIFT_UNITS)
-	_body.global_position = spawn_position
-	_update_duck_shape(false)
+	_setup_runtime_session()
+	_update_camera_height(false)
 	_apply_camera_rotation()
+
+
+func _setup_runtime_session() -> void:
+	var runtime_spawn_index = RuntimeSpawnIndex.new(_entity_index, _profile.goldsrc_unit_scale)
+	_runtime_session = LocalGameSessionRef.new()
+	_runtime_session.configure(_settings.fixed_delta(), runtime_spawn_index, _settings, _trace_backend)
+	_runtime_player_id = _runtime_session.add_player("bsp_walkable_local", PlayerSlotRef.TEAM_COUNTER_TERRORIST)
+	_runtime_session.start_round(RoundStateRef.PHASE_LIVE)
+	_sync_presentation_from_snapshot()
+	_spawn_report = _spawn_report_from_snapshot()
 
 
 func _setup_overlay() -> void:
@@ -326,6 +375,14 @@ func _setup_trace_logger(load_result: Dictionary) -> void:
 		"scale_factor": _profile.goldsrc_unit_scale,
 		"profile": _profile.to_dictionary(),
 		"movement_settings": _settings.to_dictionary(),
+		"movement_authority": "OpenStrikeLocalGameSession",
+		"movement_adapter": "local_game_session_snapshot",
+		"presentation_follows_snapshot": true,
+		"runtime_session": {
+			"player_id": _runtime_player_id,
+			"fixed_delta": _settings.fixed_delta(),
+			"snapshot_tick": int(_last_snapshot_report.get("tick", 0)),
+		},
 		"lab_max_speed_ups": LAB_WALK_MAX_SPEED_UNITS,
 		"spawn": _spawn_report,
 		"map_metadata": _map_metadata,
@@ -338,6 +395,7 @@ func _setup_trace_logger(load_result: Dictionary) -> void:
 		"window": {
 			"fullscreen": fullscreen,
 		},
+		"auto_forward_sec": auto_forward_sec,
 		"capabilities": load_result.get("capabilities", {}),
 		"controls": "WASD move, mouse look, Space jump, Ctrl/C duck, F2 release mouse, Cmd+Q/window close quits",
 	}, trace_enabled)
@@ -617,8 +675,8 @@ func _play_movement_audio(sound_key: String) -> void:
 	_movement_audio_event_counts[sound_key] = int(_movement_audio_event_counts.get(sound_key, 0)) + 1
 
 
-func _update_movement_audio(input: Dictionary, started_on_floor: bool, now_on_floor: bool, ducked: bool, jumped: bool) -> void:
-	var horizontal_speed := Vector2(_velocity_ups.x, _velocity_ups.z).length()
+func _update_movement_audio(input: Dictionary, started_on_floor: bool, now_on_floor: bool, ducked: bool, jumped: bool, velocity_ups: Vector3) -> void:
+	var horizontal_speed := Vector2(velocity_ups.x, velocity_ups.z).length()
 	var moving_input := absf(float(input.get("forward", 0.0))) > 0.01 or absf(float(input.get("side", 0.0))) > 0.01
 
 	if not _movement_audio_floor_initialized:
@@ -654,6 +712,8 @@ func _read_input() -> Dictionary:
 	var side := 0.0
 	if Input.is_key_pressed(KEY_W):
 		forward += 1.0
+	if auto_forward_sec > 0.0 and _elapsed < auto_forward_sec:
+		forward += 1.0
 	if Input.is_key_pressed(KEY_S):
 		forward -= 1.0
 	if Input.is_key_pressed(KEY_D):
@@ -673,125 +733,85 @@ func _read_input() -> Dictionary:
 	return input
 
 
-func _step_lab_movement(delta: float, input: Dictionary) -> void:
-	var on_floor := _body.is_on_floor()
-	var started_on_floor := on_floor
-	var ducked := bool(input.get("duck", false))
-	var jumped := false
-	_last_step_up_attempted = false
-	_last_step_up_applied = false
-	_last_movement_audio_events.clear()
-	_update_duck_shape(ducked)
-
-	if on_floor:
-		_velocity_ups = MovementMathRef.apply_friction(
-			_velocity_ups,
-			_settings.stop_speed,
-			_settings.friction,
-			delta
-		)
-
-	var wish_direction := _world_wish_direction(float(input.get("forward", 0.0)), float(input.get("side", 0.0)))
-	var has_wish := wish_direction.length_squared() > 0.0
-	if has_wish:
-		var wish_speed: float = minf(_settings.max_speed, LAB_WALK_MAX_SPEED_UNITS)
-		if on_floor:
-			_velocity_ups = MovementMathRef.accelerate(
-				_velocity_ups,
-				wish_direction,
-				wish_speed,
-				_settings.ground_accelerate,
-				delta
-			)
-		else:
-			_velocity_ups = MovementMathRef.air_accelerate(
-				_velocity_ups,
-				wish_direction,
-				wish_speed,
-				_settings.air_max_wishspeed,
-				_settings.air_accelerate,
-				delta
-			)
-
-	if on_floor and bool(input.get("jump_pressed", false)):
-		_velocity_ups.y = _settings.jump_velocity
-		on_floor = false
-		jumped = true
-
-	if not on_floor:
-		_velocity_ups.y -= _settings.gravity * delta
-	elif _velocity_ups.y < 0.0:
-		_velocity_ups.y = -2.0
-
-	_velocity_ups = MovementMathRef.check_velocity_components(_velocity_ups, _settings.max_velocity)
-	var previous_position := _body.global_position
-	var horizontal_velocity_godot: Vector3 = Vector3(_velocity_ups.x, 0.0, _velocity_ups.z) * _profile.goldsrc_unit_scale
-	var was_on_floor := _body.is_on_floor()
-	_body.velocity = _velocity_ups * _profile.goldsrc_unit_scale
-	_body.move_and_slide()
-
-	if was_on_floor and horizontal_velocity_godot.length_squared() > 0.0001 and _has_blocking_wall_collision():
-		_last_step_up_attempted = true
-		var blocked_position := _body.global_position
-		if _try_step_up(previous_position, blocked_position, horizontal_velocity_godot, delta):
-			_last_step_up_applied = true
-
-	_velocity_ups = _body.velocity / _profile.goldsrc_unit_scale
-	_update_movement_audio(input, started_on_floor, _body.is_on_floor(), ducked, jumped)
+func _queue_runtime_command(input: Dictionary) -> Dictionary:
+	var command = UserCommandRef.new()
+	var command_tick: int = _runtime_session.current_tick + 1
+	var command_forward := -float(input.get("forward", 0.0))
+	var command_side := float(input.get("side", 0.0))
+	command.configure(
+		command_tick,
+		_runtime_player_id,
+		command_forward,
+		command_side,
+		bool(input.get("jump_pressed", false)),
+		bool(input.get("duck", false)),
+		_yaw,
+		_pitch
+	)
+	var accepted: bool = _runtime_session.queue_command(command)
+	var report: Dictionary = command.to_dictionary()
+	report["accepted"] = accepted
+	report["presentation_input"] = input.duplicate(true)
+	return report
 
 
-func _world_wish_direction(forward: float, side: float) -> Vector3:
-	var yaw_basis := Basis(Vector3.UP, _yaw)
-	var forward_axis := yaw_basis * Vector3.FORWARD
-	var right_axis := yaw_basis * Vector3.RIGHT
-	return MovementMathRef.wish_direction_from_axes(forward, side, forward_axis, right_axis)
-
-
-func _update_duck_shape(ducked: bool) -> void:
-	var height: float = _settings.duck_height if ducked else _settings.stand_height
-	_hull_shape.size.y = _profile.scaled_units(height)
+func _update_camera_height(ducked: bool) -> void:
+	if _camera_pivot == null:
+		return
 	_camera_pivot.position.y = _profile.scaled_units(_profile.view_offset_duck if ducked else _profile.view_offset_stand)
 
 
-func _has_blocking_wall_collision() -> bool:
-	for index in range(_body.get_slide_collision_count()):
-		var collision := _body.get_slide_collision(index)
-		if collision != null and collision.get_normal().y < 0.5:
-			return true
-	return false
-
-
-func _try_step_up(base_position: Vector3, blocked_position: Vector3, horizontal_velocity_godot: Vector3, delta: float) -> bool:
-	var step_height: float = _profile.scaled_units(_settings.step_size)
-	var old_velocity := _body.velocity
-
-	_body.global_position = base_position + Vector3.UP * step_height
-	_body.velocity = horizontal_velocity_godot
-	_body.move_and_slide()
-	_body.velocity = Vector3(0.0, -step_height / maxf(delta, 0.001), 0.0)
-	_body.move_and_slide()
-
-	var climbed: bool = _body.is_on_floor() and _body.global_position.y > base_position.y + _profile.scaled_units(1.0)
-	if not climbed:
-		_body.global_position = blocked_position
-		_body.velocity = old_velocity
-		return false
-
-	_body.velocity = Vector3(horizontal_velocity_godot.x, 0.0, horizontal_velocity_godot.z)
-	return true
-
-
 func _apply_camera_rotation() -> void:
-	if _body != null:
-		_body.rotation.y = _yaw
+	if _player_root != null:
+		_player_root.rotation.y = _yaw
 	if _camera_pivot != null:
 		_camera_pivot.rotation.x = _pitch
 
 
-func _find_spawn_node() -> Node3D:
-	if _entity_index == null:
-		return null
-	return _entity_index.select_spawn_node()
+func _sync_presentation_from_snapshot() -> void:
+	if _runtime_session == null:
+		return
+	_last_snapshot_report = _runtime_session.snapshot().to_dictionary()
+	_last_player_snapshot = _snapshot_player(_last_snapshot_report)
+	if _last_player_snapshot.is_empty():
+		return
+
+	var origin_units: Vector3 = _vector_from_value(_last_player_snapshot.get("origin", Vector3.ZERO))
+	_last_snapshot_velocity_ups = _vector_from_value(_last_player_snapshot.get("velocity", Vector3.ZERO))
+	_yaw = float(_last_player_snapshot.get("view_yaw", _yaw))
+	_pitch = float(_last_player_snapshot.get("view_pitch", _pitch))
+	if _player_root != null:
+		_player_root.global_position = _runtime_units_to_godot(origin_units)
+	_update_camera_height(bool(_last_player_snapshot.get("ducked", false)))
+	_update_snapshot_contact_report()
+	_apply_camera_rotation()
+
+
+func _snapshot_player(snapshot_report: Dictionary) -> Dictionary:
+	var players: Array = snapshot_report.get("players", [])
+	for player_variant in players:
+		if not player_variant is Dictionary:
+			continue
+		var player: Dictionary = player_variant
+		if int(player.get("player_id", 0)) == _runtime_player_id:
+			return player.duplicate(true)
+	return {}
+
+
+func _spawn_report_from_snapshot() -> Dictionary:
+	if _last_player_snapshot.is_empty():
+		return {
+			"classname": "missing_runtime_snapshot",
+			"source": "local_game_session_snapshot",
+		}
+	var spawn_units: Vector3 = _vector_from_value(_last_player_snapshot.get("spawn_position", Vector3.ZERO))
+	return {
+		"classname": str(_last_player_snapshot.get("spawn_classname", "")),
+		"position_units": _vector_to_array(spawn_units),
+		"position_godot": _vector_to_array(_runtime_units_to_godot(spawn_units)),
+		"yaw": float(_last_player_snapshot.get("spawn_yaw", 0.0)),
+		"source": "local_game_session_snapshot",
+	}
 
 
 func _disable_non_blocking_entity_collision() -> Dictionary:
@@ -843,44 +863,29 @@ func _disable_collision_tree(root: Node) -> Dictionary:
 	return counts
 
 
-func _spawn_node_report(node: Node3D) -> Dictionary:
-	var entity := {}
-	if node.has_meta("entity") and node.get_meta("entity") is Dictionary:
-		entity = node.get_meta("entity")
-	return {
-		"classname": str(entity.get("classname", "")),
-		"origin": str(entity.get("origin", "")),
-		"angles": str(entity.get("angles", "")),
-		"position_godot": _vector_to_array(node.global_position),
-	}
-
-
-func _yaw_from_spawn(node: Node3D) -> float:
-	var entity := {}
-	if node.has_meta("entity") and node.get_meta("entity") is Dictionary:
-		entity = node.get_meta("entity")
-	var angles := str(entity.get("angles", "")).split(" ", false)
-	if angles.size() >= 2 and String(angles[1]).is_valid_float():
-		return -deg_to_rad(float(String(angles[1]).to_float()))
-	return node.global_rotation.y
-
-
 func _state_snapshot() -> Dictionary:
-	if _body == null:
+	if _last_player_snapshot.is_empty():
 		return {}
+	var origin_units: Vector3 = _vector_from_value(_last_player_snapshot.get("origin", Vector3.ZERO))
+	var velocity_units: Vector3 = _vector_from_value(_last_player_snapshot.get("velocity", Vector3.ZERO))
+	var position_godot: Vector3 = _runtime_units_to_godot(origin_units)
 	return {
-		"position_godot": _vector_to_array(_body.global_position),
-		"velocity_godot": _vector_to_array(_body.velocity),
-		"velocity_ups": _vector_to_array(_velocity_ups),
+		"position_units": _vector_to_array(origin_units),
+		"position_godot": _vector_to_array(position_godot),
+		"velocity_godot": _vector_to_array(_runtime_units_to_godot(velocity_units)),
+		"velocity_ups": _vector_to_array(velocity_units),
 		"yaw": _yaw,
 		"pitch": _pitch,
-		"on_floor": _body.is_on_floor(),
-		"floor_normal": _vector_to_array(_body.get_floor_normal()),
+		"ducked": bool(_last_player_snapshot.get("ducked", false)),
+		"on_floor": bool(_last_player_snapshot.get("on_ground", false)),
+		"floor_normal": _vector_to_array(_snapshot_floor_normal()),
+		"movement_state": _movement_state_report(),
 	}
 
 
-func _trace_entry(delta: float, input: Dictionary, before: Dictionary, after: Dictionary) -> Dictionary:
-	var horizontal_speed := Vector2(_velocity_ups.x, _velocity_ups.z).length()
+func _trace_entry(delta: float, input: Dictionary, command_report: Dictionary, before: Dictionary, after: Dictionary) -> Dictionary:
+	var horizontal_speed := Vector2(_last_snapshot_velocity_ups.x, _last_snapshot_velocity_ups.z).length()
+	var position_delta: float = _presentation_snapshot_position_delta()
 	return {
 		"tick": _tick,
 		"time_sec": _elapsed,
@@ -889,49 +894,111 @@ func _trace_entry(delta: float, input: Dictionary, before: Dictionary, after: Di
 		"collision_source": str(_trace_backend_report.get("source", BspProviderRef.COLLISION_SOURCE_GODOT_SCENE)),
 		"collision_confidence": str(_trace_backend_report.get("confidence", "")),
 		"goldsrc_parity_collision": bool(_trace_backend_report.get("goldsrc_parity", false)),
+		"movement_authority": "OpenStrikeLocalGameSession",
+		"presentation_follows_snapshot": position_delta <= 0.001,
+		"presentation_snapshot_position_delta": position_delta,
+		"runtime_snapshot_tick": int(_last_snapshot_report.get("tick", _tick)),
+		"command": command_report,
 		"input": input,
 		"before": before,
 		"after": after,
-		"position_godot": _vector_to_array(_body.global_position),
-		"velocity_ups": _vector_to_array(_velocity_ups),
-		"speed_ups": _velocity_ups.length(),
+		"position_units": after.get("position_units", []),
+		"position_godot": after.get("position_godot", []),
+		"velocity_ups": _vector_to_array(_last_snapshot_velocity_ups),
+		"speed_ups": _last_snapshot_velocity_ups.length(),
 		"horizontal_speed_ups": horizontal_speed,
-		"step_up_attempted": _last_step_up_attempted,
-		"step_up_applied": _last_step_up_applied,
+		"step_up_attempted": _last_snapshot_step_up_attempted,
+		"step_up_applied": _last_snapshot_step_up_applied,
 		"movement_audio_events": _last_movement_audio_events.duplicate(),
-		"on_floor": _body.is_on_floor(),
-		"floor_normal": _vector_to_array(_body.get_floor_normal()),
-		"slide_collision_count": _body.get_slide_collision_count(),
+		"on_floor": bool(after.get("on_floor", false)),
+		"floor_normal": after.get("floor_normal", []),
+		"slide_collision_count": _last_snapshot_slide_reports.size(),
 		"slide_collisions": _slide_reports(),
+		"movement_state": _movement_state_report(),
 	}
 
 
 func _slide_reports() -> Array[Dictionary]:
 	var reports: Array[Dictionary] = []
-	if _body == null:
-		return reports
-
-	for index in range(_body.get_slide_collision_count()):
-		var collision := _body.get_slide_collision(index)
-		if collision == null:
-			continue
-		var collider = collision.get_collider()
-		reports.append({
-			"index": index,
-			"position": _vector_to_array(collision.get_position()),
-			"normal": _vector_to_array(collision.get_normal()),
-			"collider_class": collider.get_class() if collider != null else "",
-			"collider_name": str(collider.name) if collider is Node else "",
-		})
+	for report in _last_snapshot_slide_reports:
+		reports.append(report.duplicate(true))
 	return reports
 
 
+func _update_snapshot_contact_report() -> void:
+	_last_snapshot_slide_reports.clear()
+	_last_snapshot_step_up_attempted = false
+	_last_snapshot_step_up_applied = false
+
+	var trace_summary: Dictionary = _snapshot_trace_summary()
+	var contact: Dictionary = trace_summary.get("contact", {}) if trace_summary.get("contact", {}) is Dictionary else {}
+	var step: Dictionary = contact.get("step", {}) if contact.get("step", {}) is Dictionary else {}
+	_last_snapshot_step_up_attempted = bool(step.get("attempted", false))
+	_last_snapshot_step_up_applied = bool(step.get("selected", false))
+
+	var contacts = contact.get("contacts", [])
+	if not contacts is Array:
+		return
+	var index := 0
+	for contact_variant in contacts:
+		if not contact_variant is Dictionary:
+			continue
+		var contact_entry: Dictionary = contact_variant
+		_last_snapshot_slide_reports.append({
+			"index": index,
+			"position": contact_entry.get("position", []),
+			"normal": contact_entry.get("normal", []),
+			"contents": str(contact_entry.get("contents", "")),
+			"contents_code": int(contact_entry.get("contents_code", 0)),
+			"model_index": int(contact_entry.get("model_index", -1)),
+			"source": "local_game_session_snapshot",
+		})
+		index += 1
+
+
+func _movement_state_report() -> Dictionary:
+	if _last_player_snapshot.is_empty():
+		return {}
+	var movement_state = _last_player_snapshot.get("movement_state", {})
+	return movement_state.duplicate(true) if movement_state is Dictionary else {}
+
+
+func _snapshot_trace_summary() -> Dictionary:
+	var movement_state: Dictionary = _movement_state_report()
+	var trace_summary = movement_state.get("last_trace_summary", {})
+	return trace_summary.duplicate(true) if trace_summary is Dictionary else {}
+
+
+func _snapshot_floor_normal() -> Vector3:
+	var slide_reports: Array[Dictionary] = _last_snapshot_slide_reports
+	for report in slide_reports:
+		var normal: Vector3 = _vector_from_value(report.get("normal", Vector3.ZERO))
+		if normal.length_squared() > 0.0 and normal.y > 0.5:
+			return normal.normalized()
+	if bool(_last_player_snapshot.get("on_ground", false)):
+		return Vector3.UP
+	return Vector3.ZERO
+
+
+func _presentation_snapshot_position_delta() -> float:
+	if _player_root == null or _last_player_snapshot.is_empty():
+		return INF
+	var origin_units: Vector3 = _vector_from_value(_last_player_snapshot.get("origin", Vector3.ZERO))
+	var snapshot_position_godot: Vector3 = _runtime_units_to_godot(origin_units)
+	return _player_root.global_position.distance_to(snapshot_position_godot)
+
+
+func _runtime_units_to_godot(value: Vector3) -> Vector3:
+	return value * _profile.goldsrc_unit_scale
+
+
 func _update_overlay() -> void:
-	if _overlay == null or _logger == null or _body == null:
+	if _overlay == null or _logger == null or _player_root == null:
 		return
 	var paths: Dictionary = _logger.get_paths()
+	var horizontal_speed := Vector2(_last_snapshot_velocity_ups.x, _last_snapshot_velocity_ups.z).length()
 	_overlay.text = (
-		"OpenStrike BSP walkable lab | %s | collision=%s:%s | sky=%s:%s\n"
+		"OpenStrike BSP walkable lab | %s | authority=LocalGameSession | collision=%s:%s | sky=%s:%s\n"
 		+ "WASD move  Mouse look  Space jump  Ctrl/C duck  F2 release mouse  Cmd+Q/window close quit\n"
 		+ "pos=%s vel_ups=%s speed=%.1f hspeed=%.1f floor=%s slides=%d\n"
 		+ "trace=%s"
@@ -941,12 +1008,12 @@ func _update_overlay() -> void:
 		str(_trace_backend_report.get("confidence", "")),
 		str(_skybox_report.get("skyname", "")),
 		str(_skybox_report.get("status", "")),
-		str(_body.global_position.snapped(Vector3(0.001, 0.001, 0.001))),
-		str(_velocity_ups.snapped(Vector3(0.1, 0.1, 0.1))),
-		_velocity_ups.length(),
-		Vector2(_velocity_ups.x, _velocity_ups.z).length(),
-		str(_body.is_on_floor()),
-		_body.get_slide_collision_count(),
+		str(_player_root.global_position.snapped(Vector3(0.001, 0.001, 0.001))),
+		str(_last_snapshot_velocity_ups.snapped(Vector3(0.1, 0.1, 0.1))),
+		_last_snapshot_velocity_ups.length(),
+		horizontal_speed,
+		str(_last_player_snapshot.get("on_ground", false)),
+		_last_snapshot_slide_reports.size(),
 		str(paths.get("trace_path", "")),
 	]
 
@@ -970,6 +1037,14 @@ func _config_path_kind(path: String) -> String:
 	if path.begins_with("res://"):
 		return "repo"
 	return "absolute_or_external"
+
+
+func _vector_from_value(value) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return Vector3.ZERO
 
 
 func _vector_to_array(value: Vector3) -> Array[float]:

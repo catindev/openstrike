@@ -39,7 +39,12 @@ func start(initial_summary: Dictionary, trace_enabled: bool = true) -> void:
 	summary["step_up_attempts"] = 0
 	summary["step_up_successes"] = 0
 	summary["slide_collision_count"] = 0
-	summary["movement_adapter"] = "bsp_walkable_lab_scaled_cs_cvars"
+	if not summary.has("movement_adapter"):
+		summary["movement_adapter"] = "bsp_walkable_lab_scaled_cs_cvars"
+	if not summary.has("movement_authority"):
+		summary["movement_authority"] = "dev_lab"
+	if not summary.has("presentation_follows_snapshot"):
+		summary["presentation_follows_snapshot"] = false
 
 	if enabled:
 		trace_file = FileAccess.open(trace_user_path, FileAccess.WRITE)

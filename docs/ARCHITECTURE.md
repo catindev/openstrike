@@ -42,9 +42,13 @@ Even single‑player or offline modes should go through a server‑authoritative
 
 The first local runtime path is `OpenStrikeLocalGameSession`. It is a pure
 game-layer service that owns fixed ticks, player slots, user command acceptance,
-round-state skeleton data, spawn assignment and snapshots. It may consume
-sanitized map/entity facts such as `OpenStrikeMapEntityIndex`, but it must not
-load maps, GoldSrc assets, presentation nodes or dev-lab scripts directly.
+runtime player movement state, round-state skeleton data, spawn assignment and
+snapshots. During each fixed tick it converts `OpenStrikeUserCommand` values to
+PMove-facing commands and applies `OpenStrikePlayerMoveService`, which resolves
+raw command movement axes relative to command view yaw. Runtime may consume
+sanitized map/entity facts such as `OpenStrikeMapEntityIndex` and an explicit
+trace backend, but it must not load maps, GoldSrc assets, presentation nodes or
+dev-lab scripts directly.
 
 ### `src/presentation/`
 

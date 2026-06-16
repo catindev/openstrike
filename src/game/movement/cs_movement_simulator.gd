@@ -29,7 +29,9 @@ func step(state, input, delta: float, telemetry = null) -> void:
 		var ground_wish := MovementMathRef.wish_direction_and_speed(
 			input.forward_move,
 			input.side_move,
-			settings.max_speed
+			settings.max_speed,
+			input.forward_axis,
+			input.right_axis
 		)
 		state.velocity = MovementMathRef.accelerate(
 			state.velocity,
@@ -48,7 +50,9 @@ func step(state, input, delta: float, telemetry = null) -> void:
 		var air_wish := MovementMathRef.wish_direction_and_speed(
 			input.forward_move,
 			input.side_move,
-			settings.max_speed
+			settings.max_speed,
+			input.forward_axis,
+			input.right_axis
 		)
 		state.velocity = MovementMathRef.air_accelerate(
 			state.velocity,
