@@ -14,6 +14,7 @@ extends Node
 class_name OpenStrikeGameShell
 
 const AssetManagerRef = preload("res://src/core/assets/asset_manager.gd")
+const GoldSrcVFSRef = preload("res://src/core/assets/goldsrc_vfs.gd")
 const WalkableWorldRef = preload("res://src/presentation/app/walkable_world.gd")
 const LocalConfigRef = preload("res://src/core/assets/goldsrc_local_config.gd")
 const CSSchemeRef = preload("res://src/presentation/ui/cs_scheme.gd")
@@ -22,6 +23,7 @@ const CSBackgroundRef = preload("res://src/presentation/ui/cs_background.gd")
 
 const MAPS_DIR := "maps"
 const MAP_EXTENSIONS: Array[String] = ["bsp"]
+const LOADING_SCREEN_MIN_SECONDS := 0.18
 
 var config_path := LocalConfigRef.DEFAULT_CONFIG_PATH
 
@@ -33,7 +35,8 @@ var _screen_root: Control = null
 var _world: Node3D = null
 var _menu_theme: Theme = null
 var _dialog_theme: Theme = null
-var _map_group: ButtonGroup = null
+var _selected_map_path := ""
+var _load_generation := 0
 
 
 func _ready() -> void:
@@ -58,9 +61,11 @@ func _ready() -> void:
 
 
 func show_main_menu() -> void:
+	_load_generation += 1
 	_teardown_world()
 	_set_ui_visible(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	_selected_map_path = ""
 
 	var screen := _new_screen()
 	screen.theme = _menu_theme
@@ -73,20 +78,15 @@ func show_main_menu() -> void:
 	column.anchor_bottom = 1.0
 	column.grow_horizontal = Control.GROW_DIRECTION_END
 	column.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	column.offset_left = 28.0
-	column.offset_top = -360.0
-	column.offset_bottom = -44.0
+	column.offset_left = 170.0
+	column.offset_top = -375.0
+	column.offset_bottom = -58.0
 	screen.add_child(column)
 
-	# Faithful CS main-menu item set; New Game and Quit are wired, the rest are
-	# present-but-disabled until those flows exist.
-	column.add_child(_menu_item("Random Server", Callable(), true))
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0.0, 22.0)
-	column.add_child(spacer)
-	column.add_child(_menu_item("New Game", show_map_select))
-	column.add_child(_menu_item("Find Servers", Callable(), true))
-	column.add_child(_menu_item("Settings", Callable(), true))
+	# Faithful CS main-menu item set; only New game and Quit are wired yet.
+	column.add_child(_menu_item("New game", show_map_select))
+	column.add_child(_menu_item("Find servers", Callable()))
+	column.add_child(_menu_item("Options", Callable()))
 	column.add_child(_menu_item("Quit", _quit))
 
 
@@ -95,13 +95,17 @@ func show_map_select() -> void:
 	var screen := _new_screen()
 	screen.theme = _dialog_theme
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen.add_child(center)
-
 	var window := PanelContainer.new()
-	window.custom_minimum_size = Vector2(520.0, 470.0)
-	center.add_child(window)
+	window.custom_minimum_size = Vector2(670.0, 495.0)
+	window.anchor_left = 0.0
+	window.anchor_right = 0.0
+	window.anchor_top = 0.0
+	window.anchor_bottom = 0.0
+	window.offset_left = 625.0
+	window.offset_top = 385.0
+	window.offset_right = 1295.0
+	window.offset_bottom = 880.0
+	screen.add_child(window)
 
 	var frame := VBoxContainer.new()
 	frame.add_theme_constant_override("separation", 0)
@@ -110,6 +114,7 @@ func show_map_select() -> void:
 	# Title bar: "Create Server" with an X close button, like the CS dialog.
 	var title_bar := PanelContainer.new()
 	title_bar.add_theme_stylebox_override("panel", CSSchemeRef.title_bar_box())
+	title_bar.custom_minimum_size = Vector2(0.0, 34.0)
 	frame.add_child(title_bar)
 	var title_row := HBoxContainer.new()
 	title_bar.add_child(title_row)
@@ -120,78 +125,110 @@ func show_map_select() -> void:
 	var close := Button.new()
 	close.text = "X"
 	close.flat = true
+	close.custom_minimum_size = Vector2(34.0, 30.0)
 	close.pressed.connect(show_main_menu)
 	if _sounds != null:
 		_sounds.attach(close)
 	title_row.add_child(close)
 
-	# Body with margins inside the olive window.
+	var tab_row := HBoxContainer.new()
+	tab_row.add_theme_constant_override("separation", 0)
+	frame.add_child(tab_row)
+	tab_row.add_child(_dialog_tab("Server", true))
+	tab_row.add_child(_dialog_tab("Game", false))
+	tab_row.add_child(_dialog_tab("CPU Player Options", false))
+
+	# Body with margins inside the olive create-server window.
 	var body := MarginContainer.new()
-	body.add_theme_constant_override("margin_left", 14)
-	body.add_theme_constant_override("margin_right", 14)
-	body.add_theme_constant_override("margin_top", 12)
+	body.add_theme_constant_override("margin_left", 48)
+	body.add_theme_constant_override("margin_right", 48)
+	body.add_theme_constant_override("margin_top", 36)
 	body.add_theme_constant_override("margin_bottom", 12)
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	frame.add_child(body)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 15)
 	body.add_child(column)
+
+	var maps := _scan_maps()
+	var map_row := HBoxContainer.new()
+	map_row.add_theme_constant_override("separation", 14)
+	column.add_child(map_row)
 
 	var map_label := Label.new()
 	map_label.text = "Map"
-	column.add_child(map_label)
+	map_label.custom_minimum_size = Vector2(90.0, 0.0)
+	map_row.add_child(map_label)
 
-	var maps := _scan_maps()
+	var map_select := OptionButton.new()
+	map_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	CSSchemeRef.style_combobox(map_select)
+	map_row.add_child(map_select)
+
 	if maps.is_empty():
+		map_select.add_item("No maps found")
+		map_select.disabled = true
 		var note := Label.new()
 		note.text = (
 			"No maps found.\n"
-			+ "Point user://local_goldsrc.json at an installed CS 1.6\n"
-			+ "with a maps/ folder of .bsp files."
+			+ "Point user://local_goldsrc.json at a licensed CS 1.6 install\n"
+			+ "with a cstrike/maps folder of .bsp files."
 		)
-		note.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_child(note)
 	else:
-		# Dark recessed list area with amber selectable rows (toggle group).
-		var inset := PanelContainer.new()
-		inset.add_theme_stylebox_override("panel", CSSchemeRef.list_inset_box())
-		inset.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		column.add_child(inset)
-		var scroll := ScrollContainer.new()
-		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		inset.add_child(scroll)
-		var list := VBoxContainer.new()
-		list.add_theme_constant_override("separation", 0)
-		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll.add_child(list)
-
-		_map_group = ButtonGroup.new()
 		for map_index in maps.size():
 			var map_entry: Dictionary = maps[map_index]
-			var row := Button.new()
-			row.text = str(map_entry.get("stem", map_entry.get("name", "map")))
-			row.toggle_mode = true
-			row.button_group = _map_group
-			row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			row.set_meta("map_path", str(map_entry.get("relative_path", "")))
-			CSSchemeRef.style_list_row(row)
-			row.button_pressed = map_index == 0  # default-select first, like CS
-			if _sounds != null:
-				_sounds.attach(row)
-			list.add_child(row)
+			map_select.add_item(str(map_entry.get("stem", map_entry.get("name", "map"))))
+			map_select.set_item_metadata(map_index, str(map_entry.get("relative_path", "")))
+		_selected_map_path = str(map_select.get_item_metadata(0))
+		map_select.item_selected.connect(_on_map_option_selected.bind(map_select))
 
-	# Action buttons bottom-right: Start / Cancel, like Начало / Отмена.
+	column.add_child(CSSchemeRef.separator())
+
+	column.add_child(_indicator_row("Include CPU players (Bots) in this game", true, true))
+
+	var bots_row := HBoxContainer.new()
+	bots_row.add_theme_constant_override("separation", 14)
+	bots_row.modulate = Color(1.0, 1.0, 1.0, 0.58)
+	column.add_child(bots_row)
+	var bot_count_label := Label.new()
+	bot_count_label.text = "Number of CPU players"
+	bot_count_label.custom_minimum_size = Vector2(210.0, 0.0)
+	bots_row.add_child(bot_count_label)
+	var bot_count := LineEdit.new()
+	bot_count.text = "9"
+	bot_count.editable = false
+	bot_count.custom_minimum_size = Vector2(74.0, 28.0)
+	bots_row.add_child(bot_count)
+
+	var difficulty_label := Label.new()
+	difficulty_label.text = "Difficulty"
+	difficulty_label.modulate = Color(1.0, 1.0, 1.0, 0.58)
+	column.add_child(difficulty_label)
+	for difficulty in ["Easy", "Normal", "Hard", "Expert"]:
+		column.add_child(_indicator_row(difficulty, difficulty == "Easy", false))
+
+	var filler := Control.new()
+	filler.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_child(filler)
+
+	column.add_child(CSSchemeRef.separator())
+
+	# Action buttons bottom-right: Start / Cancel, like the original dialog.
 	var actions := HBoxContainer.new()
 	actions.alignment = BoxContainer.ALIGNMENT_END
 	actions.add_theme_constant_override("separation", 8)
 	column.add_child(actions)
-	if not maps.is_empty():
-		var start := Button.new()
-		start.text = "Start"
+	var start := Button.new()
+	start.text = "Start"
+	start.disabled = maps.is_empty()
+	if not start.disabled:
 		start.pressed.connect(_start_selected_map)
-		if _sounds != null:
-			_sounds.attach(start)
-		actions.add_child(start)
+	if _sounds != null and not start.disabled:
+		_sounds.attach(start)
+	actions.add_child(start)
 	var cancel := Button.new()
 	cancel.text = "Cancel"
 	cancel.pressed.connect(show_main_menu)
@@ -201,11 +238,24 @@ func show_map_select() -> void:
 
 
 func _start_selected_map() -> void:
-	if _map_group == null:
+	if _selected_map_path == "":
 		return
-	var selected := _map_group.get_pressed_button()
-	if selected != null and selected.has_meta("map_path"):
-		_start_map(str(selected.get_meta("map_path")))
+	_load_generation += 1
+	var load_generation := _load_generation
+	_show_loading_screen(_selected_map_path)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().create_timer(LOADING_SCREEN_MIN_SECONDS).timeout
+	if load_generation != _load_generation:
+		return
+	_start_map(_selected_map_path)
+
+
+func _on_map_option_selected(index: int, option: OptionButton) -> void:
+	if option == null or index < 0:
+		_selected_map_path = ""
+		return
+	_selected_map_path = str(option.get_item_metadata(index))
 
 
 func _menu_item(text: String, on_pressed: Callable, disabled: bool = false) -> Button:
@@ -214,6 +264,7 @@ func _menu_item(text: String, on_pressed: Callable, disabled: bool = false) -> B
 	button.flat = true
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.focus_mode = Control.FOCUS_NONE
+	button.custom_minimum_size = Vector2(310.0, 55.0)
 	button.disabled = disabled
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	if not disabled and on_pressed.is_valid():
@@ -223,10 +274,112 @@ func _menu_item(text: String, on_pressed: Callable, disabled: bool = false) -> B
 	return button
 
 
+func _dialog_tab(text: String, active: bool, disabled: bool = false) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.disabled = disabled
+	button.focus_mode = Control.FOCUS_NONE
+	CSSchemeRef.style_dialog_tab(button, active, disabled)
+	return button
+
+
+func _indicator_row(text: String, selected: bool, amber_text: bool) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	row.modulate = Color(1.0, 1.0, 1.0, 0.84 if amber_text else 0.58)
+
+	var indicator := ColorRect.new()
+	indicator.custom_minimum_size = Vector2(14.0, 14.0)
+	indicator.color = CSSchemeRef.progress_segment_color() if selected else CSSchemeRef.field_dark_color()
+	row.add_child(indicator)
+
+	var label := Label.new()
+	label.text = text
+	label.modulate = CSSchemeRef.amber_color() if amber_text else Color(1.0, 1.0, 1.0, 0.9)
+	row.add_child(label)
+	return row
+
+
+func _show_loading_screen(_map_path: String) -> void:
+	_set_ui_visible(true)
+	var screen := _new_screen()
+	screen.theme = _dialog_theme
+
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", CSSchemeRef.loading_panel_box())
+	panel.custom_minimum_size = Vector2(760.0, 168.0)
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_top = 0.0
+	panel.anchor_bottom = 0.0
+	panel.offset_left = -380.0
+	panel.offset_top = 88.0
+	panel.offset_right = 380.0
+	panel.offset_bottom = 256.0
+	screen.add_child(panel)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 12)
+	panel.add_child(column)
+
+	var title := Label.new()
+	title.text = "Loading..."
+	title.add_theme_font_size_override("font_size", 28)
+	title.modulate = Color(0.95, 0.95, 0.9, 1.0)
+	column.add_child(title)
+
+	var status := Label.new()
+	status.text = "Precaching resources..."
+	status.add_theme_font_size_override("font_size", 22)
+	status.modulate = Color(0.73, 0.75, 0.68, 0.92)
+	column.add_child(status)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 22)
+	column.add_child(row)
+	row.add_child(_segmented_loading_bar())
+
+	var cancel := Button.new()
+	cancel.text = "Cancel"
+	cancel.custom_minimum_size = Vector2(130.0, 42.0)
+	cancel.pressed.connect(_cancel_loading)
+	if _sounds != null:
+		_sounds.attach(cancel)
+	row.add_child(cancel)
+
+
+func _segmented_loading_bar() -> PanelContainer:
+	var track := PanelContainer.new()
+	track.custom_minimum_size = Vector2(470.0, 42.0)
+	track.add_theme_stylebox_override("panel", CSSchemeRef.progress_track_box())
+
+	var segments := HBoxContainer.new()
+	segments.add_theme_constant_override("separation", 5)
+	track.add_child(segments)
+	for _index in range(18):
+		var segment := ColorRect.new()
+		segment.color = CSSchemeRef.progress_segment_color()
+		segment.custom_minimum_size = Vector2(18.0, 30.0)
+		segments.add_child(segment)
+	return track
+
+
+func _cancel_loading() -> void:
+	_load_generation += 1
+	show_map_select()
+
+
 func _scan_maps() -> Array[Dictionary]:
-	if _asset_manager == null or _asset_manager.vfs == null or not _asset_manager.vfs.is_available():
+	if _asset_manager == null or _asset_manager.local_config == null:
 		return []
-	return _asset_manager.vfs.list_files(MAPS_DIR, MAP_EXTENSIONS)
+	var cstrike_dir := str(_asset_manager.local_config.cstrike_dir)
+	if cstrike_dir == "":
+		return []
+	var cstrike_vfs = GoldSrcVFSRef.new()
+	cstrike_vfs.configure([cstrike_dir])
+	if not cstrike_vfs.is_available():
+		return []
+	return cstrike_vfs.list_files(MAPS_DIR, MAP_EXTENSIONS)
 
 
 func _start_map(map_path: String) -> void:

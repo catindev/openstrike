@@ -14,3 +14,11 @@ config/name="OpenStrike"
 config/version="0.1.0-dev"
 run/main_scene="res://scenes/app/Main.tscn"
 config/features=PackedStringArray("4.6")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"

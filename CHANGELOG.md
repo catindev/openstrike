@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.  The format
 
 ## [Unreleased]
 
+### Changed
+
+* Restyled the player-facing game shell closer to the original CS 1.6 menu:
+  amber lower-left main-menu text on a 1920x1080 canvas baseline, a compact
+  create-server-style map dialog with tabs, a VGUI-like map dropdown, olive
+  panels, dark fields and disabled CPU-player controls for visual parity only,
+  plus a same-background loading/precache dialog with segmented amber progress
+  before map startup. The map picker now lists maps only from the user's
+  configured `cstrike/maps` root instead of the full GoldSrc VFS fallback set.
+  The shell still starts maps through `OpenStrikeLocalGameSession` and keeps
+  collision marked as non-parity until the GoldSrc clipnode backend lands.
+* Set the Godot app to launch fullscreen by default with a 1920x1080 expandable
+  canvas baseline, matching the player-facing menu reference screenshots.
+
 ### Added
 
 * Added a player-facing game application shell under `src/presentation/app`
@@ -14,7 +28,7 @@ All notable changes to this project will be documented in this file.  The format
 * Added a CS 1.6 styled menu look under `src/presentation/ui`
   (`OpenStrikeCSScheme`, `OpenStrikeCSUiSounds`, `OpenStrikeCSBackground`),
   reconstructed from a licensed install's `resource/ClientScheme.res` and
-  reference screenshots: light-grey lower-left main menu items over the
+  reference screenshots: amber lower-left main menu items over the
   composed `resource/background/800_*_loading.tga` artwork, amber/olive
   create-server-style dialog for map selection, and button rollover/click
   sounds. All Valve assets (background tiles, UI sounds, host font glyphs) are
