@@ -4,7 +4,7 @@
 The hand-edited source of truth is `gen/coverage_status_matrix.json`.
 Generated artifacts:
 - `data/schemas/coverage_status.schema.json`
-- generated sections in `docs/COVERAGE_STATUS_CONTRACT.md`
+- generated sections in `docs/future/COVERAGE_STATUS_CONTRACT.md`
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX_PATH = ROOT / "gen" / "coverage_status_matrix.json"
 SCHEMA_PATH = ROOT / "data" / "schemas" / "coverage_status.schema.json"
-DOC_PATH = ROOT / "docs" / "COVERAGE_STATUS_CONTRACT.md"
+DOC_PATH = ROOT / "docs" / "future" / "COVERAGE_STATUS_CONTRACT.md"
 
 TABLE_START = "<!-- BEGIN GENERATED STATUS TABLE -->"
 TABLE_END = "<!-- END GENERATED STATUS TABLE -->"

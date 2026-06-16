@@ -1,5 +1,7 @@
 # OpenStrike — Compact PR Task Packets from GoldSrc Runtime Spine Spec
 
+next steps: take the first unclosed PR packet in this file.
+
 ## Global rule for every PR
 
 Every PR must be small enough to review in one sitting.
