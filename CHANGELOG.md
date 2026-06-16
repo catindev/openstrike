@@ -135,13 +135,13 @@ All notable changes to this project will be documented in this file.  The format
   vendored dylibs.
 * Added `docs/THIRD_PARTY_DEPENDENCIES.md` to track committed dependency
   provenance, license status, vendored paths and operational rules.
-* Added `docs/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working map
-  for CS 1.6 asset coverage levels, weapon/model/audio/effect/HUD/map domains,
-  scanner outputs and PR-06 generated-atlas acceptance criteria.
-* Added `docs/VIEWMODEL_WORLD_PROFILE.md` as the required PR-06A profile
+* Added `docs/future/CS16_ASSET_ORCHESTRATION_ATLAS.md` as the required working
+  map for CS 1.6 asset coverage levels, weapon/model/audio/effect/HUD/map
+  domains, scanner outputs and PR-06 generated-atlas acceptance criteria.
+* Added `docs/future/VIEWMODEL_WORLD_PROFILE.md` as the required PR-06A profile
   contract for GoldSrc unit scale, coordinate mapping, eye height, world FOV,
   viewmodel FOV, no-per-weapon-transform rules and profile smoke obligations.
-* Added `docs/COVERAGE_STATUS_CONTRACT.md`,
+* Added `docs/future/COVERAGE_STATUS_CONTRACT.md`,
   `gen/coverage_status_matrix.json`, `gen/generate.py` and the generated
   `data/schemas/coverage_status.schema.json` contract for scanner, generated
   atlas and coverage report status pairs.
@@ -159,9 +159,9 @@ All notable changes to this project will be documented in this file.  The format
   `src/dev/smoke/goldsrc_renderable_adapter_smoke.gd` and the
   `viewmodel_manual_preflight.gd` tool to bridge semantic pilot viewmodels to
   `alanfischer/goldsrc-godot` without adding project-owned MDL/SPR decoders.
-* Added `docs/VIEWMODEL_MANUAL_PREFLIGHT.md` with the first local manual test
-  point for loading and visually inspecting real pilot `v_*.mdl` files through
-  the locked profile.
+* Added `docs/future/VIEWMODEL_MANUAL_PREFLIGHT.md` with the first local manual
+  test point for loading and visually inspecting real pilot `v_*.mdl` files
+  through the locked profile.
 * Added agent/documentation instructions requiring future world/viewmodel scale,
   coordinate mapping, eye height, camera FOV and first-person placement work to
   read and update the viewmodel/world profile.
@@ -199,11 +199,11 @@ All notable changes to this project will be documented in this file.  The format
 * Added an asset provider smoke test with synthetic `user://` MDL/SPR/WAV files
   to verify semantic viewmodel, sprite and sound requests without committing
   proprietary fixtures.
-* Added `docs/AGENT_SKILLS/GODOT_OPENSTRIKE_SKILL.md` as the required
-  project-specific Godot/GDScript workflow guide for AI agents.
-* Added `docs/3KLIKSPHILIP_RESEARCH_NOTES.md` as a community-engineering
-  research note for Counter-Strike experiment design, dev labs, latency,
-  hitboxes, mapping, performance, HUD and viewmodel cost.
+* Added `docs/GODOT_OPENSTRIKE_SKILL.md` as the required project-specific
+  Godot/GDScript workflow guide for AI agents.
+* Added `docs/archive/3KLIKSPHILIP_RESEARCH_NOTES.md` as a historical
+  community-engineering research note for Counter-Strike experiment design,
+  dev labs, latency, hitboxes, mapping, performance, HUD and viewmodel cost.
 * Added `docs/SOURCE_CATALOG.md` to classify external references by source
   weight and document use/do-not-use rules.
 * Added `docs/DEV_LABS_METHODOLOGY.md` to define the lab contract for turning
@@ -361,6 +361,10 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Process
 
+* Repaired the active documentation source-of-truth routing after docs
+  consolidation: current agent workflow docs live in active `docs/` paths,
+  Phase 4+ material is explicitly deferred under `docs/future/`, and
+  `docs/archive/` is historical reference only.
 * Inserted PR-08A before the full local game loop and weapon-loop work so
   future gameplay features have a server-authoritative owner instead of
   growing inside BSP/dev-lab scripts.

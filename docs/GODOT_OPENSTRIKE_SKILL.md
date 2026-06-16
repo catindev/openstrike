@@ -920,5 +920,6 @@ Use these as the starting source list for this skill:
 - Godot official command line tutorial.
 - GUT repository / docs, if chosen as test framework.
 - GdUnit4 repository / docs, if chosen as test framework.
-- OpenStrike `AGENTS.md`, `docs/LEGAL_ORIGINALITY.md`, `docs/ARCHITECTURE.md`,
-  `docs/ROADMAP.md`, `docs/DEVELOPMENT_PLAN.md` and `docs/DECISIONS.md`.
+- OpenStrike `AGENTS.md`, `docs/README.md`, `docs/LEGAL_ORIGINALITY.md`,
+  `docs/ARCHITECTURE.md`, `docs/COMPACT_PR_TASK_PACKETS.md` and
+  `docs/DECISIONS.md`.

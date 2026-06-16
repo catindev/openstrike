@@ -86,7 +86,8 @@ Important materials to catalog and revisit by topic:
 * Mapping: Source SDK / Hammer mapping tutorials, lighting, reflections, 2D/3D
   skyboxes and optimized map analyses.
 
-The full working notes are in `docs/3KLIKSPHILIP_RESEARCH_NOTES.md`.
+The full historical working notes are in
+`docs/archive/3KLIKSPHILIP_RESEARCH_NOTES.md`.
 
 ## Local CS 1.6 Asset Filename Inspection
 
@@ -200,4 +201,4 @@ Important neutral/public references recorded by the spec:
   constants and contents enums where full page access is blocked.
 * Half-Life Physics Reference by jwchong for movement behavior, described in
   OpenStrike's own words.
-* `docs/VIEWMODEL_WORLD_PROFILE.md` for unit scale and coordinate mapping.
+* `docs/future/VIEWMODEL_WORLD_PROFILE.md` for unit scale and coordinate mapping.
