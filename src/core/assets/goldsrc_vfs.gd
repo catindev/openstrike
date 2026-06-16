@@ -118,6 +118,48 @@ func read_file_bytes(relative_path: String) -> PackedByteArray:
 	return file.get_buffer(file.get_length())
 
 
+func list_files(relative_dir: String, extensions: Array[String] = []) -> Array[Dictionary]:
+	var normalized := normalize_relative_path(relative_dir)
+	var results: Array[Dictionary] = []
+	if normalized == "":
+		return results
+
+	var wanted_extensions: Array[String] = []
+	for extension in extensions:
+		var clean_extension := String(extension).strip_edges().to_lower().trim_prefix(".")
+		if clean_extension != "" and not wanted_extensions.has(clean_extension):
+			wanted_extensions.append(clean_extension)
+
+	var seen: Dictionary = {}
+	for root in search_roots:
+		var directory_path := _resolve_directory_case_insensitive(root, normalized)
+		if directory_path == "":
+			continue
+		var dir := DirAccess.open(directory_path)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var entry := dir.get_next()
+		while entry != "":
+			if not entry.begins_with(".") and not dir.current_is_dir():
+				var extension := entry.get_extension().to_lower()
+				if wanted_extensions.is_empty() or wanted_extensions.has(extension):
+					var key := entry.to_lower()
+					if not seen.has(key):
+						seen[key] = true
+						results.append({
+							"relative_path": "%s/%s" % [normalized, entry],
+							"name": entry,
+							"stem": entry.get_basename(),
+							"root": root,
+						})
+			entry = dir.get_next()
+		dir.list_dir_end()
+
+	results.sort_custom(func(a, b): return str(a.get("name", "")).naturalnocasecmp_to(str(b.get("name", ""))) < 0)
+	return results
+
+
 func get_diagnostics() -> Array[Dictionary]:
 	return diagnostics.duplicate(true)
 
@@ -136,6 +178,18 @@ func _resolve_case_insensitive(root: String, normalized_path: String) -> String:
 		current = current.path_join(matched)
 
 	if FileAccess.file_exists(current):
+		return current
+	return ""
+
+
+func _resolve_directory_case_insensitive(root: String, normalized_path: String) -> String:
+	var current := root
+	for part in normalized_path.split("/", false):
+		var matched := _find_case_insensitive_child(current, String(part), false)
+		if matched == "":
+			return ""
+		current = current.path_join(matched)
+	if DirAccess.dir_exists_absolute(current):
 		return current
 	return ""
 

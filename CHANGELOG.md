@@ -6,6 +6,31 @@ All notable changes to this project will be documented in this file.  The format
 
 ### Added
 
+* Added a player-facing game application shell under `src/presentation/app`
+  (`OpenStrikeGameShell`) wired as `res://scenes/app/Main.tscn`: main menu,
+  local map selection and a walkable map scene, replacing the static bootstrap
+  label. The shell reuses `src/core` asset/map loading and the `src/game`
+  authoritative `OpenStrikeLocalGameSession`; it does not import dev-lab code.
+* Added a CS 1.6 styled menu look under `src/presentation/ui`
+  (`OpenStrikeCSScheme`, `OpenStrikeCSUiSounds`, `OpenStrikeCSBackground`),
+  reconstructed from a licensed install's `resource/ClientScheme.res` and
+  reference screenshots: light-grey lower-left main menu items over the
+  composed `resource/background/800_*_loading.tga` artwork, amber/olive
+  create-server-style dialog for map selection, and button rollover/click
+  sounds. All Valve assets (background tiles, UI sounds, host font glyphs) are
+  loaded from the player's local install through the VFS and never bundled;
+  missing assets degrade to a flat background and silent buttons.
+* Added `OpenStrikeWalkableWorld`, a minimal presentation-layer walkable scene:
+  loads a GoldSrc BSP, runs movement through `OpenStrikeLocalGameSession`,
+  follows the snapshot for camera/position and exits back to the menu on Esc.
+  Collision remains the non-parity Godot scene backend until the GoldSrc
+  clipnode trace lands, and the overlay reports the collision source honestly
+  (no skybox/weapons/HUD/audio yet).
+* Added `OpenStrikeGoldSrcVFS.list_files()` for case-insensitive, extension-
+  filtered, deduped directory enumeration across search roots, used by the map
+  selection screen to scan the local `maps/` folder. Covered by
+  `src/dev/smoke/vfs_list_files_smoke.gd` (CI-safe synthetic `user://`
+  fixtures, no Valve assets).
 * Added the first `src/game/runtime` local authoritative session skeleton:
   player slots, user commands, round-state skeleton data, fixed-tick stepping,
   team-aware spawn assignment from `OpenStrikeMapEntityIndex` and deterministic
